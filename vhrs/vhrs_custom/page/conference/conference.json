@@ -1,0 +1,19 @@
+{
+ "content": null, 
+ "creation": "2017-11-22 22:14:52.366809", 
+ "docstatus": 0, 
+ "doctype": "Page", 
+ "idx": 0, 
+ "modified": "2017-11-22 22:45:18.182772", 
+ "modified_by": "Administrator", 
+ "module": "VHRS Custom", 
+ "name": "conference", 
+ "owner": "Administrator", 
+ "page_name": "Conference", 
+ "roles": [], 
+ "script": null, 
+ "standard": "Yes", 
+ "style": null, 
+ "system_page": 1, 
+ "title": "VHRS Video Conference"
+}
