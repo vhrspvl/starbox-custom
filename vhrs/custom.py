@@ -3,10 +3,7 @@
 # For license information, please see license.txt
 
 from __future__ import unicode_literals
-import json
 import frappe
-from frappe.model.document import Document
-from frappe.model.naming import make_autoname
 from frappe.utils.data import today
 
 
@@ -114,7 +111,7 @@ def create_sales_order(closure):
             so.save(ignore_permissions=True)
 
 
-def update_status(doc, method):
+def update_status():
     projects = frappe.get_all('Project', fields={'name', 'status'})
     for project in projects:
         tasks = frappe.db.get_all('Task', fields={'name', 'project', 'status'}, filters={
