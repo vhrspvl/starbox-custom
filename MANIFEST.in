@@ -1,0 +1,18 @@
+include MANIFEST.in
+include requirements.txt
+include *.json
+include *.md
+include *.py
+include *.txt
+recursive-include starbox_custom *.css
+recursive-include starbox_custom *.csv
+recursive-include starbox_custom *.html
+recursive-include starbox_custom *.ico
+recursive-include starbox_custom *.js
+recursive-include starbox_custom *.json
+recursive-include starbox_custom *.md
+recursive-include starbox_custom *.png
+recursive-include starbox_custom *.py
+recursive-include starbox_custom *.svg
+recursive-include starbox_custom *.txt
+recursive-exclude starbox_custom *.pyc
