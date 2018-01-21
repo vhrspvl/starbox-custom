@@ -10,25 +10,38 @@ from frappe.utils import getdate, cint, add_months, date_diff, add_days
 
 @frappe.whitelist()
 def emp_absent_today():
-    query = """SELECT emp.name FROM `tabAttendance` att, `tabEmployee` emp
-		WHERE att.employee = emp.name AND att.attendance_date = subdate(CURDATE(), 1) """
-    present_emp = frappe.db.sql(query, as_dict=True)
-    for emp in frappe.get_list('Employee'):
-         if emp in present_emp:
-             pass
-         else:
-            doc = frappe.get_doc('Employee', emp)
-            attendance = frappe.new_doc("Attendance")
-            attendance.update({
-                "employee": doc.name,
-                "employee_name": doc.employee_name,
-                "attendance_date": add_days(today(), -1),
-                "status": "Absent",
-                "company": doc.company
-            })
-            attendance.save(ignore_permissions=True)
-            # attendance.submit()
-            frappe.db.commit()
+    day = add_days(today(), -1)
+    holiday = frappe.get_list("Holiday List", filters={
+                              'holiday_date': day})
+    if holiday:
+        pass
+    else:
+        query = """SELECT emp.name FROM `tabAttendance` att, `tabEmployee` emp
+		WHERE att.employee = emp.name AND att.attendance_date = '%s'""" % (day)
+        present_emp = frappe.db.sql(query, as_dict=True)
+        for emp in frappe.get_list('Employee', filters={'status': 'Active'}):
+            if emp in present_emp:
+                pass
+            else:
+                doc = frappe.get_doc('Employee', emp)
+                leave = frappe.db.sql("""select name from `tabLeave Application`
+				where employee = %s and %s between from_date and to_date and status = 'Approved'
+				and docstatus = 1""", (doc.name, day))
+                if leave:
+                    status = 'On Leave'
+                else:
+                    status = 'Absent'
+                attendance = frappe.new_doc("Attendance")
+                attendance.update({
+                    "employee": doc.name,
+                    "employee_name": doc.employee_name,
+                    "attendance_date": day,
+                    "status": status,
+                    "company": doc.company
+                })
+                attendance.save(ignore_permissions=True)
+                attendance.submit()
+                frappe.db.commit()
 
 #Default Attendance 
 # @frappe.whitelist(allow_guest=True)

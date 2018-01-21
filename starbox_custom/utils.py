@@ -44,7 +44,7 @@ def attendance():
                 attendance.out_time = max(times)
                 attendance.in_time = min(times)
                 attendance.db_update()
-		frappe.db.commit()
+		        frappe.db.commit()
             else:
                 attendance = frappe.new_doc("Attendance")
                 in_time = time.strftime("%H:%M:%S", time.gmtime(
@@ -86,14 +86,14 @@ def attendance():
                         "Attendance", attendance_id)
                     out_time = time.strftime("%H:%M:%S", time.gmtime(
                         int(frappe.form_dict.get("att_time"))))
-		    times = [out_time, attendance.in_time]
+		            times = [out_time, attendance.in_time]
                     attendance.out_time = max(times)
                     attendance.in_time = min(times)
                     total_hrs = time_diff_in_seconds(
                         attendance.out_time, attendance.in_time)
-		    attendance.overtime = (total_hrs - shft_hrs) / 3600
-		    attendance.db_update()
-		    frappe.db.commit()	
+		            attendance.overtime = (total_hrs - shft_hrs) / 3600
+		            attendance.db_update()
+		            frappe.db.commit()	
                 else:
                     if att_date >= shft_intime_min and att_date <= shft_intime_max:
                         attendance = frappe.new_doc(
@@ -115,7 +115,7 @@ def attendance():
                     else:
                         attendance = frappe.new_doc(
                             "Attendance")
-			intime = time.strftime("%H:%M:%S", time.gmtime(
+			            intime = time.strftime("%H:%M:%S", time.gmtime(
                             int(frappe.form_dict.get("att_time"))))
                         attendance.update({
                             "employee": employee,
@@ -125,11 +125,11 @@ def attendance():
                             "in_time": intime,
                             "company": doc.company
                         })
-			attendance.save(
+			            attendance.save(
                             ignore_permissions=True)
-			frappe.db.commit()
-                frappe.response.type = "text"
-                return "ok"
+			            frappe.db.commit()
+                    frappe.response.type = "text"
+                    return "ok"
 
 # @frappe.whitelist(allow_guest=True)
 # def attendance():
