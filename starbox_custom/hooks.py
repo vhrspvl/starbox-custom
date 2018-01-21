@@ -90,13 +90,13 @@ app_license = "MIT"
 # Scheduled Tasks
 # ---------------
 
-# scheduler_events = {
+scheduler_events = {
 # 	"all": [
 # 		"starbox_custom.tasks.all"
 # 	],
-# 	"daily": [
-# 		"starbox_custom.tasks.daily"
-# 	],
+	"daily": [
+		"starbox_custom.custom.emp_absent_today"
+	],
 # 	"hourly": [
 # 		"starbox_custom.tasks.hourly"
 # 	],
@@ -106,7 +106,7 @@ app_license = "MIT"
 # 	"monthly": [
 # 		"starbox_custom.tasks.monthly"
 # 	]
-# }
+}
 
 # Testing
 # -------
