@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-01-20 15:29:18.114744", 
+ "modified": "2018-01-22 13:38:09.491114", 
  "modified_by": "Administrator", 
  "module": "Starbox Custom", 
  "name": "Salary Structure", 
@@ -17,7 +17,7 @@
  "report_type": "Script Report", 
  "roles": [
   {
-   "role": "HR Manager"
+   "role": "System Manager"
   }
  ]
 }

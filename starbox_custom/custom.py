@@ -300,9 +300,3 @@ def emp_absent_today():
 #             lap.save(ignore_permissions=True)
 #             lap.submit()
 #             frappe.db.commit()
-
-def emp_absent_today():
-    query = """SELECT emp.name FROM `tabAttendance` att, `tabEmployee` emp
-		WHERE att.employee = emp.name AND att.attendance_date = subdate(CURDATE(), 1) """
-    present = frappe.db.sql(query, as_list=1)
-    print present
