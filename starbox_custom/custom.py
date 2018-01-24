@@ -10,7 +10,8 @@ from frappe.utils import getdate, cint, add_months, date_diff, add_days
 
 @frappe.whitelist()
 def emp_absent_today():
-    day = add_days(today(), -1)
+    day = '2018-01-18'
+    # add_days(today(), -1)
     holiday = frappe.get_list("Holiday List", filters={
                               'holiday_date': day})
     if holiday:
@@ -36,6 +37,8 @@ def emp_absent_today():
                     "employee": doc.name,
                     "employee_name": doc.employee_name,
                     "attendance_date": day,
+                    "in_time":'09:00',
+                    "out_time":'06:30',
                     "status": status,
                     "company": doc.company
                 })
