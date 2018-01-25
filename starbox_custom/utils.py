@@ -121,7 +121,7 @@ def attendance():
                             "employee": employee,
                             "employee_name": doc.employee_name,
                             "attendance_date": shft_indate,
-                            "status": "Absent",
+                            "status": "Late",
                             "in_time": intime,
                             "company": doc.company
                         })
