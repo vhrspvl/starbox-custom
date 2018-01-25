@@ -19,7 +19,8 @@ def execute(filters=None):
 
     data = []
     row = []
-    for emp in frappe.get_list('Employee', fields=['name', 'employee_name', 'designation', 'department'], filters={'status': 'Active'}):
+    for emp in get_employees():
+    # frappe.get_list('Employee', fields=['name', 'employee_name', 'designation', 'department'], filters={'status': 'Active'}):
         row = [emp.name, emp.employee_name, emp.designation, emp.department]
         att_details = frappe.db.get_value("Attendance", {'attendance_date': date, 'employee': emp.name}, [
                                           'name', 'status', 'in_time', 'out_time'], as_dict=True)
@@ -32,19 +33,25 @@ def execute(filters=None):
             if att_details.in_time:
                 row += [att_details.in_time]
             else:
-                row += [""]
+                row += ["00:00"]
 
             if att_details.out_time:
                 row += [att_details.out_time]
             else:
-                row += [""]
+                row += ["00:00"]
 
-            if att_details.status:
+            if att_details.status:    
                 row += [att_details.status]
             else:
                 row += [""]
+
+            if att_details.in_time and att_details.status == 'Absent':
+                row += ['Late']
+            else:
+                row += [""]
+
         else:
-            pass
+            row +=["","","","Absent","Not Punched"]
 
         data.append(row)
     return columns, data
@@ -60,5 +67,10 @@ def get_columns(filters):
         _("In Time") + "::120",
         _("Out Time") + "::120",
         _("Status") + "::120",
+        _("Remarks") + "::120",
     ]
     return columns
+
+def get_employees():
+    employees = frappe.db.sql("""select name,employee_name,designation,department from tabEmployee where status = 'Active'""",as_dict=1)
+    return employees
