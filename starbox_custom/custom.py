@@ -9,9 +9,23 @@ from frappe.utils import getdate, cint, add_months, date_diff, add_days
 
 
 @frappe.whitelist()
+def send_daily_report():
+	custom_filter = {'date': add_days(today(), -1)}
+	report = frappe.get_doc('Report', "Employee Day Attendance Report")
+	columns, data = report.get_data(
+	    limit=100 or 100, filters=custom_filter, as_dict=True)
+	html = frappe.render_template(
+	    'frappe/templates/includes/print_table.html', {'columns': columns, 'data': data})
+        frappe.sendmail(
+            recipients=['abdulla.pi@voltechgroup.com'],
+            subject='Employee Attendance Report - ' +
+            formatdate(add_days(today(), -1)),
+            message=html
+        )
+
+@frappe.whitelist()
 def emp_absent_today():
-    day = '2018-01-18'
-    # add_days(today(), -1)
+    day = add_days(today(), -1)
     holiday = frappe.get_list("Holiday List", filters={
                               'holiday_date': day})
     if holiday:
@@ -37,8 +51,8 @@ def emp_absent_today():
                     "employee": doc.name,
                     "employee_name": doc.employee_name,
                     "attendance_date": day,
-                    "in_time":'09:00',
-                    "out_time":'06:30',
+                    "in_time":'00:00',
+                    "out_time":'00:00',
                     "status": status,
                     "company": doc.company
                 })
