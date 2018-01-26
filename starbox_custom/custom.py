@@ -13,16 +13,15 @@ def send_daily_report():
 	custom_filter = {'date': add_days(today(), -1)}
 	report = frappe.get_doc('Report', "Employee Day Attendance Report")
 	columns, data = report.get_data(
-	    limit=100 or 100, filters=custom_filter, as_dict=True)
+	    limit=500 or 500, filters=custom_filter, as_dict=True)
 	html = frappe.render_template(
 	    'frappe/templates/includes/print_table.html', {'columns': columns, 'data': data})
-        print html 
-        # frappe.sendmail(
-        #     recipients=['abdulla.pi@voltechgroup.com','hari@starboxes.in','hr@starboxes.in'],
-        #     subject='Employee Attendance Report - ' +
-        #     formatdate(add_days(today(), -1)),
-        #     message=html
-        # )
+        frappe.sendmail(
+            recipients=['abdulla.pi@voltechgroup.com','hari@starboxes.in','hr@starboxes.in','thiru@starboxes.in'],
+            subject='Employee Attendance Report - ' +
+            formatdate(add_days(today(), -1)),
+            message=html
+        )
 
 @frappe.whitelist()
 def emp_absent_today():
