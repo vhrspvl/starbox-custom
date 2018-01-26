@@ -20,7 +20,6 @@ def execute(filters=None):
     data = []
     row = []
     for emp in get_employees():
-    # frappe.get_list('Employee', fields=['name', 'employee_name', 'designation', 'department'], filters={'status': 'Active'}):
         row = [emp.name, emp.employee_name, emp.designation, emp.department]
         att_details = frappe.db.get_value("Attendance", {'attendance_date': date, 'employee': emp.name}, [
                                           'name', 'attendance_date','status', 'in_time', 'out_time'], as_dict=True)
@@ -47,7 +46,7 @@ def execute(filters=None):
 
             if att_details.in_time > 0 and att_details.status == 'Absent':
                 row += ['Late']
-            if att_details.in_time and not att_details.out_time:
+            elif att_details.in_time and not att_details.out_time:
                 row += ['Failed Out Punch']    
             else:
                 row += [""]
