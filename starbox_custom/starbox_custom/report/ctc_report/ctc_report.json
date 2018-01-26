@@ -7,16 +7,29 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
+<<<<<<< Updated upstream
  "modified": "2018-01-26 18:08:53.231118", 
+=======
+ "modified": "2018-01-26 20:15:22.675412", 
+>>>>>>> Stashed changes
  "modified_by": "Administrator", 
  "module": "Starbox Custom", 
  "name": "CTC Report", 
  "owner": "Administrator", 
- "ref_doctype": "Salary Structure", 
+ "ref_doctype": "Attendance", 
  "report_name": "CTC Report", 
  "report_type": "Script Report", 
  "roles": [
   {
+<<<<<<< Updated upstream
+=======
+   "role": "HR User"
+  }, 
+  {
+   "role": "HR Manager"
+  }, 
+  {
+>>>>>>> Stashed changes
    "role": "System Manager"
   }
  ]

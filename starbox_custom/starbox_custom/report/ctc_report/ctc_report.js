@@ -5,47 +5,24 @@
 frappe.query_reports["CTC Report"] = {
 	"filters": [
 		{
-			"fieldname": "employee",
-			"label": "Employee",
-			"fieldtype": "Link",
-			"options": "Employee"
-		},
-		{
-			"fieldname": "branch",
-			"label": "Branch",
-			"fieldtype": "Link",
-			"options": "Branch"
-		},
-		{
-			"fieldname": "department",
-			"label": "Department",
-			"fieldtype": "Link",
-			"options": "Department"
-		},
-		{
-			"fieldname": "designation",
-			"label": "Designation",
-			"fieldtype": "Link",
-			"options": "Designation"
-		},
-		{
-			"fieldname": "from_date",
-			"label": "From Date",
+			"fieldname": "date",
+			"label": __("Date"),
 			"fieldtype": "Date",
 			"default": frappe.datetime.get_today(),
 			"reqd": 1
 		},
 		{
-			"fieldname": "to_date",
-			"label": "To Date",
-			"fieldtype": "Date",
-			"reqd": 1,
-			"default": frappe.datetime.add_months(frappe.datetime.get_today(), 12)
+			"fieldname": "employee",
+			"label": __("Employee"),
+			"fieldtype": "Link",
+			"options": "Employee"
 		},
 		{
-			"fieldname": "without_salary_structure",
-			"label": "Emp w/o SS",
-			"fieldtype": "Check"
-		},
+			"fieldname": "company",
+			"label": __("Company"),
+			"fieldtype": "Link",
+			"options": "Company",
+			"default": frappe.defaults.get_user_default("Company")
+		}
 	]
 }
