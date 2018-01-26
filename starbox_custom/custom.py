@@ -5,7 +5,7 @@
 from __future__ import unicode_literals
 import frappe
 from frappe.utils.data import today
-from frappe.utils import getdate, cint, add_months, date_diff, add_days
+from frappe.utils import formatdate,getdate, cint, add_months, date_diff, add_days
 
 
 @frappe.whitelist()
@@ -16,12 +16,13 @@ def send_daily_report():
 	    limit=100 or 100, filters=custom_filter, as_dict=True)
 	html = frappe.render_template(
 	    'frappe/templates/includes/print_table.html', {'columns': columns, 'data': data})
-        frappe.sendmail(
-            recipients=['abdulla.pi@voltechgroup.com'],
-            subject='Employee Attendance Report - ' +
-            formatdate(add_days(today(), -1)),
-            message=html
-        )
+        print html 
+        # frappe.sendmail(
+        #     recipients=['abdulla.pi@voltechgroup.com','hari@starboxes.in','hr@starboxes.in'],
+        #     subject='Employee Attendance Report - ' +
+        #     formatdate(add_days(today(), -1)),
+        #     message=html
+        # )
 
 @frappe.whitelist()
 def emp_absent_today():

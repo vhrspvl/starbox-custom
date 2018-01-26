@@ -14,7 +14,7 @@ frappe.query_reports["Employee Day Attendance Report"] = {
 	],
 	"formatter": function (row, cell, value, columnDef, dataContext, default_formatter) {
 		value = default_formatter(row, cell, value, columnDef, dataContext);
-		if (dataContext["In Time"]) {
+		if (dataContext["Status"] === 'Absent'|| dataContext["Status"] === 'Late') {
 			value = "<span style='color:red!important;font-weight:bold'>" + value + "</span>";
 		}
 		return value;

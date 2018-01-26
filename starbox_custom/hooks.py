@@ -95,7 +95,8 @@ scheduler_events = {
 # 		"starbox_custom.tasks.all"
 # 	],
 	"daily": [
-		"starbox_custom.custom.emp_absent_today"
+		"starbox_custom.custom.emp_absent_today",
+        "starbox_custom.custom.send_daily_report"
 	],
 # 	"hourly": [
 # 		"starbox_custom.tasks.hourly"
