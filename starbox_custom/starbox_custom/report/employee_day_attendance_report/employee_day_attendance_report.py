@@ -53,9 +53,7 @@ def execute(filters=None):
                 else:
                     row += [""]
 
-                if att_details.in_time > 0 and att_details.status == 'Absent':
-                    row += ['Late']
-                elif att_details.in_time and not att_details.out_time:
+                if att_details.in_time and not att_details.out_time:
                     row += ['Failed Out Punch']    
                 else:
                     row += [""]
