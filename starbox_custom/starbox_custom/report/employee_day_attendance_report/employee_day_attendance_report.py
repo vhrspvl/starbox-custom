@@ -26,8 +26,11 @@ def execute(filters=None):
                                           'name', 'attendance_date','status', 'in_time', 'out_time'], as_dict=True)
         holiday = frappe.get_list("Holiday List", filters={
             'holiday_date': date})
+        is_leave = check_leave_record(emp.name,date)     
         if holiday:
             row += ["", "", "", "Holiday", ""]
+        elif is_leave:
+            row += ["", "", "", "On Leave", ""]
         else:    
             if att_details:
                 if att_details.attendance_date:
@@ -81,3 +84,17 @@ def get_columns(filters):
 def get_employees():
     employees = frappe.db.sql("""select name,employee_name,designation,department from tabEmployee where status = 'Active'""",as_dict=1)
     return employees
+
+
+def check_leave_record(employee, date):
+    leave_record = frappe.db.sql("""select leave_type, half_day from `tabLeave Application`
+    where employee = %s and %s between from_date and to_date and status = 'Approved'
+    and docstatus = 1""", (employee, date), as_dict=True)
+    if leave_record:
+        if leave_record[0].half_day:
+            status = 'Half Day'
+        else:
+            status = 'On Leave'
+            leave_type = leave_record[0].leave_type
+
+        return status,leave_type 
