@@ -5,23 +5,24 @@
 from __future__ import unicode_literals
 import frappe
 from frappe.utils.data import today
-from frappe.utils import formatdate,getdate, cint, add_months, date_diff, add_days
+from frappe.utils import formatdate, getdate, cint, add_months, date_diff, add_days
 
 
 @frappe.whitelist()
 def send_daily_report():
-	custom_filter = {'date': add_days(today(), -1)}
-	report = frappe.get_doc('Report', "Employee Day Attendance Report")
-	columns, data = report.get_data(
-	    limit=500 or 500, filters=custom_filter, as_dict=True)
-	html = frappe.render_template(
-	    'frappe/templates/includes/print_table.html', {'columns': columns, 'data': data})
-        frappe.sendmail(
-            recipients=['abdulla.pi@voltechgroup.com','hari@starboxes.in','hr@starboxes.in','thiru@starboxes.in'],
-            subject='Employee Attendance Report - ' +
-            formatdate(add_days(today(), -1)),
-            message=html
-        )
+    custom_filter = {'date': add_days(today(), -1)}
+    report = frappe.get_doc('Report', "Employee Day Attendance Report")
+    columns, data = report.get_data(
+        limit=500 or 500, filters=custom_filter, as_dict=True)
+    html = frappe.render_template(
+        'frappe/templates/includes/print_table.html', {'columns': columns, 'data': data})
+    frappe.sendmail(
+        recipients=['abdulla.pi@voltechgroup.com'],
+        subject='Employee Attendance Report - ' +
+        formatdate(add_days(today(), -1)),
+        message=html
+    )
+
 
 @frappe.whitelist()
 def emp_absent_today():
@@ -51,8 +52,8 @@ def emp_absent_today():
                     "employee": doc.name,
                     "employee_name": doc.employee_name,
                     "attendance_date": day,
-                    "in_time":'00:00',
-                    "out_time":'00:00',
+                    "in_time": '00:00',
+                    "out_time": '00:00',
                     "status": status,
                     "company": doc.company
                 })
@@ -60,7 +61,7 @@ def emp_absent_today():
                 attendance.submit()
                 frappe.db.commit()
 
-#Default Attendance 
+# Default Attendance
 # @frappe.whitelist(allow_guest=True)
 # def attendance():
 #     userid = frappe.form_dict.get("userid")
@@ -99,7 +100,7 @@ def emp_absent_today():
 #     frappe.response.type = "text"
 #     return "ok"
 
-#Shift Based need to work out
+# Shift Based need to work out
 # @frappe.whitelist(allow_guest=True)
 # def attendance():
 #     userid = frappe.form_dict.get("userid")
