@@ -4,8 +4,9 @@
 
 from __future__ import unicode_literals
 import frappe
+from frappe import _
 from frappe.utils.data import today
-from frappe.utils import formatdate, getdate, cint, add_months, date_diff, add_days
+from frappe.utils import formatdate, getdate, cint, add_months, date_diff, add_days,flt
 
 
 @frappe.whitelist()
@@ -23,6 +24,24 @@ def send_daily_report():
         message=html
     )
 
+
+@frappe.whitelist()
+def calculate_total(doc, method):
+    total, total_w = 0, 0
+    for d in doc.get('personal_qualities'):
+        if d.score:
+            d.score_earned = flt(d.score) * flt(d.per_weightage) / 100
+            total = total + d.score_earned
+        total_w += flt(d.per_weightage)
+
+    if int(total_w) != 100:
+            frappe.throw(_("Total weightage assigned should be 100%. It is {0}").format(
+                str(total_w) + "%"))
+
+    if total == 0:
+        frappe.throw(_("Total cannot be zero"))
+
+    doc.total_score = total
 
 @frappe.whitelist()
 def emp_absent_today():
