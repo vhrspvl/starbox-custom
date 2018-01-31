@@ -7,6 +7,9 @@ import frappe
 from frappe import _
 from frappe.utils.data import today
 from frappe.utils import formatdate, getdate, cint, add_months, date_diff, add_days,flt
+from datetime import date
+from dateutil.relativedelta import relativedelta
+
 
 
 @frappe.whitelist()
@@ -24,6 +27,25 @@ def send_daily_report():
         message=html
     )
 
+
+@frappe.whitelist()
+def send_ctc_report():
+    from_date = str(date.today() - relativedelta(months=1))
+    to_date = add_days(today(), -1)
+    # print type(from_date)
+    custom_filter = {'from_date': from_date, 'to_date':to_date}
+    report = frappe.get_doc('Report', "CTC Report")
+    columns, data = report.get_data(
+        limit=500 or 500, filters=custom_filter, as_dict=True)
+    html = frappe.render_template(
+        'frappe/templates/includes/print_table.html', {'columns': columns, 'data': data})
+    msg = "Kindly find the attached CTC Report Dated From" + formatdate(from_date) + " To " +formatdate(to_date)  
+    frappe.sendmail(
+        recipients=['abdulla.pi@voltechgroup.com'],
+        subject='CTC Report Upto - ' +
+        formatdate(add_days(today(), -1)),
+        message=msg + html
+    )    
 
 @frappe.whitelist()
 def calculate_total(doc, method):
@@ -59,14 +81,11 @@ def emp_absent_today():
                 pass
             else:
                 doc = frappe.get_doc('Employee', emp)
-                leave = frappe.db.sql("""select name from `tabLeave Application`
-				where employee = %s and %s between from_date and to_date and status = 'Approved'
-				and docstatus = 1""", (doc.name, day))
+                leave = get_leave(doc.name,day)
                 if leave:
                     status = 'On Leave'
                 else:
                     status = 'Absent'
-                    update_leave_application(doc,day)
                 attendance = frappe.new_doc("Attendance")
                 attendance.update({
                     "employee": doc.name,
@@ -81,25 +100,45 @@ def emp_absent_today():
                 attendance.submit()
                 frappe.db.commit()
 
-# @frappe.whitelist(allow_guest=True)
-def update_leave_application(doc,date):
-    employee = frappe.db.get_value("Employee", {'employee': doc.name}, [
-        'name'], as_dict=True)
-    if employee:
-            lap = frappe.new_doc("Leave Application")
-            lap.leave_type = "Leave Without Pay"
-            lap.status = "Approved"
-            lap.from_date = date
-            lap.to_date = date
-            lap.employee = employee.name
-            lap.leave_approver = "Administrator"
-            lap.posting_date = date
-            lap.company = frappe.db.get_value(
-                "Employee", employee.name, "company")
-            lap.save(ignore_permissions=True)
-            # lap.submit()
-            frappe.db.commit()
+
+@frappe.whitelist()
+def update_leave_application():
+    day = add_days(today(), -1)
+    employees = frappe.get_all('Employee', filters={"status": "Active"})
+    for employee in employees:
+        lwp = get_leave(employee.name,day)   
+        if lwp:
+            pass
+        else:
+            query = """SELECT emp.name FROM `tabAttendance` att, `tabEmployee` emp
+		               WHERE att.employee = emp.name AND att.status = 'Absent' AND att.attendance_date = '%s'""" % (day)
+            absent_emp = frappe.db.sql(query, as_dict=True)
+            if employee in absent_emp:
+                leave_approvers = [l.leave_approver for l in frappe.db.sql("""select leave_approver from `tabEmployee Leave Approver` where parent = %s""",
+                                                                           (employee.name), as_dict=True)]
+                lap = frappe.new_doc("Leave Application")
+                lap.leave_type = "Leave Without Pay"
+                lap.status = "Approved"
+                lap.description = "Absent Auto Marked"
+                lap.from_date = day
+                lap.to_date = day
+                lap.employee = employee.name
+                if leave_approvers:
+                    lap.leave_approver = leave_approvers[0]
+                else:
+                    lap.leave_approver = "Administrator"
+                lap.posting_date=day
+                lap.company=frappe.db.get_value(
+                    "Employee", employee.name, "company")
+                lap.save(ignore_permissions=True)
+                lap.submit()
+                frappe.db.commit()
                     
+def get_leave(emp,day):
+    leave = frappe.db.sql("""select name from `tabLeave Application`
+				where employee = %s and %s between from_date and to_date and status = 'Approved'
+				""", (emp, day))
+    return leave   
 
 # Default Attendance
 # @frappe.whitelist(allow_guest=True)
@@ -337,5 +376,3 @@ def update_leave_application(doc,date):
 #                         frappe.db.commit()
 #             frappe.response.type = "text"
 #             return "ok"
-
-
