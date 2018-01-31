@@ -66,6 +66,7 @@ def emp_absent_today():
                     status = 'On Leave'
                 else:
                     status = 'Absent'
+                    update_leave_application(doc,day)
                 attendance = frappe.new_doc("Attendance")
                 attendance.update({
                     "employee": doc.name,
@@ -79,6 +80,26 @@ def emp_absent_today():
                 attendance.save(ignore_permissions=True)
                 attendance.submit()
                 frappe.db.commit()
+
+# @frappe.whitelist(allow_guest=True)
+def update_leave_application(doc,date):
+    employee = frappe.db.get_value("Employee", {'employee': doc.name}, [
+        'name'], as_dict=True)
+    if employee:
+            lap = frappe.new_doc("Leave Application")
+            lap.leave_type = "Leave Without Pay"
+            lap.status = "Approved"
+            lap.from_date = date
+            lap.to_date = date
+            lap.employee = employee.name
+            lap.leave_approver = "Administrator"
+            lap.posting_date = date
+            lap.company = frappe.db.get_value(
+                "Employee", employee.name, "company")
+            lap.save(ignore_permissions=True)
+            # lap.submit()
+            frappe.db.commit()
+                    
 
 # Default Attendance
 # @frappe.whitelist(allow_guest=True)
@@ -317,23 +338,4 @@ def emp_absent_today():
 #             frappe.response.type = "text"
 #             return "ok"
 
-# @frappe.whitelist(allow_guest=True)
-# def update_leave_application():
-#     employees = frappe.get_all('Employee')
-#     for employee in employees:
-#         attendance = frappe.db.get_all('Attendance', fields={'employee', 'attendance_date', 'status'}, filters={
-#             'attendance_date': today(), 'employee': employee.name})
-#         if not attendance:
-#             lap = frappe.new_doc("Leave Application")
-#             lap.leave_type = "Leave Without Pay"
-#             lap.status = "Approved"
-#             lap.from_date = today()
-#             lap.to_date = today()
-#             lap.employee = employee.name
-#             lap.leave_approver = "Administrator"
-#             lap.posting_date = today()
-#             lap.company = frappe.db.get_value(
-#                 "Employee", employee.name, "company")
-#             lap.save(ignore_permissions=True)
-#             lap.submit()
-#             frappe.db.commit()
+

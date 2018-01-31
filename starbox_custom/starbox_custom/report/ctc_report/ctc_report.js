@@ -17,6 +17,18 @@ frappe.query_reports["CTC Report"] = {
 			"fieldtype": "Date",
 			"default": [frappe.datetime.add_months(frappe.datetime.get_today())],
 			"reqd": 1
-		}
+		},
+		// {
+		// 	"fieldname": "department",
+		// 	"label": "Department",
+		// 	"fieldtype": "Link",
+		// 	"options": "Department"
+		// },
+		// {
+		// 	"fieldname": "designation",
+		// 	"label": "Designation",
+		// 	"fieldtype": "Link",
+		// 	"options": "Designation"
+		// },
 	]
 }

@@ -17,9 +17,12 @@ def execute(filters=None):
 
     data = []
     row = []
+    # conditions_emp = get_conditions(filters)
+    # active_employees = get_active_employees(filters, conditions_emp)
     active_employees = get_active_employees()
     for emp in active_employees:
-        row = [emp.name, emp.employee_name, emp.designation, emp.department,emp.employment_type]
+        row = [emp.name, emp.employee_name, emp.designation,
+               emp.department, emp.employment_type]
 
         emp_present_days = get_employee_attendance(emp.name, filters)
 
@@ -32,14 +35,14 @@ def execute(filters=None):
 
         sse = frappe.db.get_value("Salary Structure Employee", {'employee': emp.name}, [
             'base'], as_dict=True)
-        if sse:    
-            gross = sse.base    
+        if sse:
+            gross = sse.base
             if gross:
                 row += [gross]
 
-                act_basic = (flt(gross) * .35)
+                act_basic = (flt(gross) * .45)
                 daily_basic = (act_basic / flt('26'))
-                act_hra = (flt(gross) * .35)
+                act_hra = (flt(gross) * .225)
                 daily_hra = (act_hra / flt('26'))
                 act_da = (flt(gross) * .25)
                 daily_da = (act_da / flt('26'))
@@ -49,10 +52,9 @@ def execute(filters=None):
                 daily_ca = flt(act_ca) / flt('26')
                 act_ma = flt("1250")
                 daily_ma = flt(act_ma) / flt('26')
-                act_wa = flt("150")
-                daily_ma = flt(act_wa) / flt('26')
                 if emp.employment_type == 'Staff':
-                    act_oa = flt(gross) - (act_basic + act_hra + act_ca + act_ma)
+                    act_oa = flt(gross) - (act_basic +
+                                           act_hra + act_ca + act_ma)
                     daily_oa = flt(act_oa) / flt('26')
                 if emp.employment_type == 'Operator':
                     act_oa = flt(gross) - (act_basic + act_hra +
@@ -62,7 +64,7 @@ def execute(filters=None):
                 total_actuals = 0
                 if act_basic:
                     row += [act_basic]
-                    total_actuals += act_basic 
+                    total_actuals += act_basic
                 if act_hra:
                     row += [act_hra]
                     total_actuals += act_hra
@@ -78,14 +80,14 @@ def execute(filters=None):
                     else:
                         row += [""]
                 else:
-                    row += ["",""]
+                    row += ["", ""]
                 if emp.employment_type == 'Staff':
                     if act_ca:
-                            row += [act_ca]
-                            total_actuals += act_ca
+                        row += [act_ca]
+                        total_actuals += act_ca
                     if act_ma:
-                            row += [act_ma]
-                            total_actuals += act_ma
+                        row += [act_ma]
+                        total_actuals += act_ma
                 else:
                     row += ["", ""]
                 if act_oa:
@@ -93,9 +95,9 @@ def execute(filters=None):
                     total_actuals += act_oa
 
                 if total_actuals:
-                    row += [total_actuals] 
+                    row += [total_actuals]
                 else:
-                    row += [""]    
+                    row += [""]
 
                 if present_days > 0:
                     earned_basic = flt(daily_basic) * flt(present_days)
@@ -120,7 +122,7 @@ def execute(filters=None):
                             row += [earned_wa]
                             total_earnings += earned_wa
                     else:
-                        row += ["",""] 
+                        row += ["", ""]
                     if emp.employment_type == 'Staff':
                         if earned_ca:
                             row += [earned_ca]
@@ -137,9 +139,6 @@ def execute(filters=None):
                         row += [total_earnings]
                 else:
                     row += [""]
-
-        
-        
 
         data.append(row)
 
@@ -171,17 +170,36 @@ def get_columns(attendance):
         _("Earned MA") + ":Currency:100",
         _("Earned OA") + ":Currency:100",
         _("Total Earnings") + ":Currency:100"
-        
+
     ]
     return columns
 
+
 def get_active_employees():
     active_employees = frappe.db.sql(
-        """select * from `tabEmployee` where status = "Active" order by name""", as_dict=1)
+        """select emp.name,emp.employee_name,emp.department,emp.designation,emp.employment_type from `tabEmployee` emp where emp.status = "Active" order by emp.name""", as_dict=1)
     return active_employees
+
+
+# def get_active_employees(filters, conditions_emp):
+#     active_employees = frappe.db.sql(
+#         """select * from `tabEmployee` emp where emp.status = "Active" %s order by emp.name""" % (conditions_emp), as_dict=1)
+#     return active_employees
 
 
 def get_employee_attendance(employee, filters):
     employee_attendance = frappe.db.sql("""select count(*) as count from `tabAttendance` where \
         docstatus = 1 and status = 'Present' and employee= %s and attendance_date between %s and %s""", (employee, filters.get("from_date"), filters.get("to_date")), as_dict=1)
     return employee_attendance
+
+
+def get_conditions(filters):
+    conditions_emp = ""
+
+    if filters.get("department"):
+        conditions_emp += " AND emp.department = '%s'" % filters["department"]
+
+    if filters.get("designation"):
+        conditions_emp += " AND emp.designation = '%s'" % filters["designation"]
+
+    return filters, conditions_emp
