@@ -20,6 +20,8 @@ def execute(filters=None):
     # conditions_emp = get_conditions(filters)
     # active_employees = get_active_employees(filters, conditions_emp)
     active_employees = get_active_employees()
+    # grand_earnings = 0
+    # grand_actuals = 0
     for emp in active_employees:
         row = [emp.name, emp.employee_name, emp.designation,
                emp.department, emp.employment_type]
@@ -133,14 +135,18 @@ def execute(filters=None):
                     else:
                         row += ["", ""]
                     if earned_oa:
+                        # grand_oa += earned_oa
                         row += [earned_oa]
                         total_earnings += earned_oa
                     if total_earnings:
+                        # grand_earnings += total_earnings
                         row += [total_earnings]
                 else:
                     row += [""]
-
+        # totals = ["Totals", "", "", "", "", "", "", "",
+        #           "", "", "", "", "", "", "", "", "", "", "", "", "","",grand_earnings]
         data.append(row)
+    # data.append(totals)
 
     return columns, data
 
@@ -148,11 +154,11 @@ def execute(filters=None):
 def get_columns(attendance):
     columns = [
         _("Employee") + ":Link/Employee:90",
-        _("Employee Name") + "::150",
-        _("Designation") + "::180",
-        _("Department") + "::180",
-        _("Employment Type") + "::180",
-        _("PD") + "::50",
+        _("Employee Name") + ":Data:150",
+        _("Designation") + ":Data:180",
+        _("Department") + ":Data:180",
+        _("Employment Type") + ":Data:180",
+        _("PD") + ":Int:50",
         _("Gross") + ":Currency:100",
         _("Actual Basic") + ":Currency:100",
         _("Actual HRA") + ":Currency:100",

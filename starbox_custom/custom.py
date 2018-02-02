@@ -100,7 +100,6 @@ def emp_absent_today():
                 attendance.submit()
                 frappe.db.commit()
 
-
 @frappe.whitelist()
 def update_leave_application():
     day = add_days(today(), -1)
@@ -119,6 +118,7 @@ def update_leave_application():
                 lap = frappe.new_doc("Leave Application")
                 lap.leave_type = "Leave Without Pay"
                 lap.status = "Approved"
+                lap.follow_via_email = 0
                 lap.description = "Absent Auto Marked"
                 lap.from_date = day
                 lap.to_date = day
