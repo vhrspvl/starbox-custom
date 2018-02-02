@@ -21,7 +21,7 @@ def send_daily_report():
     html = frappe.render_template(
         'frappe/templates/includes/print_table.html', {'columns': columns, 'data': data})
     frappe.sendmail(
-        recipients=['abdulla.pi@voltechgroup.com'],
+        recipients=['abdulla.pi@voltechgroup.com','hari@starboxes.in','hr@starboxes.in','thiru@starboxes.in'],
         subject='Employee Attendance Report - ' +
         formatdate(add_days(today(), -1)),
         message=html
@@ -41,7 +41,7 @@ def send_ctc_report():
         'frappe/templates/includes/print_table.html', {'columns': columns, 'data': data})
     msg = "Kindly find the attached CTC Report Dated From" + formatdate(from_date) + " To " +formatdate(to_date)  
     frappe.sendmail(
-        recipients=['abdulla.pi@voltechgroup.com'],
+        recipients=['abdulla.pi@voltechgroup.com','hari@starboxes.in','hr@starboxes.in','thiru@starboxes.in'],
         subject='CTC Report Upto - ' +
         formatdate(add_days(today(), -1)),
         message=msg + html
@@ -136,7 +136,7 @@ def update_leave_application():
                     
 def get_leave(emp,day):
     leave = frappe.db.sql("""select name from `tabLeave Application`
-				where employee = %s and %s between from_date and to_date and status = 'Approved'
+				where employee = %s and %s between from_date and to_date
 				""", (emp, day))
     return leave   
 

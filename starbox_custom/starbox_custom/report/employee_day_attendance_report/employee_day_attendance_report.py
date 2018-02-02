@@ -21,7 +21,7 @@ def execute(filters=None):
     data = []
     row = []
     for emp in get_employees():
-        row = [emp.name, emp.employee_name, emp.designation, emp.department]
+        row = [emp.name, emp.employee_name, emp.designation, emp.department,emp.contractor]
         att_details = frappe.db.get_value("Attendance", {'attendance_date': date, 'employee': emp.name}, [
                                           'name', 'attendance_date','status', 'in_time', 'out_time'], as_dict=True)
         holiday = frappe.get_list("Holiday List", filters={
@@ -71,6 +71,7 @@ def get_columns(filters):
         _("Employee Name") + "::150",
         _("Designation") + "::180",
         _("Department") + "::180",
+        _("Contractor") + "::180",
         _("Attendance Date") + ":Date:90",
         _("In Time") + "::120",
         _("Out Time") + "::120",
@@ -80,7 +81,7 @@ def get_columns(filters):
     return columns
 
 def get_employees():
-    employees = frappe.db.sql("""select name,employee_name,designation,department from tabEmployee where status = 'Active'""",as_dict=1)
+    employees = frappe.db.sql("""select name,employee_name,designation,department,contractor from tabEmployee where status = 'Active'""",as_dict=1)
     return employees
 
 
