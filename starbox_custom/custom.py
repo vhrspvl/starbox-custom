@@ -148,8 +148,8 @@ def update_leave_application():
                     
 def get_leave(emp,day):
     leave = frappe.db.sql("""select name from `tabLeave Application`
-				where employee = %s and %s between from_date and to_date
-				""", (emp, day))
+				where employee = %s and %s between from_date and to_date and status = 'Approved'
+			and docstatus = 1""", (emp, day))
     return leave   
 
 # Default Attendance

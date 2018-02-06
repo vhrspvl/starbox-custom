@@ -53,6 +53,7 @@ def attendance():
                     "employee": employee,
                     "employee_name": doc.employee_name,
                     "attendance_date": date,
+                    "stgid":frappe.form_dict.get("stgid"),
                     "status": "Present",
                     "in_time": in_time,
                     "company": doc.company
