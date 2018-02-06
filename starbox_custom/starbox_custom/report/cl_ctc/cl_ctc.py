@@ -16,6 +16,8 @@ def execute(filters=None):
 
     data = []
     row = []
+    grand_earnings = 0
+    grand_totals = 0
     active_cl = get_active_cl()
     for cl in active_cl:
         row = [cl.name, cl.employee_name, cl.contractor, cl.employment_type]
@@ -28,7 +30,6 @@ def execute(filters=None):
             row += ["0"]
         ctc = frappe.db.get_value("Contractor", {'name': cl.contractor}, [
             'ctc_per_day'], as_dict=True)
-        ot =     
         if ctc:
             ctc_day = ctc.ctc_per_day
             if ctc_day:
@@ -39,10 +40,14 @@ def execute(filters=None):
                     if earned_ctc:
                         row += [earned_ctc]
                         total_earnings += earned_ctc
+                        grand_earnings += earned_ctc
                     if total_earnings:
+                        grand_totals += total_earnings
                         row += [total_earnings]
 
+        totals = ["Totals", "", "", "", "", "", grand_earnings, grand_totals]
         data.append(row)
+    data.append(totals)
 
     return columns, data
 
