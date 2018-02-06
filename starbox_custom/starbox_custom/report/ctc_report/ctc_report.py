@@ -20,7 +20,7 @@ def execute(filters=None):
     # conditions_emp = get_conditions(filters)
     # active_employees = get_active_employees(filters, conditions_emp)
     active_employees = get_active_employees()
-    # grand_earnings = 0
+    grand_earnings = 0
     # grand_actuals = 0
     for emp in active_employees:
         row = [emp.name, emp.employee_name, emp.designation,
@@ -139,14 +139,14 @@ def execute(filters=None):
                         row += [earned_oa]
                         total_earnings += earned_oa
                     if total_earnings:
-                        # grand_earnings += total_earnings
+                        grand_earnings += total_earnings
                         row += [total_earnings]
                 else:
                     row += [""]
-        # totals = ["Totals", "", "", "", "", "", "", "",
-        #           "", "", "", "", "", "", "", "", "", "", "", "", "","",grand_earnings]
+        totals = ["Totals", "", "", "", "", "", "", "",
+                  "", "", "", "", "", "", "", "", "", "", "", "", "", "", grand_earnings]
         data.append(row)
-    # data.append(totals)
+    data.append(totals)
 
     return columns, data
 

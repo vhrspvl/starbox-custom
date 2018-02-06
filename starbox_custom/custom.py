@@ -11,7 +11,19 @@ from datetime import date
 from dateutil.relativedelta import relativedelta
 
 
+@frappe.whitelist()
+def test_ctc():
+    for cl in get_active_cl():
+        ctc = frappe.db.get_value("Contractor", {'name': cl.contractor}, [
+            'ctc_per_day'], as_dict=True)
+        print type(ctc.ctc_per_day)
 
+
+def get_active_cl():
+    active_cl = frappe.db.sql(
+        """select emp.name,emp.employee_name,emp.contractor,emp.employment_type from `tabEmployee` emp where emp.status = "Active" and emp.employment_type="Contract" order by emp.name""", as_dict=1)
+    return active_cl
+    
 @frappe.whitelist()
 def send_daily_report():
     custom_filter = {'date': add_days(today(), -1)}
