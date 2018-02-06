@@ -30,8 +30,13 @@ def execute(filters=None):
             row += ["0"]
         ctc = frappe.db.get_value("Contractor", {'name': cl.contractor}, [
             'ctc_per_day'], as_dict=True)
+        start_date = filters.get("from_date")
+        to_date = filters.get("to_date")
+        ot = frappe.db.get_value("Timesheet", {'employee': cl.name, 'start_date': start_date}, [
+            'total_hours'], as_dict=True)
         if ctc:
             ctc_day = ctc.ctc_per_day
+
             if ctc_day:
                 row += [ctc_day]
                 total_earnings = 0
@@ -41,11 +46,21 @@ def execute(filters=None):
                         row += [earned_ctc]
                         total_earnings += earned_ctc
                         grand_earnings += earned_ctc
+                    if ot:
+                        ot_day = ot.total_hours
+                        earned_ot = flt(ot_day) * 80
+                        if ot_day:
+                            row += [ot_day]
+                            row += ['80']
+                            if earned_ot:
+                                row += [earned_ot]
+                                total_earnings += earned_ot
                     if total_earnings:
                         grand_totals += total_earnings
                         row += [total_earnings]
 
-        totals = ["Totals", "", "", "", "", "", grand_earnings, grand_totals]
+        totals = ["Totals", "", "", "", "", "",
+                  grand_earnings, "", "", "", grand_totals]
         data.append(row)
     data.append(totals)
 
@@ -61,6 +76,9 @@ def get_columns(attendance):
         _("PD") + ":Int:50",
         _("CTC Per Day") + ":Currency:100",
         _("Earned CTC") + ":Currency:100",
+        _("OT Hours ") + ":Data:50",
+        _("OT Cost") + ":Currency:50",
+        _("OT Earnings") + ":Currency:50",
         _("Total Earnings") + ":Currency:100"
 
     ]

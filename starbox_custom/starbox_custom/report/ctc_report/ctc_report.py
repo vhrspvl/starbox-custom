@@ -21,7 +21,13 @@ def execute(filters=None):
     # active_employees = get_active_employees(filters, conditions_emp)
     active_employees = get_active_employees()
     grand_earnings = 0
-    # grand_actuals = 0
+    grand_oa = 0
+    grand_ma = 0
+    grand_ca = 0
+    grand_wa = 0
+    grand_da = 0
+    grand_hra = 0
+    grand_basic = 0
     for emp in active_employees:
         row = [emp.name, emp.employee_name, emp.designation,
                emp.department, emp.employment_type]
@@ -112,30 +118,36 @@ def execute(filters=None):
                     total_earnings = 0
                     if earned_basic:
                         row += [earned_basic]
+                        grand_basic += earned_basic
                         total_earnings += earned_basic
                     if earned_hra:
                         row += [earned_hra]
+                        grand_hra += earned_hra
                         total_earnings += earned_hra
                     if emp.employment_type == 'Operator':
                         if earned_da:
                             row += [earned_da]
+                            grand_da += earned_da
                             total_earnings += earned_da
                         if earned_wa:
                             row += [earned_wa]
+                            grand_wa += earned_wa
                             total_earnings += earned_wa
                     else:
                         row += ["", ""]
                     if emp.employment_type == 'Staff':
                         if earned_ca:
                             row += [earned_ca]
+                            grand_ca += earned_ca
                             total_earnings += earned_ca
                         if earned_ma:
                             row += [earned_ma]
+                            grand_ma += earned_ma
                             total_earnings += earned_ma
                     else:
                         row += ["", ""]
                     if earned_oa:
-                        # grand_oa += earned_oa
+                        grand_oa += earned_oa
                         row += [earned_oa]
                         total_earnings += earned_oa
                     if total_earnings:
@@ -144,7 +156,7 @@ def execute(filters=None):
                 else:
                     row += [""]
         totals = ["Totals", "", "", "", "", "", "", "",
-                  "", "", "", "", "", "", "", "", "", "", "", "", "", "", grand_earnings]
+                  "", "", "", "", "", "", "", grand_basic, grand_hra, grand_da, grand_wa, grand_ca, grand_ma, grand_oa, grand_earnings]
         data.append(row)
     data.append(totals)
 
