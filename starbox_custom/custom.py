@@ -17,6 +17,11 @@ def test_ctc():
         ctc = frappe.db.get_value("Contractor", {'name': cl.contractor}, [
             'ctc_per_day'], as_dict=True)
 
+@frappe.whitelist()
+def get_employee_attendance(doc,method):
+    employee_attendance = frappe.db.sql("""select count(*) as count from `tabAttendance` where \
+                                            docstatus = 1 and status = 'Present' and employee= %s and attendance_date between %s and %s""", (doc.employee, doc.start_date, doc.end_date), as_dict=1)
+    return employee_attendance
 
 def get_active_cl():
     active_cl = frappe.db.sql(
