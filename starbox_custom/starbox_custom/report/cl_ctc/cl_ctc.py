@@ -43,26 +43,37 @@ def execute(filters=None):
                         row += [earned_ctc]
                         total_earnings += earned_ctc
                         grand_earnings += earned_ctc
+                    else:
+                        row += ["0"]
+            else:
+                row += ["0"]
+
         for hour in cl_ot_hours:
             present_hours = hour.count
         if cl_ot_hours:
             row += [present_hours]
         else:
             row += ["0"]
+
         ot = frappe.db.get_value("Contractor", {'name': cl.contractor}, [
             'ot_per_hour'], as_dict=True)
         if ot:
             ot_day = ot.ot_per_hour
             if ot_day:
                 row += [ot_day]
-                if present_hours > 0:
-                    earned_ot = flt(ot_day) * flt(present_hours)
-                    if earned_ot:
-                        row += [earned_ot]
-                        total_earnings += earned_ot
-                if total_earnings:
-                    grand_totals += total_earnings
-                    row += [total_earnings]
+            else:
+                row += ["0"]
+
+        # if present_hours > 0:
+        #     earned_ot = flt(ot_day) * flt(present_hours)
+        #     if earned_ot:
+        #         row += [earned_ot]
+        #         total_earnings += earned_ot
+        #     else:
+        #         row += ["0"]
+        if total_earnings:
+            grand_totals += total_earnings
+            row += [total_earnings]
 
         totals = ["Totals", "", "", "", "", "",
                   grand_earnings, "", "", "", grand_totals]
