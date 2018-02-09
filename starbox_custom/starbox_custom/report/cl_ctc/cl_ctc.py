@@ -22,21 +22,18 @@ def execute(filters=None):
     for cl in active_cl:
         row = [cl.name, cl.employee_name, cl.contractor, cl.employment_type]
         cl_present_days = get_cl_attendance(cl.name, filters)
+        cl_ot_hours = get_ts(cl.name, filters)
         for present in cl_present_days:
             present_days = present.count
         if cl_present_days:
             row += [present_days]
         else:
             row += ["0"]
+
         ctc = frappe.db.get_value("Contractor", {'name': cl.contractor}, [
             'ctc_per_day'], as_dict=True)
-        start_date = filters.get("from_date")
-        to_date = filters.get("to_date")
-        ot = frappe.db.get_value("Timesheet", {'employee': cl.name, 'start_date': start_date}, [
-            'total_hours'], as_dict=True)
         if ctc:
             ctc_day = ctc.ctc_per_day
-
             if ctc_day:
                 row += [ctc_day]
                 total_earnings = 0
@@ -46,18 +43,26 @@ def execute(filters=None):
                         row += [earned_ctc]
                         total_earnings += earned_ctc
                         grand_earnings += earned_ctc
-                    if ot:
-                        ot_day = ot.total_hours
-                        earned_ot = flt(ot_day) * 80
-                        if ot_day:
-                            row += [ot_day]
-                            row += ['80']
-                            if earned_ot:
-                                row += [earned_ot]
-                                total_earnings += earned_ot
-                    if total_earnings:
-                        grand_totals += total_earnings
-                        row += [total_earnings]
+        for hour in cl_ot_hours:
+            present_hours = hour.count
+        if cl_ot_hours:
+            row += [present_hours]
+        else:
+            row += ["0"]
+        ot = frappe.db.get_value("Contractor", {'name': cl.contractor}, [
+            'ot_per_hour'], as_dict=True)
+        if ot:
+            ot_day = ot.ot_per_hour
+            if ot_day:
+                row += [ot_day]
+                if present_hours > 0:
+                    earned_ot = flt(ot_day) * flt(present_hours)
+                    if earned_ot:
+                        row += [earned_ot]
+                        total_earnings += earned_ot
+                if total_earnings:
+                    grand_totals += total_earnings
+                    row += [total_earnings]
 
         totals = ["Totals", "", "", "", "", "",
                   grand_earnings, "", "", "", grand_totals]
@@ -95,3 +100,9 @@ def get_cl_attendance(employee, filters):
     cl_attendance = frappe.db.sql("""select count(*) as count from `tabAttendance` where \
         docstatus = 1 and status = 'Present' and employee= %s and attendance_date between %s and %s""", (employee, filters.get("from_date"), filters.get("to_date")), as_dict=1)
     return cl_attendance
+
+
+def get_ts(employee, filters):
+    emp_ts = frappe.db.sql("""select total_hours as count from `tabTimesheet` where \
+        docstatus = 1 and employee= %s and start_date between %s and %s""", (employee, filters.get("from_date"), filters.get("to_date")), as_dict=1)
+    return emp_ts

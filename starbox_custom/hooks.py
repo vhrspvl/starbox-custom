@@ -80,38 +80,41 @@ app_license = "MIT"
 # Hook on document methods and events
 
 doc_events = {
-	# "*": {
-	# 	"on_update": "method",
-	# 	"on_cancel": "method",
-	# 	"on_trash": "method"
-	# },
-	"Job Applicant": {
-		"before_save": "starbox_custom.custom.calculate_total"
-	}
+    # "*": {
+    # 	"on_update": "method",
+    # 	"on_cancel": "method",
+    # 	"on_trash": "method"
+    # },
+    "Job Applicant": {
+        "before_save": "starbox_custom.custom.calculate_total"
+    },
+    "Attendance": {
+        "on_update": "starbox_custom.calculations.create_ts"
+    }
 }
 
 # Scheduled Tasks
 # ---------------
 
 scheduler_events = {
-# 	"all": [
-# 		"starbox_custom.tasks.all"
-# 	],
-	"daily": [
-		# "starbox_custom.custom.emp_absent_today",
+    # 	"all": [
+    # 		"starbox_custom.tasks.all"
+    # 	],
+    "daily": [
+        # "starbox_custom.custom.emp_absent_today",
         # "starbox_custom.custom.send_daily_report",
-		# "starbox_custom.custom.send_ctc_report",
-		# "starbox_custom.custom.update_leave_application"
-	],
-# 	"hourly": [
-# 		"starbox_custom.tasks.hourly"
-# 	],
-# 	"weekly": [
-# 		"starbox_custom.tasks.weekly"
-# 	]
-# 	"monthly": [
-# 		"starbox_custom.tasks.monthly"
-# 	]
+        # "starbox_custom.custom.send_ctc_report",
+        # "starbox_custom.custom.update_leave_application"
+    ],
+    # 	"hourly": [
+    # 		"starbox_custom.tasks.hourly"
+    # 	],
+    # 	"weekly": [
+    # 		"starbox_custom.tasks.weekly"
+    # 	]
+    # 	"monthly": [
+    # 		"starbox_custom.tasks.monthly"
+    # 	]
 }
 
 # Testing
@@ -125,4 +128,3 @@ scheduler_events = {
 # override_whitelisted_methods = {
 # 	"frappe.desk.doctype.event.event.get_events": "starbox_custom.event.get_events"
 # }
-

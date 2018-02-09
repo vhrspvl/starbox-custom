@@ -6,7 +6,7 @@ from __future__ import unicode_literals
 import frappe
 from frappe import _
 from frappe.utils.data import today
-from frappe.utils import formatdate, getdate, cint, add_months, date_diff, add_days,flt
+from frappe.utils import formatdate, getdate, cint, add_months, date_diff, add_days, flt
 from datetime import date
 from dateutil.relativedelta import relativedelta
 
@@ -16,14 +16,14 @@ def test_ctc():
     for cl in get_active_cl():
         ctc = frappe.db.get_value("Contractor", {'name': cl.contractor}, [
             'ctc_per_day'], as_dict=True)
-        print type(ctc.ctc_per_day)
 
 
 def get_active_cl():
     active_cl = frappe.db.sql(
         """select emp.name,emp.employee_name,emp.contractor,emp.employment_type from `tabEmployee` emp where emp.status = "Active" and emp.employment_type="Contract" order by emp.name""", as_dict=1)
     return active_cl
-    
+
+
 @frappe.whitelist()
 def send_daily_report():
     custom_filter = {'date': add_days(today(), -1)}
@@ -33,7 +33,8 @@ def send_daily_report():
     html = frappe.render_template(
         'frappe/templates/includes/print_table.html', {'columns': columns, 'data': data})
     frappe.sendmail(
-        recipients=['abdulla.pi@voltechgroup.com','hari@starboxes.in','hr@starboxes.in','thiru@starboxes.in'],
+        recipients=['abdulla.pi@voltechgroup.com', 'hari@starboxes.in',
+                    'hr@starboxes.in', 'thiru@starboxes.in'],
         subject='Employee Attendance Report - ' +
         formatdate(add_days(today(), -1)),
         message=html
@@ -45,19 +46,22 @@ def send_ctc_report():
     from_date = str(date.today() - relativedelta(months=1))
     to_date = add_days(today(), -1)
     # print type(from_date)
-    custom_filter = {'from_date': from_date, 'to_date':to_date}
+    custom_filter = {'from_date': from_date, 'to_date': to_date}
     report = frappe.get_doc('Report', "CTC Report")
     columns, data = report.get_data(
         limit=500 or 500, filters=custom_filter, as_dict=True)
     html = frappe.render_template(
         'frappe/templates/includes/print_table.html', {'columns': columns, 'data': data})
-    msg = "Kindly find the attached CTC Report Dated From" + formatdate(from_date) + " To " +formatdate(to_date)  
+    msg = "Kindly find the attached CTC Report Dated From" + \
+        formatdate(from_date) + " To " + formatdate(to_date)
     frappe.sendmail(
-        recipients=['abdulla.pi@voltechgroup.com','hari@starboxes.in','hr@starboxes.in','thiru@starboxes.in'],
+        recipients=['abdulla.pi@voltechgroup.com', 'hari@starboxes.in',
+                    'hr@starboxes.in', 'thiru@starboxes.in'],
         subject='CTC Report Upto - ' +
         formatdate(add_days(today(), -1)),
         message=msg + html
-    )    
+    )
+
 
 @frappe.whitelist()
 def calculate_total(doc, method):
@@ -69,13 +73,14 @@ def calculate_total(doc, method):
         total_w += flt(d.per_weightage)
 
     if int(total_w) != 100:
-            frappe.throw(_("Total weightage assigned should be 100%. It is {0}").format(
-                str(total_w) + "%"))
+        frappe.throw(_("Total weightage assigned should be 100%. It is {0}").format(
+            str(total_w) + "%"))
 
     if total == 0:
         frappe.throw(_("Total cannot be zero"))
 
     doc.total_score = total
+
 
 @frappe.whitelist()
 def emp_absent_today():
@@ -93,7 +98,7 @@ def emp_absent_today():
                 pass
             else:
                 doc = frappe.get_doc('Employee', emp)
-                leave = get_leave(doc.name,day)
+                leave = get_leave(doc.name, day)
                 if leave:
                     status = 'On Leave'
                 else:
@@ -112,12 +117,13 @@ def emp_absent_today():
                 attendance.submit()
                 frappe.db.commit()
 
+
 @frappe.whitelist()
 def update_leave_application():
     day = add_days(today(), -1)
     employees = frappe.get_all('Employee', filters={"status": "Active"})
     for employee in employees:
-        lwp = get_leave(employee.name,day)   
+        lwp = get_leave(employee.name, day)
         if lwp:
             pass
         else:
@@ -139,18 +145,19 @@ def update_leave_application():
                     lap.leave_approver = leave_approvers[0]
                 else:
                     lap.leave_approver = "Administrator"
-                lap.posting_date=day
-                lap.company=frappe.db.get_value(
+                lap.posting_date = day
+                lap.company = frappe.db.get_value(
                     "Employee", employee.name, "company")
                 lap.save(ignore_permissions=True)
                 lap.submit()
                 frappe.db.commit()
-                    
-def get_leave(emp,day):
+
+
+def get_leave(emp, day):
     leave = frappe.db.sql("""select name from `tabLeave Application`
 				where employee = %s and %s between from_date and to_date and status = 'Approved'
 			and docstatus = 1""", (emp, day))
-    return leave   
+    return leave
 
 # Default Attendance
 # @frappe.whitelist(allow_guest=True)

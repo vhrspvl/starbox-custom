@@ -44,6 +44,7 @@ def attendance():
                 attendance.out_time = max(times)
                 attendance.in_time = min(times)
                 attendance.db_update()
+                attendance.submit()
                 frappe.db.commit()
             else:
                 attendance = frappe.new_doc("Attendance")
@@ -53,13 +54,12 @@ def attendance():
                     "employee": employee,
                     "employee_name": doc.employee_name,
                     "attendance_date": date,
-                    "stgid":frappe.form_dict.get("stgid"),
+                    "stgid": frappe.form_dict.get("stgid"),
                     "status": "Present",
                     "in_time": in_time,
                     "company": doc.company
                 })
                 attendance.save(ignore_permissions=True)
-                attendance.submit()
                 frappe.db.commit()
             frappe.response.type = "text"
             return "ok"
@@ -147,7 +147,7 @@ def attendance():
 
 #         doc = frappe.get_doc("Employee", employee)
 #         query = """SELECT ro.name, ro.shift FROM `tabRoster` ro, `tabRoster Details` rod
-# 		WHERE rod.parent = ro.name AND ro.from_date <= '%s' AND ro.to_date >= '%s' 
+# 		WHERE rod.parent = ro.name AND ro.from_date <= '%s' AND ro.to_date >= '%s'
 # 		AND rod.employee = '%s' """ % (attendance_date, attendance_date, doc.employee)
 #         roster = frappe.db.sql(query, as_list=1)
 #         if len(roster) < 1:
@@ -193,7 +193,7 @@ def attendance():
 #                     timedelta(0, shft.delayed_entry_allowed_time.seconds)
 #                 shft_intime_min = shft_intime - \
 #                     timedelta(0, shft.early_entry_allowed_time.seconds)
-               
+
 #                 attendance_id = frappe.db.get_value("Attendance", {
 #                     "employee": employee, "attendance_date": date})
 #                 if attendance_id:
@@ -222,7 +222,7 @@ def attendance():
 #                         attendance.save(
 #                             ignore_permissions=True)
 #                         attendance.submit()
-#                         frappe.db.commit()   
+#                         frappe.db.commit()
 #                     else:
 #                         attendance = frappe.new_doc(
 #                             "Attendance")
@@ -239,5 +239,4 @@ def attendance():
 #                         attendance.save(
 #                             ignore_permissions=True)
 #                 frappe.response.type = "text"
-#                 return "ok"        
-        
+#                 return "ok"
