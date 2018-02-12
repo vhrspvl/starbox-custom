@@ -2,6 +2,7 @@
 # For license information, please see license.txt
 
 from __future__ import unicode_literals
+
 import frappe
 from frappe import _, msgprint
 from frappe.utils import (cint, cstr, date_diff, flt, getdate, money_in_words,
@@ -18,6 +19,9 @@ def execute(filters=None):
     row = []
     grand_earnings = 0
     grand_totals = 0
+    present_hours = 0
+    total_earnings = 0
+
     active_cl = get_active_cl()
     for cl in active_cl:
         row = [cl.name, cl.employee_name, cl.contractor, cl.employment_type]
@@ -36,7 +40,6 @@ def execute(filters=None):
             ctc_day = ctc.ctc_per_day
             if ctc_day:
                 row += [ctc_day]
-                total_earnings = 0
                 if present_days > 0:
                     earned_ctc = flt(ctc_day) * flt(present_days)
                     if earned_ctc:
@@ -45,8 +48,10 @@ def execute(filters=None):
                         grand_earnings += earned_ctc
                     else:
                         row += ["0"]
+                else:
+                    row += ["0"]
             else:
-                row += ["0"]
+                row += ["0", "0"]
 
         for hour in cl_ot_hours:
             present_hours = hour.count
@@ -61,24 +66,27 @@ def execute(filters=None):
             ot_day = ot.ot_per_hour
             if ot_day:
                 row += [ot_day]
+                if present_hours > 0:
+                    earned_ot = flt(ot_day) * flt(present_hours)
+                    if earned_ot:
+                        row += [earned_ot]
+                        total_earnings += earned_ot
+                    else:
+                        row += ["0"]
+                else:
+                    row += ["0"]
             else:
-                row += ["0"]
+                row += ["0", "0"]
 
-        # if present_hours > 0:
-        #     earned_ot = flt(ot_day) * flt(present_hours)
-        #     if earned_ot:
-        #         row += [earned_ot]
-        #         total_earnings += earned_ot
-        #     else:
-        #         row += ["0"]
         if total_earnings:
             grand_totals += total_earnings
             row += [total_earnings]
-
-        totals = ["Totals", "", "", "", "", "",
-                  grand_earnings, "", "", "", grand_totals]
+        else:
+            row += ["0"]
+        # totals = ["Totals", "", "", "", "", "",
+        #           grand_earnings, "", "", "", grand_totals]
         data.append(row)
-    data.append(totals)
+    # data.append(totals)
 
     return columns, data
 
@@ -86,18 +94,18 @@ def execute(filters=None):
 def get_columns(attendance):
     columns = [
         _("Employee") + ":Link/Employee:90",
-        _("Employee Name") + ":Data:150",
-        _("Contractor") + ":Data:180",
-        _("Employment Type") + ":Data:180",
+        _("Employee Name") + "::150",
+        _("Contractor") + ":Link/Contractor:180",
+        _("Employment Type") + ":Link/Employment Type:130",
         _("PD") + ":Int:50",
         _("CTC Per Day") + ":Currency:100",
         _("Earned CTC") + ":Currency:100",
-        _("OT Hours ") + ":Data:50",
-        _("OT Cost") + ":Currency:50",
-        _("OT Earnings") + ":Currency:50",
+        _("OT Hours ") + ":Float:80",
+        _("OT Cost") + ":Currency:100",
+        _("OT Earnings") + ":Currency:100",
         _("Total Earnings") + ":Currency:100"
-
     ]
+
     return columns
 
 

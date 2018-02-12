@@ -1,29 +1,29 @@
 {
  "add_total_row": 0, 
  "apply_user_permissions": 1, 
- "creation": "2018-01-26 17:48:09.163326", 
+ "creation": "2018-02-11 23:38:03.615779", 
  "disabled": 0, 
  "docstatus": 0, 
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-02-11 23:26:29.127915", 
+ "modified": "2018-02-11 23:39:48.154636", 
  "modified_by": "Administrator", 
  "module": "Starbox Custom", 
- "name": "CTC Report", 
+ "name": "Draft Salary Register", 
  "owner": "Administrator", 
- "ref_doctype": "Attendance", 
- "report_name": "CTC Report", 
+ "ref_doctype": "Salary Slip", 
+ "report_name": "Draft Salary Register", 
  "report_type": "Script Report", 
  "roles": [
   {
    "role": "HR User"
   }, 
   {
-   "role": "HR Manager"
+   "role": "Employee"
   }, 
   {
-   "role": "System Manager"
+   "role": "HR Manager"
   }
  ]
 }
