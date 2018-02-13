@@ -89,7 +89,7 @@ doc_events = {
         "before_save": "starbox_custom.custom.calculate_total"
     },
     "Attendance": {
-        "on_update": "starbox_custom.calculations.create_ts"
+        "on_update_after_submit": "starbox_custom.calculations.create_ts"
     }
 }
 

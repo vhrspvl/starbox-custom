@@ -44,7 +44,6 @@ def attendance():
                 attendance.out_time = max(times)
                 attendance.in_time = min(times)
                 attendance.db_update()
-                attendance.submit()
                 frappe.db.commit()
             else:
                 attendance = frappe.new_doc("Attendance")
@@ -60,6 +59,7 @@ def attendance():
                     "company": doc.company
                 })
                 attendance.save(ignore_permissions=True)
+                attendance.submit()
                 frappe.db.commit()
             frappe.response.type = "text"
             return "ok"
