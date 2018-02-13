@@ -24,6 +24,8 @@ def execute(filters=None):
 
     active_cl = get_active_cl()
     for cl in active_cl:
+        total_earnings = 0
+        present_hours = 0
         row = [cl.name, cl.employee_name, cl.contractor, cl.employment_type]
         cl_present_days = get_cl_attendance(cl.name, filters)
         cl_ot_hours = get_ts(cl.name, filters)
@@ -82,7 +84,7 @@ def execute(filters=None):
             grand_totals += total_earnings
             row += [total_earnings]
         else:
-            row += ["0"]
+            row += [""]
         # totals = ["Totals", "", "", "", "", "",
         #           grand_earnings, "", "", "", grand_totals]
         data.append(row)
@@ -117,7 +119,7 @@ def get_active_cl():
 
 def get_cl_attendance(employee, filters):
     cl_attendance = frappe.db.sql("""select count(*) as count from `tabAttendance` where \
-        docstatus = 1 and status = 'Present' and employee= %s and attendance_date between %s and %s""", (employee, filters.get("from_date"), filters.get("to_date")), as_dict=1)
+        status = 'Present' and employee= %s and attendance_date between %s and %s""", (employee, filters.get("from_date"), filters.get("to_date")), as_dict=1)
     return cl_attendance
 
 
