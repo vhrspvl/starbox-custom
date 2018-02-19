@@ -64,22 +64,23 @@ def create_ts(doc, method):
                 frappe.db.commit
 
 
-def calculate_hours(in_time, out_time, employee):
+def calculate_hours(in_time, out_time, employee): 
     working_hrs = frappe.db.get_value("Employee", employee, "working_hours")
-    shift_hrs = working_hrs.seconds
-    in_time_f = datetime.strptime(
-        in_time, '%H:%M:%S')
-    out_time_f = datetime.strptime(
-        out_time, '%H:%M:%S')
-    worked_hrs = time_diff_in_seconds(
-        out_time_f, in_time_f)
-    overtime = cint(worked_hrs - shift_hrs)
-    # overtime_f = datetime.strptime(
-    #     overtime, '%H:%M:%S')
-    min_hr = timedelta(seconds=3600)
-    ot_f = timedelta(seconds=overtime)
-    if ot_f > min_hr:
-        return ot_f.seconds
+    if working_hrs:
+        shift_hrs = working_hrs.seconds
+        in_time_f = datetime.strptime(
+            in_time, '%H:%M:%S')
+        out_time_f = datetime.strptime(
+            out_time, '%H:%M:%S')
+        worked_hrs = time_diff_in_seconds(
+            out_time_f, in_time_f)
+        overtime = cint(worked_hrs - shift_hrs)
+        # overtime_f = datetime.strptime(
+        #     overtime, '%H:%M:%S')
+        min_hr = timedelta(seconds=3600)
+        ot_f = timedelta(seconds=overtime)
+        if ot_f > min_hr:
+            return ot_f.seconds
 
 
 # if ot_hours:
