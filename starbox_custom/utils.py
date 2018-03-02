@@ -19,7 +19,7 @@ def attendance():
     global attendance_date, att_time
     userid = frappe.form_dict.get("userid")
     employee = frappe.db.get_value("Employee", {
-        "biometric_id": userid})
+        "biometric_id": userid, "status": "Active"})
     if employee:
         date = time.strftime("%Y-%m-%d", time.gmtime(
             int(frappe.form_dict.get("att_time"))))
@@ -137,7 +137,7 @@ def attendance():
         date = time.strftime("%Y-%m-%d", time.gmtime(
             int(frappe.form_dict.get("att_time"))))
         ure_id = frappe.db.get_value("Unregistered Employee", {
-                "employee": employee, "attendance_date": date})
+            "employee": employee, "attendance_date": date})
         if ure_id:
             attendance = frappe.get_doc(
                 "Unregistered Employee", ure_id)
