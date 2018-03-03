@@ -38,7 +38,7 @@ def execute(filters=None):
         for d in ded_types:
             row.append(ss_ded_map.get(ss.name, {}).get(d))
 
-        row += [ss.total_deduction, ss.net_pay]
+        row += [round(ss.total_deduction), round(ss.net_pay)]
 
         data.append(row)
 
@@ -115,14 +115,9 @@ def get_ss_earning_map(salary_slips):
 
     ss_earning_map = {}
     for d in ss_earnings:
-        # if d.salary_component == 'Employee State Insurance':
-        #     ss_earning_map.setdefault(d.parent, frappe._dict()
-        #                               ).setdefault(d.salary_component, [])
-        #     ss_earning_map[d.parent][d.salary_component] = round(d.amount)
-        # else:
         ss_earning_map.setdefault(d.parent, frappe._dict()
                                   ).setdefault(d.salary_component, [])
-        ss_earning_map[d.parent][d.salary_component] = flt(d.amount)
+        ss_earning_map[d.parent][d.salary_component] = round(flt(d.amount))
 
     return ss_earning_map
 
@@ -141,6 +136,6 @@ def get_ss_ded_map(salary_slips):
         else:
             ss_ded_map.setdefault(d.parent, frappe._dict()
                                   ).setdefault(d.salary_component, [])
-            ss_ded_map[d.parent][d.salary_component] = flt(d.amount)
+            ss_ded_map[d.parent][d.salary_component] = round(flt(d.amount))
 
     return ss_ded_map
