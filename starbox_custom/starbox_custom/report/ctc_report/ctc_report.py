@@ -195,7 +195,7 @@ def get_columns(attendance):
 
 def get_active_employees():
     active_employees = frappe.db.sql(
-        """select emp.name,emp.employee_name,emp.department,emp.designation,emp.employment_type from `tabEmployee` emp where emp.status = "Active" order by emp.name""", as_dict=1)
+        """select emp.name,emp.employee_name,emp.department,emp.designation,emp.employment_type from `tabEmployee` emp where emp.status = "Active" and emp.employment_type != 'Contract' order by emp.name""", as_dict=1)
     return active_employees
 
 

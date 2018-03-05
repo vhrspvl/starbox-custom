@@ -86,6 +86,26 @@ def calculate_total(doc, method):
 
     doc.total_score = total
 
+@frappe.whitelist()
+def mark_status():
+    days = ["2018-02-01", "2018-02-02", "2018-02-03", "2018-02-05", "2018-02-06", "2018-02-07", "2018-02-08", "2018-02-09", "2018-02-10", "2018-02-12", "2018-02-13", "2018-02-14",
+            "2018-02-15", "2018-02-16", "2018-02-17", "2018-02-19", "2018-02-20", "2018-02-21", "2018-02-22", "2018-02-23", "2018-02-24", "2018-02-26", "2018-02-27", "2018-02-28"]
+    # days = ["2018-02-12"]
+    for day in days:
+        employees = frappe.get_all('Employee', filters={"status": "Active"})
+        for employee in employees:
+            lwp = get_leave(employee.name, day)
+            if lwp:
+                attendance_id = frappe.db.get_value("Attendance", {
+                    "employee": employee.name, "attendance_date": day})
+                if attendance_id:
+                    attendance = frappe.get_doc(
+                        "Attendance", attendance_id)
+                    attendance.out_time = "00:00:00"
+                    attendance.in_time = "00:00:00"
+                    attendance.status = "On Leave"
+                    attendance.db_update()
+                    frappe.db.commit()
 
 @frappe.whitelist()
 def emp_absent_today():
