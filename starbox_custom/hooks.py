@@ -90,6 +90,9 @@ doc_events = {
     },
     "Attendance": {
         "on_update_after_submit": "starbox_custom.calculations.create_ts"
+    },
+    "Salary Slip": {
+        "validate": "starbox_custom.calculations.calculate_present_days"
     }
 }
 

@@ -17,11 +17,13 @@ def test_ctc():
         ctc = frappe.db.get_value("Contractor", {'name': cl.contractor}, [
             'ctc_per_day'], as_dict=True)
 
+
 @frappe.whitelist()
-def get_employee_attendance(doc,method):
+def get_employee_attendance(doc, method):
     employee_attendance = frappe.db.sql("""select count(*) as count from `tabAttendance` where \
                                             docstatus = 1 and status = 'Present' and employee= %s and attendance_date between %s and %s""", (doc.employee, doc.start_date, doc.end_date), as_dict=1)
     return employee_attendance
+
 
 def get_active_cl():
     active_cl = frappe.db.sql(
@@ -108,6 +110,35 @@ def mark_status():
                     frappe.db.commit()
 
 @frappe.whitelist()
+def mark_status():
+    days = ["2018-02-01", "2018-02-02", "2018-02-03", "2018-02-05", "2018-02-06", "2018-02-07", "2018-02-08", "2018-02-09", "2018-02-10", "2018-02-12", "2018-02-13", "2018-02-14",
+            "2018-02-15", "2018-02-16", "2018-02-17", "2018-02-19", "2018-02-20", "2018-02-21", "2018-02-22", "2018-02-23", "2018-02-24", "2018-02-26", "2018-02-27", "2018-02-28"]
+    # days = ["2018-02-12"]
+    for day in days:
+        employees = frappe.get_all('Employee', filters={"status": "Active"})
+        for employee in employees:
+            lwp = get_leave(employee.name, day)
+            if lwp:
+                attendance_id = frappe.db.get_value("Attendance", {
+                    "employee": employee, "attendance_date": date})
+                if attendance_id:
+                    attendance = frappe.get_doc(
+                        "Attendance", attendance_id)
+                    attendance.out_time = "00:00:00"
+                    attendance.in_time = "00:00:00"
+                    attendance.status = "On Leave"
+                    attendance.db_update()
+                    frappe.db.commit()
+
+
+def get_leave(emp, day):
+    leave = frappe.db.sql("""select name from `tabLeave Application`
+				where employee = %s and %s between from_date and to_date and status = 'Approved'
+			and docstatus = 1""", (emp, day))
+    return leave
+
+
+@frappe.whitelist()
 def emp_absent_today():
     day = add_days(today(), -1)
     holiday = frappe.get_list("Holiday List", filters={
@@ -133,8 +164,8 @@ def emp_absent_today():
                     "employee": doc.name,
                     "employee_name": doc.employee_name,
                     "attendance_date": day,
-                    "in_time": '00:00',
-                    "out_time": '00:00',
+                    "in_time": '00:00:00',
+                    "out_time": '00:00:00',
                     "status": status,
                     "company": doc.company
                 })

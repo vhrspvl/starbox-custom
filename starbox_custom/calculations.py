@@ -12,6 +12,7 @@ from frappe.utils.data import today, get_timestamp
 from frappe.utils import getdate, cint, add_months, date_diff, add_days, flt, nowdate, \
     get_datetime_str, cstr, get_datetime, time_diff, time_diff_in_seconds
 from datetime import datetime, timedelta
+from erpnext.hr.doctype.employee.employee import get_holiday_list_for_employee
 
 
 @frappe.whitelist()
@@ -64,7 +65,7 @@ def create_ts(doc, method):
                 frappe.db.commit
 
 
-def calculate_hours(in_time, out_time, employee): 
+def calculate_hours(in_time, out_time, employee):
     working_hrs = frappe.db.get_value("Employee", employee, "working_hours")
     if working_hrs:
         shift_hrs = working_hrs.seconds
@@ -83,19 +84,54 @@ def calculate_hours(in_time, out_time, employee):
             return ot_f.seconds
 
 
-# if ot_hours:
-#             # from_time = doc.attendance_date + " " + doc.in_time
-#             # frappe.errprint(type(from_time))
-#             ts = frappe.new_doc("Timesheet")
-#             ts.company = doc.company
-#             ts.employee = doc.employee
-#             ts.start_date = doc.attendance_date
-#             ts.end_date = doc.attendance_date
-#             ts.append("time_logs", {
-#                 "activity_type": "OT",
-#                 "hours": ot_hours
-#                 # "from_time": from_time,
-#                 # "to_time": doc.attendance_date + " " + doc.out_time
-#             })
-#             ts.insert()
-#             ts.save(ignore_permissions=True)
+def calculate_present_days(doc, method):
+    present_days = 0
+    holidays = get_holidays_for_employee(doc.employee,
+                                         doc.start_date, doc.end_date)
+    employee_attendance = frappe.db.sql("""select name,attendance_date from `tabAttendance` where \
+        docstatus = 1 and status = 'Present' and employee= %s and attendance_date between %s and %s""", (doc.employee, doc.start_date, doc.end_date), as_dict=1)
+    present_days = len(employee_attendance)
+    for present in employee_attendance:
+        if (present["attendance_date"].strftime('%Y-%m-%d')) in holidays:
+            present_days -= 1
+    doc.present_days = present_days
+    doc.holidays = len(holidays)
+    leave = get_leave(doc.employee,
+                      doc.start_date, doc.end_date)
+    doc.leaves_availed = leave
+
+
+def get_holidays_for_employee(emp, start_date, end_date):
+    holiday_list = get_holiday_list_for_employee(emp)
+    holidays = frappe.db.sql_list('''select holiday_date from `tabHoliday`
+        where
+            parent=%(holiday_list)s
+            and holiday_date >= %(start_date)s
+            and holiday_date <= %(end_date)s''', {
+        "holiday_list": holiday_list,
+        "start_date": start_date,
+        "end_date": end_date
+    })
+
+    holidays = [cstr(i) for i in holidays]
+
+    return holidays
+
+
+def get_leave(emp, start_date, end_date):
+    count = 0
+    leave = frappe.db.sql('''select name,total_leave_days from `tabLeave Application`
+        where
+            employee=%(emp)s
+            and from_date >= %(start_date)s
+            and to_date <= %(end_date)s
+            and leave_type !='Leave without Pay'
+            ''', {
+        "emp": emp,
+        "start_date": start_date,
+        "end_date": end_date
+    }, as_dict=1)
+
+    for l in leave:
+        count += l["total_leave_days"]
+    return count
