@@ -202,26 +202,39 @@ def mark_comp_off():
     for emp in frappe.get_list('Employee', filters={'status': 'Active', 'employment_type': ("!=", "Contract")}):
         holidays = get_holidays_for_employee(emp.name, day)
         if emp in present_emp and day in holidays:
-            lal_id = frappe.db.get_value("Leave Allocation", {
-                "employee": emp.name, "from_date": from_date, "to_date": to_date})
-            if lal_id:
-                lal = frappe.get_doc("Leave Allocation", lal_id)
-                lal.new_leaves_allocated += 1.00
-                lal.total_leaves_allocated += 1.00
-                lal.description += '<br>' + 'Comp-off for {0}'.format(day)
-                lal.db_update()
-                # frappe.db.commit
-            else:
-                lal = frappe.new_doc("Leave Allocation")
-                lal.employee = emp.name
-                lal.leave_type = 'Compensatory Off'
-                lal.from_date = from_date
-                lal.to_date = to_date
-                lal.new_leaves_allocated = 1
-                lal.description = 'Comp-off for {0}'.format(day)
-                lal.save(ignore_permissions=True)
-                lal.submit()
-                frappe.db.commit()
+            lal_ids = get_lal(emp.name, day)
+            for lal_id in lal_ids:
+                if lal_id:
+                    lal = frappe.get_doc("Leave Allocation", lal_id['name'])
+                    lal.new_leaves_allocated += 1.00
+                    lal.total_leaves_allocated += 1.00
+                    if lal.description:
+                        lal.description += '<br>' + \
+                            'Comp-off for {0}'.format(day)
+                    else:
+                        lal.description = '<br>' + \
+                            'Comp-off for {0}'.format(day)
+
+                    lal.db_update()
+                    # frappe.db.commit
+                else:
+                    lal = frappe.new_doc("Leave Allocation")
+                    lal.employee = emp.name
+                    lal.leave_type = 'Compensatory Off'
+                    lal.from_date = from_date
+                    lal.to_date = to_date
+                    lal.new_leaves_allocated = 1
+                    lal.description = 'Comp-off for {0}'.format(day)
+                    lal.save(ignore_permissions=True)
+                    lal.submit()
+                    frappe.db.commit()
+
+
+def get_lal(emp, day):
+    lal = frappe.db.sql("""select name from `tabLeave Allocation`
+				where employee = %s and %s between from_date and to_date and leave_type='Compensatory Off'
+			and docstatus = 1""", (emp, day), as_dict=True)
+    return lal
 
 
 def get_holidays_for_employee(employee, day):
