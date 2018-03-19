@@ -198,7 +198,7 @@ def mark_comp_off():
 		WHERE att.employee = emp.name AND att.attendance_date = '%s'""" % (day)
     present_emp = frappe.db.sql(query, as_dict=True)
 
-    for emp in frappe.get_list('Employee', filters={'status': 'Active'}):
+    for emp in frappe.get_list('Employee', filters={'status': 'Active', 'employment_type': ("!=", "Contract")}):
         holidays = get_holidays_for_employee(emp.name, day)
         if emp in present_emp and day in holidays:
             lal = frappe.new_doc("Leave Allocation")
