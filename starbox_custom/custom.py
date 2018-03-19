@@ -193,7 +193,8 @@ def get_leave(emp, day):
 @frappe.whitelist()
 def mark_comp_off():
     day = add_days(today(), -1)
-
+    from_date = add_days(day, 1)
+    to_date = add_months(day, 1)
     query = """SELECT emp.name FROM `tabAttendance` att, `tabEmployee` emp
 		WHERE att.employee = emp.name AND att.attendance_date = '%s'""" % (day)
     present_emp = frappe.db.sql(query, as_dict=True)
@@ -201,16 +202,26 @@ def mark_comp_off():
     for emp in frappe.get_list('Employee', filters={'status': 'Active', 'employment_type': ("!=", "Contract")}):
         holidays = get_holidays_for_employee(emp.name, day)
         if emp in present_emp and day in holidays:
-            lal = frappe.new_doc("Leave Allocation")
-            lal.employee = emp.name
-            lal.leave_type = 'Compensatory Off'
-            lal.from_date = add_days(day, 1)
-            lal.to_date = add_months(day, 1)
-            lal.new_leaves_allocated = 1
-            lal.description = 'Comp-off for {0}'.format(day)
-            lal.save(ignore_permissions=True)
-            lal.submit()
-            frappe.db.commit()
+            lal_id = frappe.db.get_value("Leave Allocation", {
+                "employee": emp.name, "from_date": from_date, "to_date": to_date})
+            if lal_id:
+                lal = frappe.get_doc("Leave Allocation", lal_id)
+                lal.new_leaves_allocated += 1.00
+                lal.total_leaves_allocated += 1.00
+                lal.description += '<br>' + 'Comp-off for {0}'.format(day)
+                lal.db_update()
+                # frappe.db.commit
+            else:
+                lal = frappe.new_doc("Leave Allocation")
+                lal.employee = emp.name
+                lal.leave_type = 'Compensatory Off'
+                lal.from_date = from_date
+                lal.to_date = to_date
+                lal.new_leaves_allocated = 1
+                lal.description = 'Comp-off for {0}'.format(day)
+                lal.save(ignore_permissions=True)
+                lal.submit()
+                frappe.db.commit()
 
 
 def get_holidays_for_employee(employee, day):
