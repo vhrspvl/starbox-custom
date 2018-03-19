@@ -65,9 +65,9 @@ def execute(filters=None):
                 else:
                     row += [""]
             else:
-                row += [""]
+                row += ["",""]
         else:
-            row += [""]
+            row += ["",""]
 
         # if emp_present_days and no_of_holidays:
         #     payable_days = present_days + no_of_holidays

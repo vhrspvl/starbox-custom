@@ -19,7 +19,7 @@ def execute(filters=None):
     data = []
     for ss in salary_slips:
         row = [ss.name, ss.employee, ss.employee_name,ss.biometric_id, ss.employment_type, ss.department, ss.designation,
-               ss.company, ss.start_date, ss.end_date, ss.leave_without_pay, ss.payment_days,ss.present_days]
+               ss.company, ss.start_date, ss.end_date, ss.leave_without_pay,ss.leaves_availed,ss.holidays,ss.present_days,ss.payment_days]
 
         if not ss.branch == None:
             columns[3] = columns[3].replace('-1', '120')
@@ -61,8 +61,8 @@ def get_columns(salary_slips):
         ":Link/Designation:-1",
         _("Company") + ":Link/Company:120", _("Start Date") +
         "::80", _("End Date") +
-        "::80", _("Leave Without Pay") + ":Float:-1",
-        _("Payment Days") + ":Float:120",_("Present Days") + ":Float:120"
+        "::80", _("LoP") + ":Float:50",_("Leaves") + ":Float:50",_("Holidays") + ":Float:50",
+       _("Present") + ":Float:80", _("Payment Days") + ":Float:120",
     ]
 
     salary_components = {_("Earning"): [], _("Deduction"): []}
