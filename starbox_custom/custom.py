@@ -203,8 +203,8 @@ def mark_comp_off():
         holidays = get_holidays_for_employee(emp.name, day)
         if emp in present_emp and day in holidays:
             lal_ids = get_lal(emp.name, day)
-            for lal_id in lal_ids:
-                if lal_id:
+            if lal_ids:
+                for lal_id in lal_ids:
                     lal = frappe.get_doc("Leave Allocation", lal_id['name'])
                     lal.new_leaves_allocated += 1.00
                     lal.total_leaves_allocated += 1.00
@@ -216,18 +216,18 @@ def mark_comp_off():
                             'Comp-off for {0}'.format(day)
 
                     lal.db_update()
-                    # frappe.db.commit
-                else:
-                    lal = frappe.new_doc("Leave Allocation")
-                    lal.employee = emp.name
-                    lal.leave_type = 'Compensatory Off'
-                    lal.from_date = from_date
-                    lal.to_date = to_date
-                    lal.new_leaves_allocated = 1
-                    lal.description = 'Comp-off for {0}'.format(day)
-                    lal.save(ignore_permissions=True)
-                    lal.submit()
-                    frappe.db.commit()
+                    frappe.db.commit
+            else:
+                lal = frappe.new_doc("Leave Allocation")
+                lal.employee = emp.name
+                lal.leave_type = 'Compensatory Off'
+                lal.from_date = from_date
+                lal.to_date = to_date
+                lal.new_leaves_allocated = 1
+                lal.description = 'Comp-off for {0}'.format(day)
+                lal.save(ignore_permissions=True)
+                lal.submit()
+                frappe.db.commit()
 
 
 def get_lal(emp, day):
