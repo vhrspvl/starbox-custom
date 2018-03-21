@@ -91,6 +91,9 @@ doc_events = {
     "Attendance": {
         "on_update_after_submit": "starbox_custom.calculations.create_ts"
     },
+    "Leave Application": {
+        "on_submit": "starbox_custom.custom.mark_on_leave"
+    }
     # "Salary Slip": {
     #     "onload": "starbox_custom.calculations.calculate_present_days"
     # }
