@@ -33,8 +33,9 @@ def execute(filters=None):
     grand_basic = 0
     from_date = datetime.strptime(filters.get("from_date"), '%Y-%m-%d')
     present_days = 0
-    payable_days = monthrange(
+    working_days =  monthrange(
         cint(from_date.year), from_date.month)[1]
+    payable_days = 0
     for emp in active_employees:
         row = [emp.name, emp.employee_name, emp.designation,
                emp.department, emp.employment_type]
@@ -57,17 +58,19 @@ def execute(filters=None):
             row += [""]
 
         if no_of_holidays:
-            if present_days > 0:
-                row += [no_of_holidays]
-                payable_days = present_days + no_of_holidays
-                if emp_present_days and no_of_holidays:
-                    row += [payable_days]
-                else:
-                    row += [""]
-            else:
-                row += ["",""]
+            row += [no_of_holidays]
         else:
-            row += ["",""]
+            row += [""]
+
+        payable_days = present_days
+         
+        if emp_present_days > 0:
+            payable_days = present_days + no_of_holidays
+
+        if payable_days:
+            row += [payable_days]
+        else:
+            row += [""]
 
         # if emp_present_days and no_of_holidays:
         #     payable_days = present_days + no_of_holidays
@@ -84,25 +87,25 @@ def execute(filters=None):
                 row += [gross]
 
                 act_basic = (flt(gross) * .45)
-                daily_basic = (act_basic / flt(payable_days))
+                daily_basic = (act_basic / flt(working_days))
                 act_hra = (flt(gross) * .225)
-                daily_hra = (act_hra / flt(payable_days))
+                daily_hra = (act_hra / flt(working_days))
                 act_da = (flt(gross) * .25)
-                daily_da = (act_da / flt(payable_days))
+                daily_da = (act_da / flt(working_days))
                 act_wa = flt("150")
-                daily_wa = (act_wa / flt(payable_days))
+                daily_wa = (act_wa / flt(working_days))
                 act_ca = flt("1600")
-                daily_ca = flt(act_ca) / flt(payable_days)
+                daily_ca = flt(act_ca) / flt(working_days)
                 act_ma = flt("1250")
-                daily_ma = flt(act_ma) / flt(payable_days)
+                daily_ma = flt(act_ma) / flt(working_days)
                 if emp.employment_type == 'Staff':
                     act_oa = flt(gross) - (act_basic +
                                            act_hra + act_ca + act_ma)
-                    daily_oa = flt(act_oa) / flt(payable_days)
+                    daily_oa = flt(act_oa) / flt(working_days)
                 if emp.employment_type == 'Operator':
                     act_oa = flt(gross) - (act_basic + act_hra +
                                            act_wa + act_da)
-                    daily_oa = flt(act_oa) / flt(payable_days)
+                    daily_oa = flt(act_oa) / flt(working_days)
 
                 total_actuals = 0
                 if act_basic:

@@ -46,17 +46,6 @@ def execute(filters=None):
                     status = "Holiday"
             row.append(status_map[status])
 
-            if status == "Present" or "Late":
-                total_p += 1
-            elif status == "Absent":
-                total_a += 1
-            elif status == "On Leave":
-                total_l += 1
-            elif status == "Half Day":
-                total_p += 0.5
-                total_a += 0.5
-
-        row += [total_p, total_l, total_a]
         data.append(row)
 
     return columns, data
@@ -75,8 +64,6 @@ def get_columns(filters):
     for day in range(filters["total_days_in_month"]):
         columns.append(cstr(day + 1) + "::120")
 
-    columns += [_("Total Present") + ":Float:80", _("Total Leaves") +
-                ":Float:80",  _("Total Absent") + ":Float:80"]
     return columns
 
 
