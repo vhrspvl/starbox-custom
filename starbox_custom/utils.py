@@ -8,10 +8,12 @@ import frappe
 from frappe.model.document import Document
 from frappe.model.naming import make_autoname
 import time
+import math
 from frappe.utils.data import today, get_timestamp
 from frappe.utils import getdate, cint, add_months, date_diff, add_days, nowdate, \
     get_datetime_str, cstr, get_datetime, time_diff, time_diff_in_seconds
 from datetime import datetime, timedelta
+# from starbox_custom.starbox_custom.doctype.overtime.overtime import create_ts
 
 
 @frappe.whitelist(allow_guest=True)
@@ -44,8 +46,19 @@ def attendance():
                 attendance.out_time = max(times)
                 attendance.in_time = min(times)
                 attendance.status = "Present"
+                in_time_f = datetime.strptime(
+                    attendance.in_time, '%H:%M:%S')
+                out_time_f = datetime.strptime(
+                    attendance.out_time, '%H:%M:%S')
+                worked_hrs = time_diff_in_seconds(
+                    out_time_f, in_time_f)
+                attendance.total_working_hours = math.ceil(
+                    worked_hrs / 60 / 60)
                 attendance.db_update()
                 frappe.db.commit()
+                # create_ts(attendance)
+                frappe.response.type = "text"
+                return "ok"
             else:
                 attendance = frappe.new_doc("Attendance")
                 in_time = time.strftime("%H:%M:%S", time.gmtime(
@@ -62,8 +75,8 @@ def attendance():
                 attendance.save(ignore_permissions=True)
                 attendance.submit()
                 frappe.db.commit()
-            frappe.response.type = "text"
-            return "ok"
+                frappe.response.type = "text"
+                return "ok"
         else:
             doc.shift = roster[0][1]
 
@@ -91,9 +104,14 @@ def attendance():
                     times = [out_time, attendance.in_time]
                     attendance.out_time = max(times)
                     attendance.in_time = min(times)
-                    total_hrs = time_diff_in_seconds(
-                        attendance.out_time, attendance.in_time)
-                    attendance.overtime = (total_hrs - shft_hrs) / 3600
+                    in_time_f = datetime.strptime(
+                        attendance.in_time, '%H:%M:%S')
+                    out_time_f = datetime.strptime(
+                        attendance.out_time, '%H:%M:%S')
+                    worked_hrs = time_diff_in_seconds(
+                        out_time_f, in_time_f)
+                    attendance.total_working_hours = math.ceil(
+                        worked_hrs / 60 / 60)
                     attendance.db_update()
                     frappe.db.commit()
                 else:

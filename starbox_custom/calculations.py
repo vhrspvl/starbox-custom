@@ -8,6 +8,7 @@ import frappe
 from frappe.model.document import Document
 from frappe.model.naming import make_autoname
 import time
+import math
 from frappe.utils.data import today, get_timestamp
 from frappe.utils import getdate, cint, add_months, date_diff, add_days, flt, nowdate, \
     get_datetime_str, cstr, get_datetime, time_diff, time_diff_in_seconds
@@ -16,7 +17,7 @@ from erpnext.hr.doctype.employee.employee import get_holiday_list_for_employee
 
 
 @frappe.whitelist()
-def create_ts(doc, method):
+def create_ts(doc):
     if doc.in_time and doc.out_time:
         emp_type = frappe.db.get_value(
             "Employee", doc.employee, "employment_type")
@@ -135,3 +136,19 @@ def get_leave(emp, start_date, end_date):
     for l in leave:
         count += l["total_leave_days"]
     return count
+
+
+def total_working_hours(doc, method):
+    if doc.in_time:
+        in_time_f = datetime.strptime(
+            doc.in_time, '%H:%M:%S')
+        out_time_f = datetime.strptime(
+            doc.out_time, '%H:%M:%S')
+        worked_hrs = time_diff_in_seconds(
+            out_time_f, in_time_f)
+        att = frappe.get_doc("Attendance", doc.name)
+        att.update({
+            "total_working_hours": math.ceil(worked_hrs / 60 / 60)
+        })
+        att.db_update()
+        frappe.db.commit()
