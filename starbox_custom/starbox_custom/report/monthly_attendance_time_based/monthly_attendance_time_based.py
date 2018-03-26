@@ -38,7 +38,7 @@ def execute(filters=None):
             status = att_map.get(emp).get(day + 1, "None")
             in_time = in_time_map.get(emp).get(day + 1)
             out_time = out_time_map.get(emp).get(day + 1)
-            status_map = {"Present":  cstr(in_time) + "/" + cstr(out_time), "Late": "P", "Absent": "00:00", "Half Day": "HD",
+            status_map = {"Present":  cstr(in_time) + "/" + cstr(out_time), "On Duty": "OD", "Late": "P", "Absent": "00:00", "Half Day": "HD",
                           "On Leave": "L", "None": "", "Holiday": "<b>H</b>"}
             if status == "None" and holiday_map:
                 emp_holiday_list = emp_det.holiday_list if emp_det.holiday_list else default_holiday_list
