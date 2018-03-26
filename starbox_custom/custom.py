@@ -95,14 +95,17 @@ def mark_on_leave(doc, method):
     # days = ["2018-02-01", "2018-02-02", "2018-02-03", "2018-02-05", "2018-02-06", "2018-02-07", "2018-02-08", "2018-02-09", "2018-02-10", "2018-02-12", "2018-02-13", "2018-02-14",
     #         "2018-02-15", "2018-02-16", "2018-02-17", "2018-02-19", "2018-02-20", "2018-02-21", "2018-02-22", "2018-02-23", "2018-02-24", "2018-02-26", "2018-02-27", "2018-02-28"]
     lap = frappe.get_doc("Leave Application", doc.name)
-
+    if lap.leave_type == 'Leave Without Pay':
+        status = 'Absent'
+    else:
+        status = "On Leave"
     attendances = frappe.db.sql("""select name,status from `tabAttendance`
 				where employee = %s and attendance_date between %s and %s
 			and docstatus = 1""", (lap.employee, lap.from_date, lap.to_date), as_dict=True)
     for attendance in attendances:
         att = frappe.get_doc("Attendance", attendance)
         att.update({
-            "status": "On Leave",
+            "status": status,
             "leave_type": lap.leave_type
         })
         att.db_update()

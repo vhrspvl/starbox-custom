@@ -24,6 +24,8 @@ app_license = "MIT"
 
 # include js in page
 # page_js = {"page" : "public/js/file.js"}
+page_js = {"employee-attendance-tool": "public/js/employee_attendance_tool.js"}
+
 
 # include js in doctype views
 # doctype_js = {"doctype" : "public/js/doctype.js"}
@@ -88,10 +90,10 @@ doc_events = {
     "Job Applicant": {
         "before_save": "starbox_custom.custom.calculate_total"
     },
-    "Attendance": {
-        "on_update_after_submit": "starbox_custom.calculations.create_ts",
-        # "on_update_after_submit": "starbox_custom.calculations.total_working_hours"
-    },
+    # "Attendance": {
+    #     "on_update_after_submit": "starbox_custom.calculations.create_ts",
+    #     # "on_update_after_submit": "starbox_custom.calculations.total_working_hours"
+    # },
     "Leave Application": {
         "on_submit": "starbox_custom.custom.mark_on_leave"
     }
