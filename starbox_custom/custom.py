@@ -7,7 +7,7 @@ import frappe
 from frappe import _
 from frappe.utils.data import today
 from frappe.utils import formatdate, getdate, cint, add_months, date_diff, add_days, flt, cstr
-from datetime import date
+from datetime import date, datetime
 from dateutil.relativedelta import relativedelta
 from erpnext.hr.doctype.employee.employee import get_holiday_list_for_employee
 
@@ -135,12 +135,14 @@ def convert2present():
     to_date = '2018-03-31'
     attendances = frappe.db.sql("""select name,status from `tabAttendance` where status='Late'
     and attendance_date between %s and %s""", (from_date, to_date), as_dict=True)
-    for attendance in attendances["name"]:
+    print len(attendances)
+    for attendance in attendances:
         att = frappe.get_doc("Attendance", attendance)
         att.update({
             "status": "Present"
         })
         att.save(ignore_permissions=True)
+        if att.docstttttttttatussss
         frappe.db.commit()
 
     # for day in days:
@@ -301,6 +303,52 @@ def get_holidays_for_employee(employee, day):
 
     return holidays
 
+
+@frappe.whitelist()
+def daily_punch_record():
+    from zk import ZK, const
+    conn = None
+    zk = ZK('192.168.10.143', port=4370, timeout=5)
+    try:
+        conn = zk.connect()
+        attendance = conn.get_attendance()
+        curdate = datetime.now().date()
+        for att in attendance:
+            # if att.user_id == '170':
+            date = att.timestamp.date()
+            # print date
+            # if date == '2018-03-01':
+            mtime = att.timestamp.time()
+            userid = att.user_id
+            employee = frappe.db.get_value("Employee", {
+                "biometric_id": userid, "status": "Active"})
+            if employee:
+                doc = frappe.get_doc("Employee", employee)
+                pr_id = frappe.db.get_value("Punch Record", {
+                    "employee": employee, "attendance_date": date})
+                if pr_id:
+                    pr = frappe.get_doc("Punch Record", pr_id)
+                    pr.append("time_table", {
+                        "punch_time": str(mtime)
+                    })
+                    pr.save(ignore_permissions=True)
+                    frappe.db.commit()
+                else:
+                    pr = frappe.new_doc("Punch Record")
+                    pr.employee = employee
+                    pr.employee_name = doc.employee_name
+                    pr.attendance_date = date
+                    pr.append("time_table", {
+                        "punch_time": mtime
+                    })
+                    pr.insert()
+                    pr.save(ignore_permissions=True)
+                    frappe.db.commit()
+    except Exception, e:
+        print "Process terminate : {}".format(e)
+    finally:
+        if conn:
+            conn.disconnect()
     # Default Attendance
     # @frappe.whitelist(allow_guest=True)
     # def attendance():

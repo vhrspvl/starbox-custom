@@ -21,7 +21,7 @@ def execute(filters=None):
     data = []
     row = []
     for emp in get_employees():
-        row = [emp.name, emp.employee_name,
+        row = [emp.name, emp.biometric_id, emp.employee_name,
                emp.designation, emp.department, emp.contractor]
         att_details = frappe.db.get_value("Attendance", {'attendance_date': date, 'employee': emp.name}, [
                                           'name', 'total_working_hours', 'attendance_date', 'status', 'in_time', 'out_time'], as_dict=True)
@@ -29,9 +29,9 @@ def execute(filters=None):
             'holiday_date': date})
         is_leave = check_leave_record(emp.name, date)
         if holiday:
-            row += ["", "", "", "Holiday", ""]
+            row += ["", "", "", "", "Holiday", ""]
         elif is_leave:
-            row += ["", "", "", "On Leave", ""]
+            row += ["", "", "", "", is_leave[1], ""]
         else:
             if att_details:
                 if att_details.attendance_date:
@@ -74,6 +74,7 @@ def execute(filters=None):
 def get_columns(filters):
     columns = [
         _("Employee") + ":Link/Employee:90",
+        _("Employee ID") + ":Data:90",
         _("Employee Name") + "::150",
         _("Designation") + "::180",
         _("Department") + "::180",
@@ -90,7 +91,7 @@ def get_columns(filters):
 
 def get_employees():
     employees = frappe.db.sql(
-        """select name,employee_name,designation,department,contractor from tabEmployee where status = 'Active'""", as_dict=1)
+        """select name,biometric_id,employee_name,designation,department,contractor from tabEmployee where status = 'Active'""", as_dict=1)
     return employees
 
 
