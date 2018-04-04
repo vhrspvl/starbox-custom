@@ -10,6 +10,7 @@ from frappe.utils import formatdate, getdate, cint, add_months, date_diff, add_d
 from datetime import date, datetime
 from dateutil.relativedelta import relativedelta
 from erpnext.hr.doctype.employee.employee import get_holiday_list_for_employee
+import requests
 
 
 @frappe.whitelist()
@@ -17,6 +18,16 @@ def test_ctc():
     for cl in get_active_cl():
         ctc = frappe.db.get_value("Contractor", {'name': cl.contractor}, [
             'ctc_per_day'], as_dict=True)
+
+
+@frappe.whitelist()
+def update_in_biometric_machine(uid, uname):
+    stgids = frappe.db.get_all("Service Tag")
+    for stgid in stgids:
+        url = "http://robot.camsunit.com/external/1.0/user/update?uid=%s&uname=%s&stgid=%s" % (
+            uid, uname, stgid.name)
+        r = requests.post(url)
+    return r.content
 
 
 @frappe.whitelist()

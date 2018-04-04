@@ -152,3 +152,92 @@ def total_working_hours(doc, method):
         })
         att.db_update()
         frappe.db.commit()
+
+
+@frappe.whitelist()
+def daily_punch_record():
+    from zk import ZK, const
+    conn = None
+    zk = ZK('192.168.10.65', port=4370, timeout=5)
+    try:
+        conn = zk.connect()
+        attendance = conn.get_attendance()
+        curdate = datetime.now().date()
+        for att in attendance:
+            # if att.user_id == '170':
+            date = att.timestamp.date()
+            if date == curdate:
+                mtime = att.timestamp.time()
+                userid = att.user_id
+                employee = frappe.db.get_value("Employee", {
+                    "employee_no": userid, "status": "Active"})
+                if employee:
+                    doc = frappe.get_doc("Employee", employee)
+                    pr_id = frappe.db.get_value("Punch Record", {
+                        "employee": employee, "attendance_date": date})
+                if pr_id:
+                    pr = frappe.get_doc("Punch Record", pr_id)
+                    pr.append("timetable", {
+                        "punch_time": str(mtime)
+                    })
+                    pr.save(ignore_permissions=True)
+                else:
+                    pr = frappe.new_doc("Punch Record")
+                    pr.employee = employee
+                    pr.employee_name = doc.employee_name
+                    pr.attendance_date = date
+                    pr.append("timetable", {
+                        "punch_time": mtime
+                    })
+                    pr.insert()
+                    pr.save(ignore_permissions=True)
+    except Exception, e:
+        print "Process terminate : {}".format(e)
+    finally:
+        if conn:
+            conn.disconnect()
+
+
+@frappe.whitelist()
+def punch_record(att_date):
+    from zk import ZK, const
+    conn = None
+    zk = ZK('192.168.1.65', port=4370, timeout=5)
+    try:
+        conn = zk.connect()
+        attendance = conn.get_attendance()
+        for att in attendance:
+            # if att.user_id == '170':
+            date = att.timestamp.date()
+            if date == att_date:
+                mtime = att.timestamp.time()
+                userid = att.user_id
+                employee = frappe.db.get_value("Employee", {
+                    "employee_no": userid, "status": "Active"})
+                if employee:
+                    doc = frappe.get_doc("Employee", employee)
+                    pr_id = frappe.db.get_value("Punch Record", {
+                        "employee": employee, "attendance_date": date})
+                if pr_id:
+                    pr = frappe.get_doc("Punch Record", pr_id)
+                    pr.append("timetable", {
+                        "punch_time": str(mtime)
+                    })
+                    pr.save(ignore_permissions=True)
+                else:
+                    pr = frappe.new_doc("Punch Record")
+                    pr.employee = employee
+                    pr.employee_name = doc.employee_name
+                    pr.attendance_date = date
+                    pr.append("timetable", {
+                        "punch_time": mtime
+                    })
+                    pr.insert()
+                    pr.save(ignore_permissions=True)
+                    frappe.response.type = "text"
+                    return "ok"
+    except Exception, e:
+        return "Process terminate : {}".format(e)
+    finally:
+        if conn:
+            conn.disconnect()

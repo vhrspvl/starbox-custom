@@ -65,8 +65,9 @@ def execute(filters=None):
                     row += [""]
 
             else:
-                row += ["", "", "", "", "Absent", ""]
-
+                row += [date, "", "", "", "Absent", ""]
+        test = row.sort(key=att_details.status)
+        frappe.errprint(test)
         data.append(row)
     return columns, data
 
