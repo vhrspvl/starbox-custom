@@ -13,7 +13,6 @@ from frappe.utils.data import today, get_timestamp
 from frappe.utils import getdate, cint, add_months, date_diff, add_days, nowdate, \
     get_datetime_str, cstr, get_datetime, time_diff, time_diff_in_seconds
 from datetime import datetime, timedelta
-from starbox_custom.calculations import create_ts
 
 
 @frappe.whitelist(allow_guest=True)
@@ -60,7 +59,6 @@ def attendance():
                     attendance.total_working_hours = total_working_hours
                 attendance.db_update()
                 frappe.db.commit()
-                create_ts(attendance)
                 frappe.response.type = "text"
                 return "ok"
             else:

@@ -153,7 +153,6 @@ def convert2present():
             "status": "Present"
         })
         att.save(ignore_permissions=True)
-        if att.docstttttttttatussss
         frappe.db.commit()
 
     # for day in days:
