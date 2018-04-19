@@ -33,7 +33,7 @@ def execute(filters=None):
     grand_basic = 0
     from_date = datetime.strptime(filters.get("from_date"), '%Y-%m-%d')
     present_days = 0
-    working_days =  monthrange(
+    working_days = monthrange(
         cint(from_date.year), from_date.month)[1]
     payable_days = 0
     for emp in active_employees:
@@ -45,6 +45,7 @@ def execute(filters=None):
         for present in emp_present_days:
             present_days = present.count
         holidays = get_holidays_for_employee(emp.name, filters)
+        leaves = get_leave(emp.name, filters)
         joining_date, relieving_date = frappe.db.get_value(
             "Employee", emp.name, ["date_of_joining", "relieving_date"])
         no_of_holidays = 0
@@ -57,15 +58,20 @@ def execute(filters=None):
         else:
             row += [""]
 
+        if leaves:
+            row += [leaves]
+        else:
+            row += [""]
+
         if no_of_holidays:
             row += [no_of_holidays]
         else:
             row += [""]
 
         payable_days = present_days
-         
+
         if emp_present_days > 0:
-            payable_days = present_days + no_of_holidays
+            payable_days = present_days + no_of_holidays + leaves
 
         if payable_days:
             row += [payable_days]
@@ -239,6 +245,7 @@ def get_columns(attendance):
         _("Department") + ":Data:180",
         _("Employment Type") + ":Data:180",
         _("PD") + ":Int:50",
+        _("Leaves") + ":Int:50",
         _("Holidays") + ":Int:50",
         _("Payable Days") + ":Int:50",
         _("Gross") + ":Currency:100",
@@ -290,6 +297,27 @@ def get_employee_attendance(employee, filters):
     employee_attendance = frappe.db.sql("""select count(*) as count from `tabAttendance` where \
         docstatus = 1 and status = 'Present' and employee= %s and attendance_date between %s and %s""", (employee, filters.get("from_date"), filters.get("to_date")), as_dict=1)
     return employee_attendance
+
+
+def get_leave(employee, filters):
+    count = 0
+    leave = frappe.db.sql('''select name,total_leave_days from `tabLeave Application`
+            where
+                employee=%(emp)s
+                and from_date >= %(start_date)s
+                and to_date <= %(end_date)s
+                and leave_type !='Leave without Pay'
+                and docstatus = 1
+                and status = 'Approved'
+                ''', {
+        "emp": employee,
+        "start_date": filters.start_date,
+        "end_date": filters.end_date
+    }, as_dict=1)
+
+    for l in leave:
+        count += l["total_leave_days"]
+    return count
 
 
 def get_conditions(filters):

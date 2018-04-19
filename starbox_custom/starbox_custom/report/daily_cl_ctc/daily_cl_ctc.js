@@ -10,6 +10,12 @@ frappe.query_reports["Daily CL CTC"] = {
 			"fieldtype": "Date",
 			"default": frappe.datetime.get_today(),
 			"reqd": 1
-		}
+		},
+		{
+			"fieldname": "contractor",
+			"label": __("Contractor"),
+			"fieldtype": "Link",
+			"options": "Contractor"
+		},
 	]
 }

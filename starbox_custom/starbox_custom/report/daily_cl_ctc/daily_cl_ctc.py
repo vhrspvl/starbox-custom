@@ -15,7 +15,7 @@ def execute(filters=None):
         filters = {}
 
     columns = get_columns(filters)
-
+    conditions, filters = get_conditions(filters)
     data = []
     row = []
     grand_earnings = 0
@@ -23,7 +23,7 @@ def execute(filters=None):
     present_hours = 0
     total_earnings = 0
 
-    active_cl = get_active_cl()
+    active_cl = get_active_cl(conditions, filters)
     for cl in active_cl:
         total_earnings = 0
         present_hours = 0
@@ -128,9 +128,9 @@ def get_columns(attendance):
     return columns
 
 
-def get_active_cl():
+def get_active_cl(conditions, filters):
     active_cl = frappe.db.sql(
-        """select emp.name,emp.biometric_id,emp.working_hours,emp.employee_name,emp.contractor,emp.employment_type from `tabEmployee` emp where emp.status = "Active" and emp.employment_type="Contract" order by emp.name""", as_dict=1)
+        """select emp.name,emp.biometric_id,emp.working_hours,emp.employee_name,emp.contractor,emp.employment_type from `tabEmployee` emp where %s emp.status = "Active" and emp.employment_type="Contract" order by emp.name""" % conditions, filters, as_dict=1)
     return active_cl
 
 
@@ -138,6 +138,16 @@ def get_cl_attendance(employee, filters):
     cl_attendance = frappe.db.sql("""select in_time,out_time,total_working_hours from `tabAttendance` where \
         status = 'Present' and employee= %s and attendance_date=%s""", (employee, filters.get("date")), as_dict=1)
     return cl_attendance
+
+
+def get_conditions(filters):
+    conditions = ""
+    if filters.get("employee"):
+        conditions += " name = %(employee)s and"
+    if filters.get("contractor"):
+        conditions += " emp.contractor = %(contractor)s and"
+        frappe.errprint(conditions)
+    return conditions, filters
 
 
 def get_ts(employee, filters):
