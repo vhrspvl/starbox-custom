@@ -43,7 +43,7 @@ def execute(filters=None):
                 row += [in_time]
             else:
                 row += ["00:00:00"]
-            if in_time:
+            if out_time:
                 row += [out_time]
             else:
                 row += ["00:00:00"]

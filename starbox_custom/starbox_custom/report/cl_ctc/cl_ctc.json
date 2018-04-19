@@ -1,13 +1,13 @@
 {
  "add_total_row": 1, 
  "apply_user_permissions": 1, 
- "creation": "2018-02-06 09:44:24.676691", 
- "disabled": 0, 
+ "creation": "2018-02-06 22:42:39.507264", 
+ "disabled": 1, 
  "docstatus": 0, 
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-02-11 21:36:18.676676", 
+ "modified": "2018-04-19 13:04:44.012147", 
  "modified_by": "Administrator", 
  "module": "Starbox Custom", 
  "name": "CL CTC", 
@@ -24,6 +24,12 @@
   }, 
   {
    "role": "System Manager"
+  }, 
+  {
+   "role": "Leave Applicant"
+  }, 
+  {
+   "role": "Leave Approver"
   }
  ]
 }

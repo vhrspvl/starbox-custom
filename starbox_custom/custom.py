@@ -198,8 +198,6 @@ def emp_absent_today():
                     "employee": doc.name,
                     "employee_name": doc.employee_name,
                     "attendance_date": day,
-                    "in_time": '00:00:00',
-                    "out_time": '00:00:00',
                     "status": status,
                     "company": doc.company
                 })
