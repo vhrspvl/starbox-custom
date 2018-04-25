@@ -311,8 +311,8 @@ def get_leave(employee, filters):
                 and status = 'Approved'
                 ''', {
         "emp": employee,
-        "start_date": filters.start_date,
-        "end_date": filters.end_date
+        "start_date": filters.from_date,
+        "end_date": filters.to_date
     }, as_dict=1)
 
     for l in leave:

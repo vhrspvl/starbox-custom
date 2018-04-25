@@ -241,3 +241,16 @@ def punch_record(att_date):
     finally:
         if conn:
             conn.disconnect()
+
+
+@frappe.whitelist()
+def markattfrompr():
+    date = datetime.strptime('18042018', "%d%m%Y").date()
+    employee = frappe.get_list("Employee", filters={"status": "Active"})
+    for emp in employee:
+        pr_id = frappe.db.get_value(
+            "Punch Record", {"employee": emp["name"], "attendance_date": date})
+        if pr_id:
+            pr = frappe.get_doc("Punch Record", pr_id)
+            prt = frappe.get_doc("Punch Time", max(pr.time_table))
+            print prt

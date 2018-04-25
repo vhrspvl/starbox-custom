@@ -43,6 +43,7 @@ def attendance():
                     int(frappe.form_dict.get("att_time"))))
                 if not attendance.in_time:
                     attendance.in_time = m_time
+                    attendance.status = "Present"
                 else:
                     times = [m_time, attendance.in_time]
                     attendance.out_time = max(times)
@@ -101,22 +102,29 @@ def attendance():
                 if attendance_id:
                     attendance = frappe.get_doc(
                         "Attendance", attendance_id)
-                    out_time = time.strftime("%H:%M:%S", time.gmtime(
+                    m_time = time.strftime("%H:%M:%S", time.gmtime(
                         int(frappe.form_dict.get("att_time"))))
-                    times = [out_time, attendance.in_time]
-                    attendance.out_time = max(times)
-                    attendance.in_time = min(times)
-                    in_time_f = datetime.strptime(
-                        attendance.in_time, '%H:%M:%S')
-                    out_time_f = datetime.strptime(
-                        attendance.out_time, '%H:%M:%S')
-                    worked_hrs = time_diff_in_seconds(
-                        out_time_f, in_time_f)
-                    total_working_hours = math.ceil(
-                        worked_hrs / 60 / 60)
-                    attendance.total_working_hours = total_working_hours
+                    if not attendance.in_time:
+                        attendance.in_time = m_time
+                        attendance.status = "Present"
+                    else:
+                        times = [m_time, attendance.in_time]
+                        attendance.out_time = max(times)
+                        attendance.in_time = min(times)
+                        attendance.status = "Present"
+                        in_time_f = datetime.strptime(
+                            attendance.in_time, '%H:%M:%S')
+                        out_time_f = datetime.strptime(
+                            attendance.out_time, '%H:%M:%S')
+                        worked_hrs = time_diff_in_seconds(
+                            out_time_f, in_time_f)
+                        total_working_hours = math.ceil(
+                            worked_hrs / 60 / 60)
+                        attendance.total_working_hours = total_working_hours
                     attendance.db_update()
                     frappe.db.commit()
+                    frappe.response.type = "text"
+                    return "ok"
                 else:
                     if att_date >= shft_intime_min and att_date <= shft_intime_max:
                         attendance = frappe.new_doc(
