@@ -80,6 +80,7 @@ def execute(filters=None):
                 row += ["0", "0"]
 
         ot_hours = total_working_hours - actual_working_hours
+        frappe.errprint(type(total_working_hours))
         if ot_hours > 0:
             row += [ot_hours]
         else:
@@ -146,7 +147,6 @@ def get_conditions(filters):
         conditions += " name = %(employee)s and"
     if filters.get("contractor"):
         conditions += " emp.contractor = %(contractor)s and"
-        frappe.errprint(conditions)
     return conditions, filters
 
 
