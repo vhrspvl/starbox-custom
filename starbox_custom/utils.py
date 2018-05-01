@@ -34,7 +34,7 @@ def attendance():
     if employee:
         doc = frappe.get_doc("Employee", employee)
         # return doc.employment_type
-        if doc.employment_type == 'Contract':
+        if doc.employment_type == 'Contract' or doc.employment_type == 'Operator':
             prev_attendance_id = frappe.db.get_value("Attendance", {
                 "employee": doc.name, "attendance_date": add_days(date, -1)})
             attendance_id = frappe.db.get_value("Attendance", {

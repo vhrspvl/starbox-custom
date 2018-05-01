@@ -1,24 +1,4 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-from . import __version__ as app_version
-
-app_name = "starbox_custom"
-app_title = "Starbox Custom"
-app_publisher = "Starboxes India"
-app_description = "Customisation for starbox"
-app_icon = "octicon octicon-file-directory"
-app_color = "grey"
-app_email = "hr@starboxes.in"
-app_license = "MIT"
-
-# Includes in <head>
-# ------------------
-
-# include js, css files in header of desk.html
-# app_include_css = "/assets/starbox_custom/css/starbox_custom.css"
-# app_include_js = "/assets/starbox_custom/js/starbox_custom.js"
-
-# include js, css files in header of web template
+# -*-template
 # web_include_css = "/assets/starbox_custom/css/starbox_custom.css"
 # web_include_js = "/assets/starbox_custom/js/starbox_custom.js"
 
@@ -30,7 +10,15 @@ page_js = {"employee-attendance-tool": "public/js/employee_attendance_tool.js"}
 # include js in doctype views
 # doctype_js = {"doctype" : "public/js/doctype.js"}
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
-# doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
+# doctype_tree_js = {"doctype" : "p
+# Includes in <head>
+# ------------------
+
+# include js, css files in header of desk.html
+# app_include_css = "/assets/starbox_custom/css/starbox_custom.css"
+# app_include_js = "/assets/starbox_custom/js/starbox_custom.js"
+
+# include js, css files in headerublic/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
 
 # Home Pages
