@@ -18,8 +18,8 @@ from erpnext.hr.doctype.employee.employee import get_holiday_list_for_employee
 
 @frappe.whitelist()
 def create_ts():
-    # day = add_days(today(), -1)
-    day = datetime.strptime('25042018', "%d%m%Y").date()
+    day = add_days(today(), -1)
+    # day = datetime.strptime('25042018', "%d%m%Y").date()
     attendance = frappe.get_all("Attendance", fields=[
                                 'name', 'employee', 'attendance_date', 'in_time', 'out_time'], filters={'attendance_date': day})
     for doc in attendance:

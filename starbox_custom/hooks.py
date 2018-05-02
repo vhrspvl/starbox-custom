@@ -1,4 +1,24 @@
-# -*-template
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+from . import __version__ as app_version
+
+app_name = "starbox_custom"
+app_title = "Starbox Custom"
+app_publisher = "Starboxes India"
+app_description = "Customisation for starbox"
+app_icon = "octicon octicon-file-directory"
+app_color = "grey"
+app_email = "hr@starboxes.in"
+app_license = "MIT"
+
+# Includes in <head>
+# ------------------
+
+# include js, css files in header of desk.html
+# app_include_css = "/assets/starbox_custom/css/starbox_custom.css"
+# app_include_js = "/assets/starbox_custom/js/starbox_custom.js"
+
+# include js, css files in header of web template
 # web_include_css = "/assets/starbox_custom/css/starbox_custom.css"
 # web_include_js = "/assets/starbox_custom/js/starbox_custom.js"
 
@@ -102,7 +122,8 @@ scheduler_events = {
         "starbox_custom.custom.send_daily_report",
         "starbox_custom.custom.send_ctc_report",
         "starbox_custom.custom.update_leave_application",
-        "starbox_custom.custom.mark_comp_off"
+        "starbox_custom.custom.mark_comp_off",
+        "starbox_custom.calculations.create_ts"
     ],
     # 	"hourly": [
     # 		"starbox_custom.tasks.hourly"
