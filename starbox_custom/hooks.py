@@ -100,6 +100,7 @@ doc_events = {
     },
     "Attendance": {
         "on_update_after_submit": "starbox_custom.custom.removelop",
+        "on_update_after_submit": "starbox_custom.custom.addlop",
         #     # "on_update_after_submit": "starbox_custom.calculations.total_working_hours"
     },
     "Leave Application": {

@@ -225,6 +225,32 @@ def removelop(doc, method):
 
 
 @frappe.whitelist()
+def addlop(doc, method):
+    if doc.status == 'Absent':
+        day = doc.attendance_date
+        leave_approvers = [l.leave_approver for l in frappe.db.sql("""select leave_approver from `tabEmployee Leave Approver` where parent = %s""",
+                                                                   (doc.employee), as_dict=True)]
+        lap = frappe.new_doc("Leave Application")
+        lap.leave_type = "Leave Without Pay"
+        lap.status = "Approved"
+        lap.follow_via_email = 0
+        lap.description = "Absent Auto Marked"
+        lap.from_date = day
+        lap.to_date = day
+        lap.employee = doc.employee
+        if leave_approvers:
+            lap.leave_approver = leave_approvers[0]
+        else:
+            lap.leave_approver = "Administrator"
+        lap.posting_date = day
+        lap.company = frappe.db.get_value(
+            "Employee", employee.name, "company")
+        lap.save(ignore_permissions=True)
+        lap.submit()
+        frappe.db.commit()
+
+
+@frappe.whitelist()
 def bulkremovelop():
     employees = frappe.get_all('Employee', fields=['name'], filters={
                                "status": "Active", "employment_type": ("!=", "Contract")})
