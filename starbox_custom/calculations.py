@@ -257,31 +257,6 @@ def punch_record(att_date):
 
 
 @frappe.whitelist()
-def markshift():
-    attendances = frappe.get_all("Attendance", fields=['name', 'status', 'in_time'], filters={
-        'status': 'Present'})
-    a_min_time = datetime.strptime('07:30', '%H:%M')
-    a_max_time = datetime.strptime('09:30', '%H:%M')
-    b_min_time = datetime.strptime('19:30', '%H:%M')
-    b_max_time = datetime.strptime('21:30', '%H:%M')
-    for att in attendances:
-        if att.in_time:
-            intime = datetime.strptime(att.in_time, '%H:%M:%S')
-            if intime >= a_min_time and intime <= a_max_time:
-                shift = "A"
-            elif intime >= b_min_time and intime <= b_max_time:
-                shift = "B"
-            else:
-                shift = "General"
-            attendance = frappe.get_doc("Attendance", att)
-            attendance.update({
-                "shift": shift
-            })
-            attendance.db_update()
-            frappe.db.commit()
-
-
-@frappe.whitelist()
 def markattfrompr():
     date = datetime.strptime('18042018', "%d%m%Y").date()
     employee = frappe.get_list("Employee", filters={"status": "Active"})

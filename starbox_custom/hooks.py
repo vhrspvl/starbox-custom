@@ -98,10 +98,10 @@ doc_events = {
     "Job Applicant": {
         "before_save": "starbox_custom.custom.calculate_total"
     },
-    # "Attendance": {
-    #     "on_update_after_submit": "starbox_custom.calculations.create_ts",
-    #     # "on_update_after_submit": "starbox_custom.calculations.total_working_hours"
-    # },
+    "Attendance": {
+        "on_update_after_submit": "starbox_custom.custom.removelop",
+        #     # "on_update_after_submit": "starbox_custom.calculations.total_working_hours"
+    },
     "Leave Application": {
         "on_submit": "starbox_custom.custom.mark_on_leave"
     }
