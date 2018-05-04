@@ -213,7 +213,7 @@ def emp_absent_today():
 
 @frappe.whitelist()
 def removelop(doc, method):
-    if doc.status == 'Present':
+    if doc.status == 'Present' or doc.status == 'On Duty':
         lop = frappe.get_list("Leave Application", filters={
             'from_date': doc.attendance_date, 'to_date': doc.attendance_date, 'employee': doc.employee, 'leave_type': 'Leave without Pay'})
         for l in lop:
@@ -222,11 +222,7 @@ def removelop(doc, method):
                 lop.db_set("docstatus", "Cancelled")
                 frappe.delete_doc("Leave Application", lop.name)
                 frappe.db.commit()
-
-
-@frappe.whitelist()
-def addlop(doc, method):
-    if doc.status == 'Absent':
+    elif doc.status == 'Absent':
         day = doc.attendance_date
         leave_approvers = [l.leave_approver for l in frappe.db.sql("""select leave_approver from `tabEmployee Leave Approver` where parent = %s""",
                                                                    (doc.employee), as_dict=True)]
@@ -244,7 +240,7 @@ def addlop(doc, method):
             lap.leave_approver = "Administrator"
         lap.posting_date = day
         lap.company = frappe.db.get_value(
-            "Employee", employee.name, "company")
+            "Employee", doc.employee, "company")
         lap.save(ignore_permissions=True)
         lap.submit()
         frappe.db.commit()
@@ -383,12 +379,12 @@ def get_holidays_for_employee(employee, day):
 def daily_punch_record():
     from zk import ZK, const
     conn = None
-    zk = ZK('192.168.10.141', port=4370, timeout=5)
+    zk = ZK('192.168.10.143', port=4370, timeout=5)
     try:
         conn = zk.connect()
         attendance = conn.get_attendance()
-        curdate = datetime.now().date()
-        # curdate = datetime.strptime('18042018', "%d%m%Y").date()
+        curdate = add_days(today, -1)
+        curdate = datetime.strptime('30042018', "%d%m%Y").date()
         for att in attendance:
             # if att.user_id == '170':
             date = att.timestamp.date()
