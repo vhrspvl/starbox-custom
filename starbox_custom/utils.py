@@ -43,6 +43,7 @@ def attendance():
                 attendance = frappe.get_doc(
                     "Attendance", prev_attendance_id)
                 if attendance.in_time and not attendance.out_time:
+                    attendance.out_date = date
                     attendance.out_time = time_m
                     in_time_f = datetime.strptime(
                         attendance.in_time, '%H:%M:%S')
@@ -55,7 +56,7 @@ def attendance():
                     else:
                         worked_hrs = time_diff_in_seconds(
                             out_time_f, in_time_f)
-                    total_working_hours = math.ceil(
+                    total_working_hours = math.floor(
                         worked_hrs / 60 / 60)
                     attendance.total_working_hours = total_working_hours
                     attendance.db_update()
@@ -71,6 +72,7 @@ def attendance():
                             attendance.status = "Present"
                         else:
                             times = [time_m, attendance.in_time]
+                            attendance.out_date = date
                             attendance.out_time = max(times)
                             attendance.in_time = min(times)
                             attendance.status = "Present"
@@ -80,7 +82,7 @@ def attendance():
                                 attendance.out_time, '%H:%M:%S')
                             worked_hrs = time_diff_in_seconds(
                                 out_time_f, in_time_f)
-                            total_working_hours = math.ceil(
+                            total_working_hours = math.floor(
                                 worked_hrs / 60 / 60)
                             attendance.total_working_hours = total_working_hours
                         attendance.db_update()
@@ -114,6 +116,7 @@ def attendance():
                     attendance.status = "Present"
                 else:
                     times = [time_m, attendance.in_time]
+                    attendance.out_date = date
                     attendance.out_time = max(times)
                     attendance.in_time = min(times)
                     attendance.status = "Present"
@@ -123,7 +126,7 @@ def attendance():
                         attendance.out_time, '%H:%M:%S')
                     worked_hrs = time_diff_in_seconds(
                         out_time_f, in_time_f)
-                    total_working_hours = math.ceil(
+                    total_working_hours = math.floor(
                         worked_hrs / 60 / 60)
                     attendance.total_working_hours = total_working_hours
                 attendance.db_update()
@@ -170,6 +173,7 @@ def attendance():
                         attendance.status = "Present"
                     else:
                         times = [m_time, attendance.in_time]
+                        attendance.out_date = date
                         attendance.out_time = max(times)
                         attendance.in_time = min(times)
                         attendance.status = "Present"
@@ -179,7 +183,7 @@ def attendance():
                             attendance.out_time, '%H:%M:%S')
                         worked_hrs = time_diff_in_seconds(
                             out_time_f, in_time_f)
-                        total_working_hours = math.ceil(
+                        total_working_hours = math.floor(
                             worked_hrs / 60 / 60)
                         attendance.total_working_hours = total_working_hours
                     attendance.db_update()
@@ -235,6 +239,7 @@ def attendance():
                             attendance.status = "Present"
                         else:
                             times = [m_time, attendance.in_time]
+                            attendance.out_date = date
                             attendance.out_time = max(times)
                             attendance.in_time = min(times)
                             attendance.status = "Present"
@@ -244,7 +249,7 @@ def attendance():
                                 attendance.out_time, '%H:%M:%S')
                             worked_hrs = time_diff_in_seconds(
                                 out_time_f, in_time_f)
-                            total_working_hours = math.ceil(
+                            total_working_hours = math.floor(
                                 worked_hrs / 60 / 60)
                             attendance.total_working_hours = total_working_hours
                         attendance.db_update()

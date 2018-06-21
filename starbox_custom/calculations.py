@@ -19,21 +19,22 @@ from erpnext.hr.doctype.employee.employee import get_holiday_list_for_employee
 @frappe.whitelist()
 def create_ts():
     day = add_days(today(), -1)
+    # days = ["2018-06-01", "2018-06-03",
+    #         "2018-06-04", "2018-06-05", "2018-06-06"]
     # day = datetime.strptime('25042018', "%d%m%Y").date()
+    # for day in days:
     attendance = frappe.get_all("Attendance", fields=[
-                                'name', 'employee', 'attendance_date', 'in_time', 'out_time'], filters={'attendance_date': day})
+                                'name', 'employee', 'attendance_date', 'out_date', 'in_time', 'out_time'], filters={'attendance_date': day})
     for doc in attendance:
         if doc.in_time and doc.out_time:
             employee = frappe.get_doc("Employee", doc.employee)
+
             if employee.employment_type == 'Operator':
                 ot_hours = calculate_hours(
                     doc.in_time, doc.out_time, doc.employee)
                 if ot_hours:
                     from_date = doc.attendance_date
-                    if doc.out_time <= doc.in_time:
-                        to_date = add_days(doc.attendance_date, -1)
-                    else:
-                        to_date = doc.attendance_date
+                    to_date = doc.out_date
                     from_time = str(from_date) + " " + doc.in_time
                     from_time_f = datetime.strptime(
                         from_time, '%Y-%m-%d %H:%M:%S')
@@ -151,17 +152,23 @@ def get_leave(emp, start_date, end_date):
     return count
 
 
+@frappe.whitelist()
 def total_working_hours(doc, method):
     if doc.in_time:
         in_time_f = datetime.strptime(
             doc.in_time, '%H:%M:%S')
         out_time_f = datetime.strptime(
             doc.out_time, '%H:%M:%S')
-        worked_hrs = time_diff_in_seconds(
-            out_time_f, in_time_f)
+        if doc.out_date > doc.attendance_date:
+            next_day = timedelta(hours=24)
+            worked_hrs = time_diff_in_seconds(
+                out_time_f + next_day, in_time_f)
+        else:
+            worked_hrs = time_diff_in_seconds(
+                out_time_f, in_time_f)
         att = frappe.get_doc("Attendance", doc.name)
         att.update({
-            "total_working_hours": math.ceil(worked_hrs / 60 / 60)
+            "total_working_hours": math.floor(worked_hrs / 60 / 60)
         })
         att.db_update()
         frappe.db.commit()
