@@ -99,6 +99,7 @@ doc_events = {
         "before_save": "starbox_custom.custom.calculate_total"
     },
     "Attendance": {
+        "on_submit": "starbox_custom.calculations.total_working_hours",
         "on_update_after_submit": "starbox_custom.custom.removelop",
         "on_update_after_submit": "starbox_custom.calculations.total_working_hours",
         #     # "on_update_after_submit": "starbox_custom.calculations.total_working_hours"
@@ -122,6 +123,7 @@ scheduler_events = {
         "starbox_custom.custom.emp_absent_today",
         "starbox_custom.custom.send_daily_report",
         "starbox_custom.custom.send_ctc_report",
+        "starbox_custom.custom.removeduplicateatt",
         # "starbox_custom.custom.update_leave_apsplication",
         "starbox_custom.custom.mark_comp_off",
         "starbox_custom.calculations.create_ts"

@@ -204,11 +204,10 @@ def convert2present():
 @frappe.whitelist()
 def emp_absent_today():
     day = add_days(today(), -1)
-    # days = ["2018-05-01", "2018-05-02", "2018-05-03", "2018-05-04", "2018-05-05", "2018-05-06", "2018-05-07", "2018-05-08", "2018-05-09", "2018-05-10", "2018-05-11", "2018-05-12", "2018-05-13", "2018-05-14",
-    #         "2018-05-15", "2018-05-16", "2018-05-17", "2018-05-18", "2018-05-19", "2018-05-20", "2018-05-21", "2018-05-22", "2018-05-23", "2018-05-24", "2018-05-25", "2018-05-26", "2018-05-27", "2018-05-28", "2018-05-29", "2018-05-30", "2018-05-31"]
-    # days = ["2018-05-11"]
+    # days = ["2018-06-16", "2018-06-17", "2018-06-18", "2018-06-19", "2018-06-20", "2018-06-21", "2018-06-22",
+    #         "2018-06-23", "2018-06-24", "2018-06-25", "2018-06-26", "2018-06-27", "2018-06-28", "2018-06-29", "2018-06-30"]
+
     # for day in days:
-    # day = datetime.strptime('18042018', "%d%m%Y").date()
     holiday = frappe.get_list("Holiday List", filters={
         'holiday_date': day})
     if holiday:
@@ -245,12 +244,26 @@ def emp_absent_today():
 
 
 @frappe.whitelist()
+def removeduplicateatt():
+    day = add_days(today(), -1)
+    get_att = frappe.db.sql("""SELECT name FROM `tabAttendance` WHERE attendance_date = %s GROUP BY employee
+                    HAVING COUNT(employee) >1""", (day), as_dict=1)
+    if get_att:
+        for att in get_att:
+            obj = frappe.get_doc("Attendance", att["name"])
+            obj.db_set("docstatus", 2)
+            frappe.delete_doc("Attendance", obj.name)
+            frappe.db.commit()
+
+
+@frappe.whitelist()
 def update_leave_application():
     # day = add_days(today(), -1)
-    days = ["2018-05-01", "2018-05-02", "2018-05-03", "2018-05-04", "2018-05-05", "2018-05-06", "2018-05-07", "2018-05-08", "2018-05-09", "2018-05-10", "2018-05-11", "2018-05-12", "2018-05-13", "2018-05-14",
-            "2018-05-15", "2018-05-16", "2018-05-17", "2018-05-18", "2018-05-19", "2018-05-20", "2018-05-21", "2018-05-22", "2018-05-23", "2018-05-24", "2018-05-25", "2018-05-26", "2018-05-27", "2018-05-28", "2018-05-29", "2018-05-30", "2018-05-31"]
+    days = ["2018-06-16", "2018-06-17", "2018-06-18", "2018-06-19", "2018-06-20", "2018-06-21", "2018-06-22",
+            "2018-06-23", "2018-06-24", "2018-06-25", "2018-06-26", "2018-06-27", "2018-06-28", "2018-06-29", "2018-06-30"]
     for day in days:
-        employees = frappe.get_all('Employee', filters={"status": "Active"})
+        employees = frappe.get_all(
+            'Employee', filters={"status": "Active", 'employment_type': ('!=', 'Contract')})
         for employee in employees:
             lwp = get_leave(employee.name, day)
             if lwp:
@@ -282,24 +295,30 @@ def update_leave_application():
                     frappe.db.commit()
 
 
-# @frappe.whitelist()
-# def delete_bulk():
-#     left_employees = frappe.get_list(
-#         "Employee", fields=["biometric_id"], filters={"status": "Left"})
-#     for l in left_employees:
-#         stgids = frappe.db.get_all("Service Tag")
-#         for stgid in stgids:
-#             uid = atten
-#             url = "http://robot.camsunit.com/external/1.0/user/delete?uid=%s&stgid=%s" % (
-#                 uid, stgid.name)
-#             frappe.errprint(url)
-#             r = requests.post(url)
-#             print r.content
+def get_leave(emp, day):
+    leave = frappe.db.sql("""select name from `tabLeave Application`
+				where employee = %s and %s between from_date and to_date""", (emp, day), as_dict=1)
+    return leave
+
+
+@frappe.whitelist()
+def delete_bulk():
+    left_employees = frappe.get_list(
+        "Employee", fields=["biometric_id"], filters={"status": "Left"})
+    for l in left_employees:
+        stgids = frappe.db.get_all("Service Tag")
+        for stgid in stgids:
+            uid = l.biometric_id
+            url = "http://robot.camsunit.com/external/1.0/user/delete?uid=%s&stgid=%s" % (
+                uid, stgid.name)
+            frappe.errprint(url)
+            r = requests.post(url)
+            print r.content
 
 
 @frappe.whitelist()
 def removelop(doc, method):
-    if doc.status == 'Present' or doc.status == 'On Duty':
+    if doc.status == 'Present' or doc.status == 'On Duty' or doc.status == 'Late':
         lop = frappe.get_list("Leave Application", filters={
             'from_date': doc.attendance_date, 'to_date': doc.attendance_date, 'employee': doc.employee, 'leave_type': 'Leave without Pay'})
         for l in lop:
@@ -378,37 +397,30 @@ def bulkremovelop():
 #                 print pre_day
 #             else:
 #                 print "hhi"
-#             # query = """SELECT emp.name FROM `tabAttendance` att, `tabEmployee` emp
-#             #             WHERE att.employee = emp.name AND att.status = 'Absent' AND att.attendance_date = '%s'""" % (day)
-#             # absent_emp = frappe.db.sql(query, as_dict=True)
-#             # if employee in absent_emp or pre_day:
-#             #     leave_approvers = [l.leave_approver for l in frappe.db.sql("""select leave_approver from `tabEmployee Leave Approver` where parent = %s""",
-#             #                                                                (employee.name), as_dict=True)]
-#             #     lap = frappe.new_doc("Leave Application")
-#             #     lap.leave_type = "Leave Without Pay"
-#             #     lap.status = "Approved"
-#             #     lap.follow_via_email = 0
-#             #     lap.description = "Absent Auto Marked"
-#             #     lap.from_date = day
-#             #     lap.to_date = day
-#             #     lap.employee = employee.name
-#             #     if leave_approvers:
-#             #         lap.leave_approver = leave_approvers[0]
-#             #     else:
-#             #         lap.leave_approver = "Administrator"
-#             #     lap.posting_date = day
-#             #     lap.company = frappe.db.get_value(
-#             #         "Employee", employee.name, "company")
-            #     lap.save(ignore_permissions=True)
-            #     # lap.submit()
-            #     frappe.db.commit()
-
-
-def get_leave(emp, day):
-    leave = frappe.db.sql("""select name from `tabLeave Application`
-				where employee = %s and %s between from_date and to_date and status = 'Approved'
-			and docstatus = 1""", (emp, day), as_dict=1)
-    return leave
+#             query = """SELECT emp.name FROM `tabAttendance` att, `tabEmployee` emp
+#                         WHERE att.employee = emp.name AND att.status = 'Absent' AND att.attendance_date = '%s'""" % (day)
+#             absent_emp = frappe.db.sql(query, as_dict=True)
+#             if employee in absent_emp or pre_day:
+#                 leave_approvers = [l.leave_approver for l in frappe.db.sql("""select leave_approver from `tabEmployee Leave Approver` where parent = %s""",
+#                                                                            (employee.name), as_dict=True)]
+#                 lap = frappe.new_doc("Leave Application")
+#                 lap.leave_type = "Leave Without Pay"
+#                 lap.status = "Approved"
+#                 lap.follow_via_email = 0
+#                 lap.description = "Absent Auto Marked"
+#                 lap.from_date = day
+#                 lap.to_date = day
+#                 lap.employee = employee.name
+#                 if leave_approvers:
+#                     lap.leave_approver = leave_approvers[0]
+#                 else:
+#                     lap.leave_approver = "Administrator"
+#                 lap.posting_date = day
+#                 lap.company = frappe.db.get_value(
+#                     "Employee", employee.name, "company")
+#                 lap.save(ignore_permissions=True)
+#                 # lap.submit()
+#                 frappe.db.commit()
 
 
 @frappe.whitelist()

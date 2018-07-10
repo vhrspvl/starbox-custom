@@ -154,7 +154,7 @@ def get_leave(emp, start_date, end_date):
 
 @frappe.whitelist()
 def total_working_hours(doc, method):
-    if doc.in_time:
+    if doc.in_time and doc.out_time:
         in_time_f = datetime.strptime(
             doc.in_time, '%H:%M:%S')
         out_time_f = datetime.strptime(

@@ -38,19 +38,19 @@ def execute(filters=None):
         for present in cl_present_days:
             in_time = present.in_time
             out_time = present.out_time
-            from_date = present.attendance_date
-            to_date = present.out_date
-            from_time = str(from_date) + " " + in_time
-            from_time_f = datetime.strptime(
-                from_time, '%Y-%m-%d %H:%M:%S')
-            if to_date:
-                to_time = str(to_date) + " " + out_time
-                to_time_f = datetime.strptime(
-                    to_time, '%Y-%m-%d %H:%M:%S')
-                worked_hrs = time_diff_in_seconds(
-                    to_time_f, from_time_f)
-                ot_f = timedelta(seconds=worked_hrs)
-                frappe.errprint(ot_f // 3600)
+            # from_date = present.attendance_date
+            # to_date = present.out_date
+            # from_time = str(from_date) + " " + in_time
+            # from_time_f = datetime.strptime(
+            #     from_time, '%Y-%m-%d %H:%M:%S')
+            # if to_date:
+            #     to_time = str(to_date) + " " + out_time
+            #     to_time_f = datetime.strptime(
+            #         to_time, '%Y-%m-%d %H:%M:%S')
+            #     worked_hrs = time_diff_in_seconds(
+            #         to_time_f, from_time_f)
+            #     ot_f = timedelta(seconds=worked_hrs)
+            #     frappe.errprint(ot_f // 3600)
             total_working_hours = present.total_working_hours
         if cl_present_days:
             if in_time:
