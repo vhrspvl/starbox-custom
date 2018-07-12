@@ -528,11 +528,41 @@ def daily_punch_record():
                         pr.insert()
                         pr.save(ignore_permissions=True)
                         frappe.db.commit()
-    except Exception, e:
         print "Process terminate : {}".format(e)
     finally:
         if conn:
             conn.disconnect()
+
+
+@frappe.whitelist()
+def bulk_mark_contractor():
+    attendance = frappe.db.sql("""
+        select name,employee from tabAttendance where contractor is null 
+            """, as_dict=1)
+    for att in attendance:
+        contractor = frappe.db.get_value(
+            "Employee", att["employee"], "contractor")
+        if contractor:
+            att = frappe.get_doc("Attendance", att["name"])
+            att.contractor = contractor
+            att.db_update()
+            frappe.db.commit()
+
+
+@frappe.whitelist()
+def bulk_mark_department():
+    attendance = frappe.db.sql("""
+        select name,employee from tabAttendance where department is null 
+            """, as_dict=1)
+    for att in attendance:
+        department = frappe.db.get_value(
+            "Employee", att["employee"], "department")
+        if department:
+            att = frappe.get_doc("Attendance", att["name"])
+            att.department = department
+            att.db_update()
+            frappe.db.commit()
+
     # Default Attendance
     # @frappe.whitelist(allow_guest=True)
     # def attendance():

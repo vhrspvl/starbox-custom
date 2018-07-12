@@ -102,7 +102,7 @@ doc_events = {
         "on_submit": "starbox_custom.calculations.total_working_hours",
         "on_update_after_submit": "starbox_custom.custom.removelop",
         "on_update_after_submit": "starbox_custom.calculations.total_working_hours",
-        #     # "on_update_after_submit": "starbox_custom.calculations.total_working_hours"
+        "on_update_after_submit": "starbox_custom.calculations.create_ts_submit"
     },
     "Leave Application": {
         "on_submit": "starbox_custom.custom.mark_on_leave"
