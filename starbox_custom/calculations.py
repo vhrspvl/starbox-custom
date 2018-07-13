@@ -27,13 +27,13 @@ def create_ts_submit(doc, method):
                 from_date = doc.attendance_date
                 to_date = doc.out_date
                 from_time = str(from_date) + " " + doc.in_time
+                # extra_hours = doc.total_working_hours - \
+                #     ((employee.working_hours).seconds // 3600)
                 from_time_f = datetime.strptime(
-                    from_time, '%Y-%m-%d %H:%M:%S')
-                extra_hours = doc.total_working_hours - \
-                    ((employee.working_hours).seconds // 3600)
+                    from_time, '%Y-%m-%d %H:%M:%S') + timedelta(hours=((employee.working_hours).seconds // 3600))
                 to_time = str(to_date) + " " + doc.out_time
                 to_time_f = datetime.strptime(
-                    to_time, '%Y-%m-%d %H:%M:%S') - timedelta(hours=extra_hours)
+                    to_time, '%Y-%m-%d %H:%M:%S')
                 ts_id = frappe.db.get_value(
                     "Timesheet", {"employee": doc.employee, "start_date": from_date, "end_date": to_date})
                 if ts_id:
@@ -70,7 +70,8 @@ def create_ts_submit(doc, method):
 @frappe.whitelist()
 def create_ts():
     day = today()
-    # days = ["2018-07-07"]
+    # days = ["2018-07-01", "2018-07-02", "2018-07-03", "2018-07-04", "2018-07-05", "2018-07-06",
+    #         "2018-07-07", "2018-07-08", "2018-07-09", "2018-07-10", "2018-07-11", "2018-07-12"]
     # # day = datetime.strptime('25042018', "%d%m%Y").date()
     # for day in days:
     attendance = frappe.get_all("Attendance", fields=[
@@ -87,12 +88,10 @@ def create_ts():
                     to_date = doc.out_date
                     from_time = str(from_date) + " " + doc.in_time
                     from_time_f = datetime.strptime(
-                        from_time, '%Y-%m-%d %H:%M:%S')
+                        from_time, '%Y-%m-%d %H:%M:%S') + timedelta(hours=((employee.working_hours).seconds // 3600))
                     to_time = str(to_date) + " " + doc.out_time
-                    extra_hours = doc.total_working_hours - \
-                        ((employee.working_hours).seconds // 3600)
                     to_time_f = datetime.strptime(
-                        to_time, '%Y-%m-%d %H:%M:%S') - timedelta(hours=extra_hours)
+                        to_time, '%Y-%m-%d %H:%M:%S')
                     ts_id = frappe.db.get_value(
                         "Timesheet", {"employee": doc.employee, "start_date": from_date, "end_date": to_date})
                     if ts_id:

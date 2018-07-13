@@ -101,8 +101,7 @@ doc_events = {
     "Attendance": {
         "on_submit": "starbox_custom.calculations.total_working_hours",
         "on_update_after_submit": "starbox_custom.custom.removelop",
-        "on_update_after_submit": "starbox_custom.calculations.total_working_hours",
-        "on_update_after_submit": "starbox_custom.calculations.create_ts_submit"
+        "on_update_after_submit": "starbox_custom.calculations.total_working_hours"
     },
     "Leave Application": {
         "on_submit": "starbox_custom.custom.mark_on_leave"
@@ -128,9 +127,9 @@ scheduler_events = {
         "starbox_custom.custom.mark_comp_off",
         "starbox_custom.calculations.create_ts"
     ],
-    # 	"hourly": [
-    # 		"starbox_custom.tasks.hourly"
-    # 	],
+    "hourly": [
+        "starbox_custom.calculations.create_ts"
+    ],
     # 	"weekly": [
     # 		"starbox_custom.tasks.weekly"
     # 	]

@@ -11,6 +11,7 @@ from datetime import date, datetime
 from dateutil.relativedelta import relativedelta
 from erpnext.hr.doctype.employee.employee import get_holiday_list_for_employee
 import requests
+import math
 
 
 @frappe.whitelist()
@@ -562,6 +563,58 @@ def bulk_mark_department():
             att.department = department
             att.db_update()
             frappe.db.commit()
+
+
+@frappe.whitelist()
+def clc_calculator():
+    ctc_per_day = 0
+    days = ['2018-07-12']
+    for day in days:
+        attendance_list = frappe.get_list("Attendance", fields=['name', 'employee', 'employee_name', 'employment_type', 'in_time', 'out_time',
+                                                                'total_working_hours', 'contractor', 'attendance_date'], filters={"attendance_date": day, "status": "Present", "employment_type": "Contract", "employee": 13004})
+        for attendance in attendance_list:
+            att = frappe.get_doc("Attendance", attendance['name'])
+            earned_ctc = 0
+            ctc_per_day = frappe.get_value(
+                "Contractor", attendance["contractor"], "ctc_per_day")
+            working_hours = frappe.db.get_value(
+                "Employee", attendance['employee'], 'working_hours')
+            actual_working_hours = math.ceil(working_hours.seconds / 3600)
+            if ctc_per_day:
+                actual_hours = 0
+                total_working_hours = att.total_working_hours
+                                            
+                if total_working_hours > 0:
+                    actual_hours = total_working_hours - actual_working_hours
+                    if total_working_hours > actual_working_hours:
+                        earned_ctc = flt((total_working_hours - actual_hours) *
+                                         (ctc_per_day / actual_working_hours))
+                    else:
+                        earned_ctc = flt(total_working_hours *
+                                         (ctc_per_day / actual_working_hours))
+
+            clc = frappe.new_doc("Contract Labour Costing")
+            clc.update({
+                "employee": att.employee,
+                "employee_name": att.employee_name,
+                "employment_type": att.employment_type,
+                "attendance_date": att.attendance_date,
+                "in_time": att.in_time,
+                "out_time": att.out_time,
+                "total_working_hours": att.total_working_hours,
+                "actual_working_hours": actual_working_hours,
+                "contractor": att.contractor,
+                "ctc_per_day": ctc_per_day,
+                "earned_ctc": earned_ctc
+
+            })
+            clc.save(ignore_permissions=True)
+
+
+def get_active_emp():
+    active_emp = frappe.db.sql(
+        """select emp.working_hours from `tabEmployee` emp where emp.status = "Active" and emp.employment_type="Contract" order by emp.name""", as_dict=1)
+    return active_emp
 
     # Default Attendance
     # @frappe.whitelist(allow_guest=True)
