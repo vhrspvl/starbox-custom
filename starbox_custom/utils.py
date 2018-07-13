@@ -18,22 +18,45 @@ from datetime import datetime, timedelta
 @frappe.whitelist(allow_guest=True)
 def attendance():
     global attendance_date, att_time
-
-    date = time.strftime("%Y-%m-%d", time.gmtime(
-        int(frappe.form_dict.get("att_time"))))
-
-    attendance_date = time.strftime("%Y-%m-%d %X", time.gmtime(
-        int(frappe.form_dict.get("att_time"))))
-
-    time_m = time.strftime("%H:%M:%S", time.gmtime(
-        int(frappe.form_dict.get("att_time"))))
-
     userid = frappe.form_dict.get("userid")
     employee = frappe.db.get_value("Employee", {
         "biometric_id": userid, "status": "Active"})
     if employee:
+        
+        date = time.strftime("%Y-%m-%d", time.gmtime(
+            int(frappe.form_dict.get("att_time"))))
+
+        attendance_date = time.strftime("%Y-%m-%d %X", time.gmtime(
+            int(frappe.form_dict.get("att_time"))))
+
+        time_m = time.strftime("%H:%M:%S", time.gmtime(
+            int(frappe.form_dict.get("att_time"))))
+    
         doc = frappe.get_doc("Employee", employee)
         # return doc.employment_type
+        if doc.employment_type == 'Contractor':
+            a_min_time = datetime.strptime('06:30', '%H:%M')
+            a_max_time = datetime.strptime('07:30', '%H:%M')
+            b_min_time = datetime.strptime('08:00', '%H:%M')
+            b_max_time = datetime.strptime('09:00', '%H:%M')
+            c_min_time = datetime.strptime('12:30', '%H:%M')
+            c_max_time = datetime.strptime('13:30', '%H:%M')
+            d_min_time = datetime.strptime('20:00', '%H:%M')
+            d_max_time = datetime.strptime('21:00', '%H:%M')
+            e_min_time = datetime.strptime('18:30', '%H:%M')
+            e_max_time = datetime.strptime('19:30', '%H:%M')
+        if doc.employment_type == 'Operator':
+            a_min_time = datetime.strptime('07:30', '%H:%M')
+            a_max_time = datetime.strptime('08:30', '%H:%M')
+            b_min_time = datetime.strptime('04:30', '%H:%M')
+            b_max_time = datetime.strptime('05:30', '%H:%M')
+            c_min_time = datetime.strptime('00:30', '%H:%M')
+            c_max_time = datetime.strptime('01:30', '%H:%M')
+            d_min_time = datetime.strptime('20:00', '%H:%M')
+            d_max_time = datetime.strptime('21:00', '%H:%M')
+            e_min_time = datetime.strptime('18:30', '%H:%M')
+            e_max_time = datetime.strptime('19:30', '%H:%M')
+
         if doc.employment_type == 'Contract' or doc.employment_type == 'Operator' or doc.employment_type == 'Aparajita':
             prev_attendance_id = frappe.db.get_value("Attendance", {
                 "employee": doc.name, "attendance_date": add_days(date, -1)})
@@ -71,10 +94,10 @@ def attendance():
                             attendance.in_time = time_m
                             attendance.status = "Present"
                         else:
-                            times = [time_m, attendance.in_time]
+                            # times = [time_m, attendance.in_time]
                             attendance.out_date = date
-                            attendance.out_time = max(times)
-                            attendance.in_time = min(times)
+                            attendance.out_time = time_m
+                            # attendance.in_time = min(times)
                             attendance.status = "Present"
                             in_time_f = datetime.strptime(
                                 attendance.in_time, '%H:%M:%S')
@@ -94,11 +117,24 @@ def attendance():
                         in_time = time_m
                         intime = datetime.strptime(
                             in_time, '%H:%M:%S')
+                        if intime >= a_min_time and intime <= a_max_time:
+                            shift = "A"
+                        elif intime >= b_min_time and intime <= b_max_time:
+                            shift = "B"
+                        elif intime >= c_min_time and intime <= c_max_time:
+                            shift = "C"
+                        elif intime >= d_min_time and intime <= d_max_time:
+                            shift = "D"
+                        elif intime >= e_min_time and intime <= e_max_time:
+                            shift = "E"    
+                        else:
+                            shift = "NA"    
                         # return type(a_min_time)
                         attendance.update({
                             "employee": employee,
                             "employee_name": doc.employee_name,
                             "attendance_date": date,
+                            "shift":shift,
                             "status": "Present",
                             "in_time": in_time,
                             "company": doc.company
@@ -136,10 +172,23 @@ def attendance():
             else:
                 attendance = frappe.new_doc("Attendance")
                 in_time = time_m
+                if intime >= a_min_time and intime <= a_max_time:
+                    shift = "A"
+                elif intime >= b_min_time and intime <= b_max_time:
+                    shift = "B"
+                elif intime >= c_min_time and intime <= c_max_time:
+                    shift = "G"
+                elif intime >= d_min_time and intime <= d_max_time:
+                    shift = "B"
+                elif intime >= e_min_time and intime <= e_max_time:
+                    shift = "G"    
+                else:
+                    shift = "NA"
                 attendance.update({
                     "employee": employee,
                     "employee_name": doc.employee_name,
                     "attendance_date": date,
+                    "shift":shift,
                     "status": "Present",
                     "in_time": in_time,
                     "company": doc.company
