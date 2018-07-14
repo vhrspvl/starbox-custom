@@ -22,7 +22,7 @@ def attendance():
     employee = frappe.db.get_value("Employee", {
         "biometric_id": userid, "status": "Active"})
     if employee:
-        
+
         date = time.strftime("%Y-%m-%d", time.gmtime(
             int(frappe.form_dict.get("att_time"))))
 
@@ -31,10 +31,10 @@ def attendance():
 
         time_m = time.strftime("%H:%M:%S", time.gmtime(
             int(frappe.form_dict.get("att_time"))))
-    
+
         doc = frappe.get_doc("Employee", employee)
         # return doc.employment_type
-        if doc.employment_type == 'Contractor':
+        if doc.employment_type == 'Staff' or doc.employment_type == 'Contract' or doc.employment_type == 'Aparajita':
             a_min_time = datetime.strptime('06:30', '%H:%M')
             a_max_time = datetime.strptime('07:30', '%H:%M')
             b_min_time = datetime.strptime('08:00', '%H:%M')
@@ -126,15 +126,15 @@ def attendance():
                         elif intime >= d_min_time and intime <= d_max_time:
                             shift = "D"
                         elif intime >= e_min_time and intime <= e_max_time:
-                            shift = "E"    
+                            shift = "E"
                         else:
-                            shift = "NA"    
+                            shift = "NA"
                         # return type(a_min_time)
                         attendance.update({
                             "employee": employee,
                             "employee_name": doc.employee_name,
                             "attendance_date": date,
-                            "shift":shift,
+                            "shift": shift,
                             "status": "Present",
                             "in_time": in_time,
                             "company": doc.company
@@ -181,14 +181,14 @@ def attendance():
                 elif intime >= d_min_time and intime <= d_max_time:
                     shift = "B"
                 elif intime >= e_min_time and intime <= e_max_time:
-                    shift = "G"    
+                    shift = "G"
                 else:
                     shift = "NA"
                 attendance.update({
                     "employee": employee,
                     "employee_name": doc.employee_name,
                     "attendance_date": date,
-                    "shift":shift,
+                    "shift": shift,
                     "status": "Present",
                     "in_time": in_time,
                     "company": doc.company
