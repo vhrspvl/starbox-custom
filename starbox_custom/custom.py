@@ -538,7 +538,7 @@ def daily_punch_record():
 @frappe.whitelist()
 def bulk_mark_contractor():
     attendance = frappe.db.sql("""
-        select name,employee from tabAttendance where contractor is null
+        select name,employee from tabAttendance where contractor is null and attendance_date between '2018-07-01' and '2018-07-14'
             """, as_dict=1)
     for att in attendance:
         contractor = frappe.db.get_value(
@@ -553,8 +553,9 @@ def bulk_mark_contractor():
 @frappe.whitelist()
 def bulk_mark_department():
     attendance = frappe.db.sql("""
-        select name,employee from tabAttendance where department is null
+        select name,employee from tabAttendance where department is null 
             """, as_dict=1)
+    print attendance        
     for att in attendance:
         department = frappe.db.get_value(
             "Employee", att["employee"], "department")
@@ -577,7 +578,7 @@ def clc_calculator():
             '2018-07-04', '2018-07-05', '2018-07-06', '2018-07-07']
     for day in days:
         attendance_list = frappe.get_list("Attendance", fields=['name', 'employee', 'employee_name', 'employment_type', 'in_time', 'out_time',
-                                                                'total_working_hours', 'department', 'contractor', 'attendance_date'], filters={"attendance_date": day, "status": "Present", "employment_type": "Contract", "employee": 12018})
+                                                                'total_working_hours', 'department', 'contractor', 'attendance_date'], filters={"attendance_date": day, "status": "Present", "employment_type": "Contract"})
         for attendance in attendance_list:
             att = frappe.get_doc("Attendance", attendance['name'])
             earned_ctc = 0
@@ -589,7 +590,7 @@ def clc_calculator():
                     "Contractor", attendance["contractor"], "finishing")
             elif att.department == "Mould":
                 ctc_per_day = frappe.get_value(
-                    "Contractor", attendance["contractor"], "mould_operator")
+                    "Contractor", attendance["contractor"], "mould_operator")    
             else:
                 ctc_per_day = frappe.get_value(
                     "Contractor", attendance["contractor"], "ctc_per_day")
