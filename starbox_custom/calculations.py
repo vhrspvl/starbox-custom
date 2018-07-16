@@ -217,9 +217,18 @@ def total_working_hours(doc, method):
         else:
             worked_hrs = time_diff_in_seconds(
                 out_time_f, in_time_f)
+        maxhr = timedelta(seconds=1200)
+        actual_working_hours = frappe.db.get_value("Employee",doc.name,"working_hours").seconds
+        difftime = (out_time_f - in_time_f).seconds
+        if (actual_working_hours - difftime) < maxhr.seconds:
+            total_working_hours = math.ceil(
+            worked_hrs / 60 / 60)
+        else:
+            total_working_hours = math.floor(
+            worked_hrs / 60 / 60)        
         att = frappe.get_doc("Attendance", doc.name)
         att.update({
-            "total_working_hours": math.floor(worked_hrs / 60 / 60)
+            "total_working_hours": total_working_hours
         })
         att.db_update()
         frappe.db.commit()
