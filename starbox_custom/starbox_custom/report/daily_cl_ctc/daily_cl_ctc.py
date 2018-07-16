@@ -31,7 +31,7 @@ def execute(filters=None):
         total_working_hours = 0
 
         row = [cl.name, cl.biometric_id, cl.employee_name,
-               cl.contractor,cl.department, cl.employment_type]
+               cl.contractor, cl.department, cl.employment_type]
         cl_present_days = get_cl_attendance(cl.name, filters)
         working_hours = cl.working_hours
         actual_working_hours = math.ceil(working_hours.seconds / 3600)
@@ -70,17 +70,14 @@ def execute(filters=None):
 
         if cl.department == "Boiler":
             ctc_per_day = frappe.get_value(
-                    "Contractor", cl.contractor, "boiler")
-        elif cl.department == "Finishing":
-            ctc_per_day = frappe.get_value(
-                "Contractor", cl.contractor, "finishing")
+                "Contractor", cl.contractor, "boiler")
         elif cl.department == "MOULD":
             ctc_per_day = frappe.get_value(
-                "Contractor",cl.contractor, "mould_operator")    
+                "Contractor", cl.contractor, "mould_operator")
         else:
             ctc_per_day = frappe.get_value(
                 "Contractor", cl.contractor, "ctc_per_day")
-        # frappe.errprint(ctc_per_day)        
+        # frappe.errprint(ctc_per_day)
         # ctc = frappe.db.get_value("Contractor", {'name': cl.contractor}, [
         #     'ctc_per_day'], as_dict=True)
         if ctc_per_day:
@@ -106,7 +103,7 @@ def execute(filters=None):
             else:
                 row += ["0", "0"]
         else:
-                row += ["0","0","0"]        
+            row += ["0", "0", "0"]
 
         ot_hours = total_working_hours - actual_working_hours
         if ot_hours > 0:

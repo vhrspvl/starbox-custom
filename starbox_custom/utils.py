@@ -172,16 +172,18 @@ def attendance():
             else:
                 attendance = frappe.new_doc("Attendance")
                 in_time = time_m
+                intime = datetime.strptime(
+                    in_time, '%H:%M:%S')
                 if intime >= a_min_time and intime <= a_max_time:
                     shift = "A"
                 elif intime >= b_min_time and intime <= b_max_time:
                     shift = "B"
                 elif intime >= c_min_time and intime <= c_max_time:
-                    shift = "G"
+                    shift = "C"
                 elif intime >= d_min_time and intime <= d_max_time:
-                    shift = "B"
+                    shift = "D"
                 elif intime >= e_min_time and intime <= e_max_time:
-                    shift = "G"
+                    shift = "E"
                 else:
                     shift = "NA"
                 attendance.update({
