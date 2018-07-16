@@ -598,6 +598,7 @@ def clc_calculator():
             actual_working_hours = math.ceil(working_hours.seconds / 3600)
 
             if ctc_per_day:
+
                 total_working_hours = att.total_working_hours
                 ot_hours = total_working_hours - actual_working_hours
                 if total_working_hours > 0:
@@ -614,7 +615,6 @@ def clc_calculator():
                 ot_cost = (ctc_per_day / actual_working_hours) * 2
                 ot_earnings = flt(ot_hours * ot_cost)
             total = earned_ctc + ot_earnings
-
             clc = frappe.new_doc("Contract Labour Costing")
             clc.update({
                 "employee": att.employee,
