@@ -218,7 +218,7 @@ def total_working_hours(doc, method):
             worked_hrs = time_diff_in_seconds(
                 out_time_f, in_time_f)
         maxhr = timedelta(seconds=1200)
-        actual_working_hours = frappe.db.get_value("Employee",doc.name,"working_hours").seconds
+        actual_working_hours = frappe.db.get_value("Employee",doc.employee,"working_hours").seconds
         difftime = (out_time_f - in_time_f).seconds
         if (actual_working_hours - difftime) < maxhr.seconds:
             total_working_hours = math.ceil(
@@ -233,6 +233,41 @@ def total_working_hours(doc, method):
         att.db_update()
         frappe.db.commit()
 
+@frappe.whitelist()
+def total_working_hours():
+    days = ["2018-07-13"]
+    # # day = datetime.strptime('25042018', "%d%m%Y").date()
+    for day in days:
+        attendance = frappe.get_all("Attendance", fields=[
+                                    'name', 'employee', 'attendance_date', 'out_date', 'in_time', 'out_time', 'total_working_hours'], filters={'attendance_date': day})
+        for doc in attendance:
+            if doc.in_time and doc.out_time:
+                in_time_f = datetime.strptime(
+                    doc.in_time, '%H:%M:%S')
+                out_time_f = datetime.strptime(
+                    doc.out_time, '%H:%M:%S')
+                if doc.out_date > doc.attendance_date:
+                    next_day = timedelta(hours=24)
+                    worked_hrs = time_diff_in_seconds(
+                        out_time_f + next_day, in_time_f)
+                else:
+                    worked_hrs = time_diff_in_seconds(
+                        out_time_f, in_time_f)
+                maxhr = timedelta(seconds=1200)
+                actual_working_hours = frappe.db.get_value("Employee",doc.employee,"working_hours").seconds
+                difftime = (out_time_f - in_time_f).seconds
+                if (actual_working_hours - difftime) < maxhr.seconds:
+                    total_working_hours = math.ceil(
+                    worked_hrs / 60 / 60)
+                else:
+                    total_working_hours = math.floor(
+                    worked_hrs / 60 / 60)        
+                att = frappe.get_doc("Attendance", doc.name)
+                att.update({
+                    "total_working_hours": total_working_hours
+                })
+                att.db_update()
+                frappe.db.commit()
 
 @frappe.whitelist()
 def daily_punch_record():
