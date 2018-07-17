@@ -73,6 +73,11 @@ def attendance():
                         attendance.in_time, '%H:%M:%S')
                     out_time_f = datetime.strptime(
                         attendance.out_time, '%H:%M:%S')
+                    maxhr = timedelta(seconds=1200)
+                    actual_working_hours = frappe.db.get_value("Employee",doc.employee,"working_hours")
+                    difftime = actual_working_hours - timedelta(seconds=(out_time_f - in_time_f).seconds)    
+                    if difftime <= maxhr:
+                        out_time_f = out_time_f + timedelta(seconds=1200)    
                     if out_time_f <= in_time_f:
                         min_hr = timedelta(hours=24)
                         worked_hrs = time_diff_in_seconds(
@@ -80,8 +85,8 @@ def attendance():
                     else:
                         worked_hrs = time_diff_in_seconds(
                             out_time_f, in_time_f)
-                    total_working_hours = round(
-                        worked_hrs / 3600.00)
+                    total_working_hours = (
+                        worked_hrs // 3600.00)
                     attendance.total_working_hours = total_working_hours
                     attendance.db_update()
                     frappe.db.commit()
@@ -104,10 +109,16 @@ def attendance():
                                 attendance.in_time, '%H:%M:%S')
                             out_time_f = datetime.strptime(
                                 attendance.out_time, '%H:%M:%S')
+                            maxhr = timedelta(seconds=1200)
+                            actual_working_hours = frappe.db.get_value("Employee",doc.employee,"working_hours")
+                            difftime = actual_working_hours - timedelta(seconds=(out_time_f - in_time_f).seconds)    
+                            if difftime <= maxhr:
+                                out_time_f = out_time_f + timedelta(seconds=1200)    
+                        
                             worked_hrs = time_diff_in_seconds(
                                 out_time_f, in_time_f)
-                            total_working_hours = round(
-                                worked_hrs / 3600.00)
+                            total_working_hours = (
+                                worked_hrs // 3600.00)
                             attendance.total_working_hours = total_working_hours
                         attendance.db_update()
                         frappe.db.commit()
@@ -161,10 +172,16 @@ def attendance():
                         attendance.in_time, '%H:%M:%S')
                     out_time_f = datetime.strptime(
                         attendance.out_time, '%H:%M:%S')
+                    maxhr = timedelta(seconds=1200)
+                    actual_working_hours = frappe.db.get_value("Employee",doc.employee,"working_hours")
+                    difftime = actual_working_hours - timedelta(seconds=(out_time_f - in_time_f).seconds)    
+                    if difftime <= maxhr:
+                        out_time_f = out_time_f + timedelta(seconds=1200)    
+                        
                     worked_hrs = time_diff_in_seconds(
                         out_time_f, in_time_f)
-                    total_working_hours = round(
-                        worked_hrs / 3600.00)
+                    total_working_hours = (
+                        worked_hrs // 3600.00)
                     attendance.total_working_hours = total_working_hours
                 attendance.db_update()
                 frappe.db.commit()
