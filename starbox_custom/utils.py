@@ -73,14 +73,8 @@ def attendance():
                         attendance.in_time, '%H:%M:%S')
                     out_time_f = datetime.strptime(
                         attendance.out_time, '%H:%M:%S')
-                    maxhr = timedelta(seconds=1200)
-                    actual_working_hours = frappe.db.get_value(
-                        "Employee", doc.employee, "working_hours")
-                    if actual_working_hours:
-                        difftime = actual_working_hours - \
-                            timedelta(seconds=(out_time_f - in_time_f).seconds)
-                        if difftime <= maxhr:
-                            out_time_f = out_time_f + timedelta(seconds=1200)
+                    out_time_f = floor_dt(out_time_f)
+                    in_time_f = floor_dt(in_time_f)
                     if out_time_f <= in_time_f:
                         min_hr = timedelta(hours=24)
                         worked_hrs = time_diff_in_seconds(
@@ -89,7 +83,7 @@ def attendance():
                         worked_hrs = time_diff_in_seconds(
                             out_time_f, in_time_f)
                     total_working_hours = (
-                        worked_hrs // 3600.00)
+                        worked_hrs / 3600.00)
                     attendance.total_working_hours = total_working_hours
                     attendance.db_update()
                     frappe.db.commit()
@@ -112,20 +106,12 @@ def attendance():
                                 attendance.in_time, '%H:%M:%S')
                             out_time_f = datetime.strptime(
                                 attendance.out_time, '%H:%M:%S')
-                            maxhr = timedelta(seconds=1200)
-                            actual_working_hours = frappe.db.get_value(
-                                "Employee", doc.employee, "working_hours")
-                            if actual_working_hours:
-                                difftime = actual_working_hours - \
-                                    timedelta(
-                                        seconds=(out_time_f - in_time_f).seconds)
-                                if difftime <= maxhr:
-                                    out_time_f = out_time_f + \
-                                        timedelta(seconds=1200)
+                            out_time_f = floor_dt(out_time_f)
+                            in_time_f = floor_dt(in_time_f)
                             worked_hrs = time_diff_in_seconds(
                                 out_time_f, in_time_f)
                             total_working_hours = (
-                                worked_hrs // 3600.00)
+                                worked_hrs / 3600.00)
                             attendance.total_working_hours = total_working_hours
                         attendance.db_update()
                         frappe.db.commit()
@@ -179,19 +165,12 @@ def attendance():
                         attendance.in_time, '%H:%M:%S')
                     out_time_f = datetime.strptime(
                         attendance.out_time, '%H:%M:%S')
-                    maxhr = timedelta(seconds=1200)
-                    actual_working_hours = frappe.db.get_value(
-                        "Employee", doc.employee, "working_hours")
-                    if actual_working_hours:
-                        difftime = actual_working_hours - \
-                            timedelta(seconds=(out_time_f - in_time_f).seconds)
-                        if difftime <= maxhr:
-                            out_time_f = out_time_f + timedelta(seconds=1200)
-
+                    out_time_f = floor_dt(out_time_f)
+                    in_time_f = floor_dt(in_time_f)
                     worked_hrs = time_diff_in_seconds(
                         out_time_f, in_time_f)
                     total_working_hours = (
-                        worked_hrs // 3600.00)
+                        worked_hrs / 3600.00)
                     attendance.total_working_hours = total_working_hours
                 attendance.db_update()
                 frappe.db.commit()
@@ -401,6 +380,17 @@ def attendance():
             frappe.db.commit()
         frappe.response.type = "text"
         return "ok"
+
+def floor_dt(dt):
+    # how many secs have passed this hour
+    nsecs = dt.minute*60 + dt.second + dt.microsecond*1e-6  
+    # number of seconds to next quarter hour mark
+    # Non-analytic (brute force is fun) way:  
+    #   delta = next(x for x in xrange(0,3601,900) if x>=nsecs) - nsecs
+    # analytic way:
+    delta = math.floor(nsecs / 900) * 900 - nsecs
+    #time + number of seconds to quarter hour mark.
+    return dt + timedelta(seconds=delta)
 # @frappe.whitelist(allow_guest=True)
 # def attendance():
 #     global attendance_date, att_time

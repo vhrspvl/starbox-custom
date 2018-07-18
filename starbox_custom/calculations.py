@@ -248,13 +248,9 @@ def bulk_total_working_hours():
                     doc.in_time, '%H:%M:%S')
                 out_time_f = datetime.strptime(
                     doc.out_time, '%H:%M:%S')
-                maxhr = timedelta(seconds=1200)
-                actual_working_hours = frappe.db.get_value(
-                    "Employee", doc.employee, "working_hours")
-                td =(out_time_f - in_time_f)
                 out_time_f = floor_dt(out_time_f)
                 in_time_f = floor_dt(in_time_f)
-                if doc.in_time > doc.out_time:
+                if doc.attendance_date > doc.out_date:
                     next_day = timedelta(hours=24)
                     worked_hrs = time_diff_in_seconds(
                         out_time_f + next_day, in_time_f)
@@ -269,18 +265,6 @@ def bulk_total_working_hours():
                 })
                 att.db_update()
                 frappe.db.commit()
-
-
-def ceil_dt(dt):
-    # how many secs have passed this hour
-    nsecs = dt.minute*60 + dt.second + dt.microsecond*1e-6  
-    # number of seconds to next quarter hour mark
-    # Non-analytic (brute force is fun) way:  
-    #   delta = next(x for x in xrange(0,3601,900) if x>=nsecs) - nsecs
-    # analytic way:
-    delta = math.ceil(nsecs / 900) * 900 - nsecs
-    #time + number of seconds to quarter hour mark.
-    return dt + timedelta(seconds=delta)
 
 def floor_dt(dt):
     # how many secs have passed this hour
