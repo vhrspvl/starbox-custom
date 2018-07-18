@@ -574,10 +574,10 @@ def clc_calculator():
     ot_hours = 0
     ot_cost = 0
     total = 0
-    days = ['2018-07-13']
+    days = ['2018-07-05']
     for day in days:
         attendance_list = frappe.get_list("Attendance", fields=['name', 'employee', 'employee_name', 'employment_type', 'in_time', 'out_time',
-                                                                'total_working_hours', 'department', 'contractor', 'attendance_date'], filters={"attendance_date": day, "status": "Present", "employment_type": "Contract"})
+                                                                'total_working_hours', 'department', 'contractor', 'attendance_date'], filters={"attendance_date": day, "status": "Present", "employment_type": "Contract","employee":15019})
         for attendance in attendance_list:
             att = frappe.get_doc("Attendance", attendance['name'])
             earned_ctc = 0
@@ -595,27 +595,25 @@ def clc_calculator():
                     "Contractor", attendance["contractor"], "ctc_per_day")
             working_hours = frappe.db.get_value(
                 "Employee", attendance['employee'], 'working_hours')
-            actual_working_hours = math.ceil(working_hours.seconds / 3600)
-
+            actual_working_hours = (working_hours.seconds / 3600.00)   
             if ctc_per_day:
-
                 total_working_hours = att.total_working_hours
                 if total_working_hours > 0:
-                    actual_hours = total_working_hours - actual_working_hours
+                    earned_ctc = flt(total_working_hours *
+                                         (ctc_per_day / actual_working_hours))
                     if total_working_hours > actual_working_hours:
+                        print total_working_hours
+
+                        actual_hours = total_working_hours - actual_working_hours
+                        print actual_hours
                         earned_ctc = flt((total_working_hours - actual_hours) *
                                          (ctc_per_day / actual_working_hours))
-                    else:
-                        earned_ctc = flt(total_working_hours *
-                                         (ctc_per_day / actual_working_hours))
-
-                if total_working_hours > actual_working_hours:
-                    ot_hours = total_working_hours - actual_working_hours
-                    ot_cost = (ctc_per_day / actual_working_hours) * 2
-                    ot_earnings = flt(ot_hours * ot_cost)
+                        ot_cost = (ctc_per_day / actual_working_hours)
+                        ot_earnings = flt(actual_hours * ot_cost)                 
             total = earned_ctc + ot_earnings
             clc = frappe.new_doc("Contract Labour Costing")
             clc.update({
+                "attendance_id":att.name,
                 "employee": att.employee,
                 "employee_name": att.employee_name,
                 "employment_type": att.employment_type,
@@ -628,8 +626,7 @@ def clc_calculator():
                 "contractor": att.contractor,
                 "ctc_per_day": ctc_per_day,
                 "earned_ctc": earned_ctc,
-                "working_hours": working_hours,
-                "ot_hours": ot_hours,
+                "ot_hours": actual_hours,
                 "ot_cost": ot_cost,
                 "ot_earnings": ot_earnings,
                 "total": total

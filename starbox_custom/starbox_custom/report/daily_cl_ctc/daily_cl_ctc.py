@@ -105,12 +105,13 @@ def execute(filters=None):
         else:
             row += ["0", "0", "0"]
 
+        
         ot_hours = total_working_hours - actual_working_hours
         if ot_hours > 0:
             row += [ot_hours]
         else:
             row += ["0"]
-
+        
         ot_day = (ctc_day / actual_working_hours)
         if ot_hours > 0:
             row += [ot_day]

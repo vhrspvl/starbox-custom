@@ -11,7 +11,7 @@ import time
 import math
 from frappe.utils.data import today, get_timestamp
 from frappe.utils import getdate, cint, add_months, date_diff, add_days, flt, nowdate, \
-    get_datetime_str, cstr, get_datetime, time_diff, time_diff_in_seconds
+    get_datetime_str, cstr, get_datetime, time_diff, time_diff_in_seconds,time_diff_in_hours
 from datetime import datetime, timedelta
 from erpnext.hr.doctype.employee.employee import get_holiday_list_for_employee
 
@@ -205,6 +205,7 @@ def get_leave(emp, start_date, end_date):
 
 @frappe.whitelist()
 def total_working_hours(doc, method):
+    
     if doc.in_time and doc.out_time:
         in_time_f = datetime.strptime(
             doc.in_time, '%H:%M:%S')
@@ -213,11 +214,11 @@ def total_working_hours(doc, method):
         maxhr = timedelta(seconds=1200)
         actual_working_hours = frappe.db.get_value(
             "Employee", doc.employee, "working_hours")
-        difftime = actual_working_hours - \
-            timedelta(seconds=(out_time_f - in_time_f).seconds)
-        if difftime <= maxhr:
-            in_time_f = in_time_f + timedelta(seconds=600)
-            out_time_f = out_time_f + timedelta(seconds=600)
+        td =(out_time_f - in_time_f)
+        out_time_f = ceil_dt(out_time_f)
+        in_time_f = floor_dt(in_time_f)
+        frappe.errprint(in_time_f)
+        frappe.errprint(out_time_f)
         if doc.out_date > doc.attendance_date:
             next_day = timedelta(hours=24)
             worked_hrs = time_diff_in_seconds(
@@ -225,13 +226,8 @@ def total_working_hours(doc, method):
         else:
             worked_hrs = time_diff_in_seconds(
                 out_time_f, in_time_f)
-
-        total_working_hours = round(worked_hrs / 3600.00)
-        dtime = actual_working_hours.seconds - worked_hrs
-        frappe.errprint(worked_hrs)
-        frappe.errprint(actual_working_hours.seconds)
-        frappe.errprint(abs(dtime))
-        frappe.errprint(total_working_hours)
+        total_working_hours = (worked_hrs / 3600.00)
+        
         att = frappe.get_doc("Attendance", doc.name)
         att.update({
             "total_working_hours": total_working_hours
@@ -239,10 +235,9 @@ def total_working_hours(doc, method):
         att.db_update()
         frappe.db.commit()
 
-
 @frappe.whitelist()
 def bulk_total_working_hours():
-    days = ["2018-07-16"]
+    days = ["2018-07-05"]
     # # day = datetime.strptime('25042018', "%d%m%Y").date()
     for day in days:
         attendance = frappe.get_all("Attendance", fields=[
@@ -256,26 +251,49 @@ def bulk_total_working_hours():
                 maxhr = timedelta(seconds=1200)
                 actual_working_hours = frappe.db.get_value(
                     "Employee", doc.employee, "working_hours")
-                difftime = actual_working_hours - \
-                    timedelta(seconds=(out_time_f - in_time_f).seconds)
-                if difftime <= maxhr:
-                    in_time_f = in_time_f + timedelta(seconds=600)
-                    out_time_f = out_time_f + timedelta(seconds=600)
-                if doc.out_date > doc.attendance_date:
+                td =(out_time_f - in_time_f)
+                out_time_f = floor_dt(out_time_f)
+                in_time_f = floor_dt(in_time_f)
+                if doc.in_time > doc.out_time:
                     next_day = timedelta(hours=24)
                     worked_hrs = time_diff_in_seconds(
                         out_time_f + next_day, in_time_f)
                 else:
                     worked_hrs = time_diff_in_seconds(
                         out_time_f, in_time_f)
-
-                total_working_hours = round(worked_hrs / 3600.00)
+                total_working_hours = (worked_hrs / 3600.00)
+                
                 att = frappe.get_doc("Attendance", doc.name)
                 att.update({
                     "total_working_hours": total_working_hours
                 })
                 att.db_update()
                 frappe.db.commit()
+
+
+def ceil_dt(dt):
+    # how many secs have passed this hour
+    nsecs = dt.minute*60 + dt.second + dt.microsecond*1e-6  
+    # number of seconds to next quarter hour mark
+    # Non-analytic (brute force is fun) way:  
+    #   delta = next(x for x in xrange(0,3601,900) if x>=nsecs) - nsecs
+    # analytic way:
+    delta = math.ceil(nsecs / 900) * 900 - nsecs
+    #time + number of seconds to quarter hour mark.
+    return dt + timedelta(seconds=delta)
+
+def floor_dt(dt):
+    # how many secs have passed this hour
+    nsecs = dt.minute*60 + dt.second + dt.microsecond*1e-6  
+    # number of seconds to next quarter hour mark
+    # Non-analytic (brute force is fun) way:  
+    #   delta = next(x for x in xrange(0,3601,900) if x>=nsecs) - nsecs
+    # analytic way:
+    delta = math.floor(nsecs / 900) * 900 - nsecs
+    #time + number of seconds to quarter hour mark.
+    return dt + timedelta(seconds=delta)
+    
+
 
 
 @frappe.whitelist()
