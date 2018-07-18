@@ -555,7 +555,7 @@ def bulk_mark_department():
     attendance = frappe.db.sql("""
         select name,employee from tabAttendance where department is null 
             """, as_dict=1)
-    print attendance        
+    print attendance
     for att in attendance:
         department = frappe.db.get_value(
             "Employee", att["employee"], "department")
@@ -574,7 +574,7 @@ def clc_calculator():
     ot_hours = 0
     ot_cost = 0
     total = 0
-    days = ['2018-07-01']
+    days = ['2018-07-13']
     for day in days:
         attendance_list = frappe.get_list("Attendance", fields=['name', 'employee', 'employee_name', 'employment_type', 'in_time', 'out_time',
                                                                 'total_working_hours', 'department', 'contractor', 'attendance_date'], filters={"attendance_date": day, "status": "Present", "employment_type": "Contract"})
@@ -589,7 +589,7 @@ def clc_calculator():
                     "Contractor", attendance["contractor"], "finishing")
             elif att.department == "Mould":
                 ctc_per_day = frappe.get_value(
-                    "Contractor", attendance["contractor"], "mould_operator")    
+                    "Contractor", attendance["contractor"], "mould_operator")
             else:
                 ctc_per_day = frappe.get_value(
                     "Contractor", attendance["contractor"], "ctc_per_day")
@@ -600,7 +600,6 @@ def clc_calculator():
             if ctc_per_day:
 
                 total_working_hours = att.total_working_hours
-                ot_hours = total_working_hours - actual_working_hours
                 if total_working_hours > 0:
                     actual_hours = total_working_hours - actual_working_hours
                     if total_working_hours > actual_working_hours:
@@ -609,11 +608,11 @@ def clc_calculator():
                     else:
                         earned_ctc = flt(total_working_hours *
                                          (ctc_per_day / actual_working_hours))
-            ot_hours = total_working_hours - actual_working_hours
-            
-            if ot_hours > 0:
-                ot_cost = (ctc_per_day / actual_working_hours) * 2
-                ot_earnings = flt(ot_hours * ot_cost)
+
+                if total_working_hours > actual_working_hours:
+                    ot_hours = total_working_hours - actual_working_hours
+                    ot_cost = (ctc_per_day / actual_working_hours) * 2
+                    ot_earnings = flt(ot_hours * ot_cost)
             total = earned_ctc + ot_earnings
             clc = frappe.new_doc("Contract Labour Costing")
             clc.update({
@@ -880,3 +879,29 @@ def get_active_emp():
     #                         frappe.db.commit()
     #             frappe.response.type = "text"
     #             return "ok"
+
+
+@frappe.whitelist()
+def emp_sunday_attendance():
+
+    days = frappe.get_list("Holiday List", filters={"weekly_off": Sunday})
+    for day in days:
+        if days.weekly_off == Sunday:
+            attendance_list = frappe.get_list(
+                "Attendance", filters={"attendance_date": day, "status": "Present"})
+            for attendance in attendance_list:
+                att = frappe.get_doc("Attendance", attendance)
+                sunday_attendance = frappe.new_doc("Sunday Attendance")
+                sunday_attendance.update({
+                    "employee": att.employee,
+                    "employee_name": att.employee_name,
+                    "attendance_date": att.attendance_date,
+                    "in_time": att.in_time,
+                    "out_time": att.out_time,
+                    "status": att.status,
+                    "line": att.line,
+                    "company": att.company
+                })
+                sunday_attendance.save(ignore_permissions=True)
+                sunday_attendance.submit()
+                frappe.db.commit()
