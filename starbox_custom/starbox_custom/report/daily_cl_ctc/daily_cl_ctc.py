@@ -34,7 +34,7 @@ def execute(filters=None):
                cl.contractor, cl.department, cl.employment_type]
         cl_present_days = get_cl_attendance(cl.name, filters)
         working_hours = cl.working_hours
-        actual_working_hours = math.ceil(working_hours.seconds / 3600)
+        actual_working_hours = (working_hours.seconds / 3600.00)
         for present in cl_present_days:
             in_time = present.in_time
             out_time = present.out_time
@@ -105,7 +105,6 @@ def execute(filters=None):
         else:
             row += ["0", "0", "0"]
 
-        
         ot_hours = total_working_hours - actual_working_hours
         if ot_hours > 0:
             row += [ot_hours]
