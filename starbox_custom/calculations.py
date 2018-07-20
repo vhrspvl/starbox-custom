@@ -11,7 +11,7 @@ import time
 import math
 from frappe.utils.data import today, get_timestamp
 from frappe.utils import getdate, cint, add_months, date_diff, add_days, flt, nowdate, \
-    get_datetime_str, cstr, get_datetime, time_diff, time_diff_in_seconds,time_diff_in_hours
+    get_datetime_str, cstr, get_datetime, time_diff, time_diff_in_seconds, time_diff_in_hours
 from datetime import datetime, timedelta
 from erpnext.hr.doctype.employee.employee import get_holiday_list_for_employee
 
@@ -205,20 +205,16 @@ def get_leave(emp, start_date, end_date):
 
 @frappe.whitelist()
 def total_working_hours(doc, method):
-    
     if doc.in_time and doc.out_time:
         in_time_f = datetime.strptime(
             doc.in_time, '%H:%M:%S')
         out_time_f = datetime.strptime(
             doc.out_time, '%H:%M:%S')
-        maxhr = timedelta(seconds=1200)
         actual_working_hours = frappe.db.get_value(
             "Employee", doc.employee, "working_hours")
-        td =(out_time_f - in_time_f)
-        out_time_f = ceil_dt(out_time_f)
-        in_time_f = floor_dt(in_time_f)
-        frappe.errprint(in_time_f)
-        frappe.errprint(out_time_f)
+        td = (out_time_f - in_time_f) - actual_working_hours
+        if actual_working_hours > (out_time_f - in_time_f):
+            td = (out_time_f - in_time_f)
         if doc.out_date > doc.attendance_date:
             next_day = timedelta(hours=24)
             worked_hrs = time_diff_in_seconds(
@@ -227,7 +223,10 @@ def total_working_hours(doc, method):
             worked_hrs = time_diff_in_seconds(
                 out_time_f, in_time_f)
         total_working_hours = (worked_hrs / 3600.00)
-        
+        if td.seconds >= 2700:
+            total_working_hours = math.ceil(total_working_hours)
+        else:
+            total_working_hours = math.floor(total_working_hours)
         att = frappe.get_doc("Attendance", doc.name)
         att.update({
             "total_working_hours": total_working_hours
@@ -235,9 +234,22 @@ def total_working_hours(doc, method):
         att.db_update()
         frappe.db.commit()
 
+
+def floor_dt(dt):
+    nsecs = dt.minute*60+dt.second+dt.microsecond*1e-6
+    delta = math.floor(nsecs / 900) * 900 - nsecs
+    return dt + timedelta(seconds=delta)
+
+
+def ceil_dt(dt):
+    nsecs = dt.minute*60 + dt.second + dt.microsecond*1e-6
+    delta = math.ceil(nsecs / 900) * 900 - nsecs
+    return dt + timedelta(seconds=delta)
+
+
 @frappe.whitelist()
 def bulk_total_working_hours():
-    days = ["2018-07-05"]
+    days = ["2018-07-18"]
     # # day = datetime.strptime('25042018', "%d%m%Y").date()
     for day in days:
         attendance = frappe.get_all("Attendance", fields=[
@@ -248,9 +260,12 @@ def bulk_total_working_hours():
                     doc.in_time, '%H:%M:%S')
                 out_time_f = datetime.strptime(
                     doc.out_time, '%H:%M:%S')
-                out_time_f = floor_dt(out_time_f)
-                in_time_f = floor_dt(in_time_f)
-                if doc.attendance_date > doc.out_date:
+                maxhr = timedelta(seconds=2400)
+                actual_working_hours = frappe.db.get_value(
+                    "Employee", doc.employee, "working_hours")
+                td = (out_time_f - in_time_f)-actual_working_hours
+
+                if doc.out_date > doc.attendance_date:
                     next_day = timedelta(hours=24)
                     worked_hrs = time_diff_in_seconds(
                         out_time_f + next_day, in_time_f)
@@ -258,7 +273,10 @@ def bulk_total_working_hours():
                     worked_hrs = time_diff_in_seconds(
                         out_time_f, in_time_f)
                 total_working_hours = (worked_hrs / 3600.00)
-                
+                if td.seconds > 2700:
+                    total_working_hours = math.ceil(total_working_hours)
+                else:
+                    total_working_hours = math.floor(total_working_hours)
                 att = frappe.get_doc("Attendance", doc.name)
                 att.update({
                     "total_working_hours": total_working_hours
@@ -266,18 +284,20 @@ def bulk_total_working_hours():
                 att.db_update()
                 frappe.db.commit()
 
-def floor_dt(dt):
+
+def round_dt(dt, dttype):
     # how many secs have passed this hour
-    nsecs = dt.minute*60 + dt.second + dt.microsecond*1e-6  
+    nsecs = dt.minute*60 + dt.second + dt.microsecond*1e-6
     # number of seconds to next quarter hour mark
-    # Non-analytic (brute force is fun) way:  
+    # Non-analytic (brute force is fun) way:
     #   delta = next(x for x in xrange(0,3601,900) if x>=nsecs) - nsecs
     # analytic way:
-    delta = math.floor(nsecs / 900) * 900 - nsecs
-    #time + number of seconds to quarter hour mark.
+    if dttype == 'out':
+        delta = math.floor(nsecs / 900) * 900 - nsecs
+    else:
+        delta = math.ceil(nsecs / 900) * 900 - nsecs
+    # time + number of seconds to quarter hour mark.
     return dt + timedelta(seconds=delta)
-    
-
 
 
 @frappe.whitelist()
