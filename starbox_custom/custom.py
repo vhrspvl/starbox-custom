@@ -602,7 +602,6 @@ def clc_calculator():
                     earned_ctc = flt(total_working_hours *
                                      (ctc_per_day / actual_working_hours))
                     if total_working_hours > actual_working_hours:
-                        print total_working_hours
                         actual_hours = total_working_hours - actual_working_hours
                         print actual_hours
                         earned_ctc = flt((total_working_hours - actual_hours) *

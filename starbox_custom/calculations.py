@@ -16,7 +16,6 @@ from datetime import datetime, timedelta
 from erpnext.hr.doctype.employee.employee import get_holiday_list_for_employee
 from frappe.core.doctype.sms_settings.sms_settings import send_sms
 
-
 @frappe.whitelist()
 def create_ts_submit(doc, method):
     if doc.in_time and doc.out_time:
