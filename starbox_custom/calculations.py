@@ -249,7 +249,7 @@ def ceil_dt(dt):
 
 @frappe.whitelist()
 def bulk_total_working_hours():
-    days = ["2018-07-18"]
+    days = ["2018-07-05"]
     # # day = datetime.strptime('25042018', "%d%m%Y").date()
     for day in days:
         attendance = frappe.get_all("Attendance", fields=[
@@ -265,7 +265,7 @@ def bulk_total_working_hours():
                     "Employee", doc.employee, "working_hours")
                 td = (out_time_f - in_time_f)-actual_working_hours
 
-                if doc.out_date > doc.attendance_date:
+                if doc.in_time_f > doc.out_time_f:
                     next_day = timedelta(hours=24)
                     worked_hrs = time_diff_in_seconds(
                         out_time_f + next_day, in_time_f)

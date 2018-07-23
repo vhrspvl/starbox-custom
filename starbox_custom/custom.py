@@ -574,10 +574,10 @@ def clc_calculator():
     ot_hours = 0
     ot_cost = 0
     total = 0
-    days = ['2018-07-14']
+    days = ['2018-07-05']
     for day in days:
         attendance_list = frappe.get_list("Attendance", fields=['name', 'employee', 'employee_name', 'employment_type', 'in_time', 'out_time',
-                                                                'total_working_hours', 'department', 'contractor', 'attendance_date'], filters={"attendance_date": day, "status": "Present", "employment_type": "Contract"})
+                                                                'total_working_hours', 'department', 'contractor', 'attendance_date'], filters={"attendance_date": day, "status": "Present", "employment_type": "Contract","employee":15019})
         for attendance in attendance_list:
             att = frappe.get_doc("Attendance", attendance['name'])
             earned_ctc = 0

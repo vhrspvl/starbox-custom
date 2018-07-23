@@ -73,8 +73,11 @@ def attendance():
                         attendance.in_time, '%H:%M:%S')
                     out_time_f = datetime.strptime(
                         attendance.out_time, '%H:%M:%S')
-                    out_time_f = floor_dt(out_time_f)
-                    in_time_f = floor_dt(in_time_f)
+                    actual_working_hours = frappe.db.get_value(
+                        "Employee", doc.employee, "working_hours")
+                    td = (out_time_f - in_time_f) - actual_working_hours
+                    if actual_working_hours > (out_time_f - in_time_f):
+                        td = (out_time_f - in_time_f)
                     if out_time_f <= in_time_f:
                         min_hr = timedelta(hours=24)
                         worked_hrs = time_diff_in_seconds(
@@ -82,8 +85,11 @@ def attendance():
                     else:
                         worked_hrs = time_diff_in_seconds(
                             out_time_f, in_time_f)
-                    total_working_hours = (
-                        worked_hrs / 3600.00)
+                    total_working_hours = (worked_hrs / 3600.00)
+                    if td.seconds >= 2700:
+                        total_working_hours = math.ceil(total_working_hours)
+                    else:
+                        total_working_hours = math.floor(total_working_hours)
                     attendance.total_working_hours = total_working_hours
                     attendance.db_update()
                     frappe.db.commit()
@@ -106,13 +112,19 @@ def attendance():
                                 attendance.in_time, '%H:%M:%S')
                             out_time_f = datetime.strptime(
                                 attendance.out_time, '%H:%M:%S')
-                            out_time_f = floor_dt(out_time_f)
-                            in_time_f = floor_dt(in_time_f)
+                            actual_working_hours = frappe.db.get_value(
+                                "Employee", doc.employee, "working_hours")
+                            td = (out_time_f - in_time_f) - actual_working_hours
+                            if actual_working_hours > (out_time_f - in_time_f):
+                                td = (out_time_f - in_time_f)
                             worked_hrs = time_diff_in_seconds(
                                 out_time_f, in_time_f)
-                            total_working_hours = (
-                                worked_hrs / 3600.00)
-                            attendance.total_working_hours = total_working_hours
+                            total_working_hours = (worked_hrs / 3600.00)
+                            if td.seconds >= 2700:
+                                total_working_hours = math.ceil(total_working_hours)
+                            else:
+                                total_working_hours = math.floor(total_working_hours)
+                        attendance.total_working_hours = total_working_hours
                         attendance.db_update()
                         frappe.db.commit()
                         frappe.response.type = "text"
