@@ -577,7 +577,7 @@ def clc_calculator():
     days = ['2018-07-05']
     for day in days:
         attendance_list = frappe.get_list("Attendance", fields=['name', 'employee', 'employee_name', 'employment_type', 'in_time', 'out_time',
-                                                                'total_working_hours', 'department', 'contractor', 'attendance_date'], filters={"attendance_date": day, "status": "Present", "employment_type": "Contract","employee":15019})
+                                                                'total_working_hours', 'department', 'contractor', 'attendance_date'], filters={"attendance_date": day, "status": "Present", "employment_type": "Contract"})
         for attendance in attendance_list:
             att = frappe.get_doc("Attendance", attendance['name'])
             earned_ctc = 0
@@ -880,8 +880,8 @@ def get_active_emp():
 @frappe.whitelist()
 def emp_sunday_attendance():
 
-    days = ['2018-06-01', '2018-06-08',
-            '2018-06-15', '2018-06-22', '2018-06-29']
+    days = ['2018-07-01', '2018-07-08',
+            '2018-07-15', '2018-07-22', '2018-07-29']
     for day in days:
         attendance_list = frappe.get_list(
             "Attendance", filters={"attendance_date": day, "status": "Present"})

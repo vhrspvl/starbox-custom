@@ -114,16 +114,19 @@ def attendance():
                                 attendance.out_time, '%H:%M:%S')
                             actual_working_hours = frappe.db.get_value(
                                 "Employee", doc.employee, "working_hours")
-                            td = (out_time_f - in_time_f) - actual_working_hours
+                            td = (out_time_f - in_time_f) - \
+                                actual_working_hours
                             if actual_working_hours > (out_time_f - in_time_f):
                                 td = (out_time_f - in_time_f)
                             worked_hrs = time_diff_in_seconds(
                                 out_time_f, in_time_f)
                             total_working_hours = (worked_hrs / 3600.00)
                             if td.seconds >= 2700:
-                                total_working_hours = math.ceil(total_working_hours)
+                                total_working_hours = math.ceil(
+                                    total_working_hours)
                             else:
-                                total_working_hours = math.floor(total_working_hours)
+                                total_working_hours = math.floor(
+                                    total_working_hours)
                         attendance.total_working_hours = total_working_hours
                         attendance.db_update()
                         frappe.db.commit()
@@ -393,15 +396,16 @@ def attendance():
         frappe.response.type = "text"
         return "ok"
 
+
 def floor_dt(dt):
     # how many secs have passed this hour
-    nsecs = dt.minute*60 + dt.second + dt.microsecond*1e-6  
+    nsecs = dt.minute*60 + dt.second + dt.microsecond*1e-6
     # number of seconds to next quarter hour mark
-    # Non-analytic (brute force is fun) way:  
+    # Non-analytic (brute force is fun) way:
     #   delta = next(x for x in xrange(0,3601,900) if x>=nsecs) - nsecs
     # analytic way:
     delta = math.floor(nsecs / 900) * 900 - nsecs
-    #time + number of seconds to quarter hour mark.
+    # time + number of seconds to quarter hour mark.
     return dt + timedelta(seconds=delta)
 # @frappe.whitelist(allow_guest=True)
 # def attendance():
