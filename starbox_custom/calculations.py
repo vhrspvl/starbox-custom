@@ -5,6 +5,7 @@
 from __future__ import unicode_literals
 import json
 import frappe
+from frappe import _
 from frappe.model.document import Document
 from frappe.model.naming import make_autoname
 import time
@@ -15,6 +16,12 @@ from frappe.utils import getdate, cint, add_months, date_diff, add_days, flt, no
 from datetime import datetime, timedelta
 from erpnext.hr.doctype.employee.employee import get_holiday_list_for_employee
 from frappe.core.doctype.sms_settings.sms_settings import send_sms
+
+
+def updateaftersubmit(doc, method):
+    removelop(doc, method)
+    total_working_hours(doc, method)
+
 
 @frappe.whitelist()
 def create_ts_submit(doc, method):
@@ -69,10 +76,8 @@ def create_ts_submit(doc, method):
 
 @frappe.whitelist()
 def create_ts():
-    # day = today()
-    days = ["2018-07-11", "2018-07-12",
-            "2018-07-13", "2018-07-14", "2018-07-15"]
-    # # day = datetime.strptime('25042018', "%d%m%Y").date()
+    days = add_days(today(), -1)
+    # days = ["2018-07-22"]
     for day in days:
         attendance = frappe.get_all("Attendance", fields=[
                                     'name', 'employee', 'attendance_date', 'out_date', 'in_time', 'out_time', 'total_working_hours'], filters={'attendance_date': day})
@@ -235,6 +240,41 @@ def total_working_hours(doc, method):
         frappe.db.commit()
 
 
+@frappe.whitelist()
+def removelop(doc, method):
+    if doc.status == 'Present' or doc.status == 'On Duty' or doc.status == 'Late':
+        lop = frappe.get_list("Leave Application", filters={
+            'from_date': doc.attendance_date, 'to_date': doc.attendance_date, 'employee': doc.employee, 'leave_type': 'Leave without Pay'})
+        for l in lop:
+            lop = frappe.get_doc("Leave Application", l)
+            if lop.leave_type == 'Leave Without Pay':
+                lop.db_set("docstatus", "Cancelled")
+                frappe.delete_doc("Leave Application", lop.name)
+                frappe.db.commit()
+    elif doc.status == 'Absent':
+        day = doc.attendance_date
+        leave_approvers = [l.leave_approver for l in frappe.db.sql("""select leave_approver from `tabEmployee Leave Approver` where parent = %s""",
+                                                                   (doc.employee), as_dict=True)]
+        lap = frappe.new_doc("Leave Application")
+        lap.leave_type = "Leave Without Pay"
+        lap.status = "Approved"
+        lap.follow_via_email = 0
+        lap.description = "Absent Auto Marked"
+        lap.from_date = day
+        lap.to_date = day
+        lap.employee = doc.employee
+        if leave_approvers:
+            lap.leave_approver = leave_approvers[0]
+        else:
+            lap.leave_approver = "Administrator"
+        lap.posting_date = day
+        lap.company = frappe.db.get_value(
+            "Employee", doc.employee, "company")
+        lap.save(ignore_permissions=True)
+        lap.submit()
+        frappe.db.commit()
+
+
 def floor_dt(dt):
     nsecs = dt.minute*60+dt.second+dt.microsecond*1e-6
     delta = math.floor(nsecs / 900) * 900 - nsecs
@@ -252,13 +292,13 @@ def bulk_total_working_hours():
     # days = ["2018-07-01", "2018-07-02", "2018-07-03", "2018-07-04", "2018-07-06",
     #         "2018-07-07", "2018-07-08", "2018-07-09", "2018-07-10", "2018-07-11", "2018-07-12", "2018-07-13",
     #         "2018-07-14", "2018-07-15", "2018-07-16", "2018-07-17", "2018-07-18", "2018-07-19", "2018-07-20"]
-    days = ["2018-07-20"]
+    days = ["2018-07-22"]
     # # day = datetime.strptime('25042018', "%d%m%Y").date()
     for day in days:
         attendance = frappe.get_all("Attendance", fields=[
             'name', 'employee', 'attendance_date', 'out_date', 'in_time', 'out_time', 'total_working_hours'], filters={'attendance_date': day})
         for doc in attendance:
-            if doc.attendance_date and doc.out_date:
+            if doc.attendance_date and doc.out_date and doc.in_time and doc.out_time:
                 in_time_f = datetime.strptime(
                     doc.in_time, '%H:%M:%S')
                 out_time_f = datetime.strptime(
@@ -420,3 +460,9 @@ def send_message():
     # print message
     # number = ['8939837002']
     # send_sms(number, message)
+
+    # try:
+    #     time.strptime(doc.in_time, '%H:%M:%S')
+    #     return True
+    # except ValueError:
+    #     frappe.msgprint(_('Kindly check the in time format'))

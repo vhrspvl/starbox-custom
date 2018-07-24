@@ -318,41 +318,6 @@ def delete_bulk():
 
 
 @frappe.whitelist()
-def removelop(doc, method):
-    if doc.status == 'Present' or doc.status == 'On Duty' or doc.status == 'Late':
-        lop = frappe.get_list("Leave Application", filters={
-            'from_date': doc.attendance_date, 'to_date': doc.attendance_date, 'employee': doc.employee, 'leave_type': 'Leave without Pay'})
-        for l in lop:
-            lop = frappe.get_doc("Leave Application", l)
-            if lop.leave_type == 'Leave Without Pay':
-                lop.db_set("docstatus", "Cancelled")
-                frappe.delete_doc("Leave Application", lop.name)
-                frappe.db.commit()
-    elif doc.status == 'Absent':
-        day = doc.attendance_date
-        leave_approvers = [l.leave_approver for l in frappe.db.sql("""select leave_approver from `tabEmployee Leave Approver` where parent = %s""",
-                                                                   (doc.employee), as_dict=True)]
-        lap = frappe.new_doc("Leave Application")
-        lap.leave_type = "Leave Without Pay"
-        lap.status = "Approved"
-        lap.follow_via_email = 0
-        lap.description = "Absent Auto Marked"
-        lap.from_date = day
-        lap.to_date = day
-        lap.employee = doc.employee
-        if leave_approvers:
-            lap.leave_approver = leave_approvers[0]
-        else:
-            lap.leave_approver = "Administrator"
-        lap.posting_date = day
-        lap.company = frappe.db.get_value(
-            "Employee", doc.employee, "company")
-        lap.save(ignore_permissions=True)
-        lap.submit()
-        frappe.db.commit()
-
-
-@frappe.whitelist()
 def bulkremovelop():
     employees = frappe.get_all('Employee', fields=['name'], filters={
                                "status": "Active", "employment_type": ("!=", "Contract")})
@@ -584,9 +549,6 @@ def clc_calculator():
             if att.department == "Boiler":
                 ctc_per_day = frappe.get_value(
                     "Contractor", attendance["contractor"], "boiler")
-            elif att.department == "Finishing":
-                ctc_per_day = frappe.get_value(
-                    "Contractor", attendance["contractor"], "finishing")
             elif att.department == "Mould":
                 ctc_per_day = frappe.get_value(
                     "Contractor", attendance["contractor"], "mould_operator")
