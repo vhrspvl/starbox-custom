@@ -533,7 +533,7 @@ def bulk_mark_department():
 
 @frappe.whitelist()
 def clc_calculator():
-    
+
     days = ['2018-07-05']
     for day in days:
         attendance_list = frappe.get_list("Attendance", fields=['name', 'employee', 'employee_name', 'employment_type', 'in_time', 'out_time',
@@ -550,7 +550,7 @@ def clc_calculator():
             if att.department == "Boiler":
                 ctc_per_day = frappe.get_value(
                     "Contractor", attendance["contractor"], "boiler")
-            elif att.department == "Mould":
+            elif att.department == "MOULD":
                 ctc_per_day = frappe.get_value(
                     "Contractor", attendance["contractor"], "mould_operator")
             else:
