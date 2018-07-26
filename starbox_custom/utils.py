@@ -35,7 +35,7 @@ def attendance():
 
         doc = frappe.get_doc("Employee", employee)
         # return doc.employment_type
-        if doc.employment_type == 'Staff' or doc.employment_type == 'Contract' or doc.employment_type == 'Aparajita':
+        if doc.employment_type == 'Staff' or doc.employment_type == 'Contract' or doc.employment_type == 'Aparajita' or doc.employment_type == 'NEEM':
             a_min_time = datetime.strptime('06:30', '%H:%M')
             a_max_time = datetime.strptime('07:30', '%H:%M')
             b_min_time = datetime.strptime('08:00', '%H:%M')
@@ -58,7 +58,7 @@ def attendance():
             e_min_time = datetime.strptime('18:30', '%H:%M')
             e_max_time = datetime.strptime('19:30', '%H:%M')
 
-        if doc.employment_type == 'Contract' or doc.employment_type == 'Operator' or doc.employment_type == 'Aparajita':
+        if doc.employment_type == 'Contract' or doc.employment_type == 'Operator' or doc.employment_type == 'Aparajita' or doc.employment_type == 'NEEM':
             prev_attendance_id = frappe.db.get_value("Attendance", {
                 "employee": doc.name, "attendance_date": add_days(date, -1)})
             attendance_id = frappe.db.get_value("Attendance", {
