@@ -14,12 +14,6 @@ import requests
 import math
 
 
-@frappe.whitelist()
-def test_ctc():
-    for cl in get_active_cl():
-        ctc = frappe.db.get_value("Contractor", {'name': cl.contractor}, [
-            'ctc_per_day'], as_dict=True)
-
 
 @frappe.whitelist()
 def update_in_biometric_machine(uid, uname):
@@ -260,8 +254,10 @@ def removeduplicateatt():
 @frappe.whitelist()
 def update_leave_application():
     # day = add_days(today(), -1)
-    days = ["2018-06-16", "2018-06-17", "2018-06-18", "2018-06-19", "2018-06-20", "2018-06-21", "2018-06-22",
-            "2018-06-23", "2018-06-24", "2018-06-25", "2018-06-26", "2018-06-27", "2018-06-28", "2018-06-29", "2018-06-30"]
+    days = ["2018-07-01", "2018-07-02", "2018-07-03", "2018-07-04", "2018-07-05", "2018-07-06",
+            "2018-07-07", "2018-07-08", "2018-07-09", "2018-07-10", "2018-07-11", "2018-07-12", "2018-07-13",
+            "2018-07-14", "2018-07-15", "2018-07-16", "2018-07-17", "2018-07-18", "2018-07-19", "2018-07-20", "2018-07-21", 
+            "2018-07-22", "2018-07-23","2018-07-24", "2018-07-25","2018-07-26", "2018-07-27","2018-07-28"]
     for day in days:
         employees = frappe.get_all(
             'Employee', filters={"status": "Active", 'employment_type': ('!=', 'Contract')})
