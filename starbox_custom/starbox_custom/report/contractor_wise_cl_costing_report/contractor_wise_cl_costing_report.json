@@ -7,18 +7,24 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-07-25 16:45:11.816667", 
+ "modified": "2018-07-26 17:54:51.828817", 
  "modified_by": "Administrator", 
  "module": "Starbox Custom", 
  "name": "Contractor wise CL Costing Report", 
  "owner": "Administrator", 
- "query": "SELECT \n`tabContract Labour Costing`.`contractor` AS \"Contractor::250\", \nsum(`tabContract Labour Costing`.`total_working_hours`) AS `Total Working Hours:Float:150`, \nsum(`tabContract Labour Costing`.`actual_working_hours`) AS `Actual Working Hours:Float:150`, \nROUND(sum(`tabContract Labour Costing`.`earned_ctc`)) AS `Earned CTC:Currency:100`, \nROUND(sum(`tabContract Labour Costing`.`ot_hours`)) AS `OT Hours:Float:100`, \nROUND(sum(`tabContract Labour Costing`.`ot_earnings`)) AS `OT Earnings:Currency:100`,\nROUND(sum(`tabContract Labour Costing`.`total`)) AS `TOTAL:Currency:100`\nFROM `tabContract Labour Costing`\nGROUP BY \n`tabContract Labour Costing`.`contractor`;\n", 
+ "query": "SELECT \nIF(%(filtertype)s = \"contractor\",`tabContract Labour Costing`.`contractor` AS `Contractor::150`,`tabContract Labour Costing`.`department`) ,\nsum(`tabContract Labour Costing`.`total_working_hours`) AS `Total Working Hours:Float:150`, \nsum(`tabContract Labour Costing`.`actual_working_hours`) AS `Actual Working Hours:Float:150`, \nROUND(sum(`tabContract Labour Costing`.`earned_ctc`)) AS `Earned CTC:Currency:100`, \nROUND(sum(`tabContract Labour Costing`.`ot_hours`)) AS `OT Hours:Float:100`, \nROUND(sum(`tabContract Labour Costing`.`ot_earnings`)) AS `OT Earnings:Currency:100`,\nROUND(sum(`tabContract Labour Costing`.`total`)) AS `TOTAL:Currency:100`\nFROM `tabContract Labour Costing`\nWHERE\ndate(`tabContract Labour Costing`.`attendance_date`) BETWEEN %(from_date)s\n   AND %(to_date)s\nGROUP BY \nIF(%(filtertype)s = \"contractor\",`tabContract Labour Costing`.`contractor`,`tabContract Labour Costing`.`department`);\n", 
  "ref_doctype": "Contract Labour Costing", 
  "report_name": "Contractor wise CL Costing Report", 
  "report_type": "Query Report", 
  "roles": [
   {
    "role": "System Manager"
+  }, 
+  {
+   "role": "HR Manager"
+  }, 
+  {
+   "role": "HR User"
   }
  ]
 }

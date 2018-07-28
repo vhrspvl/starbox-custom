@@ -26,7 +26,8 @@ def execute(filters=None):
     for cl in active_cl:
         total_earnings = 0
         present_hours = 0
-        row = [cl.name, cl.employee_name, cl.contractor, cl.employment_type]
+        row = [cl.name, cl.employee_name, cl.contractor,
+               cl.department, cl.employment_type]
         cl_present_days = get_cl_attendance(cl.name, filters)
         cl_ot_hours = get_ts(cl.name, filters)
         for present in cl_present_days:
@@ -98,6 +99,7 @@ def get_columns(attendance):
         _("Employee") + ":Link/Employee:90",
         _("Employee Name") + "::150",
         _("Contractor") + ":Link/Contractor:180",
+        _("Department") + ":Link/Department:180",
         _("Employment Type") + ":Link/Employment Type:130",
         _("PD") + ":Int:50",
         _("CTC Per Day") + ":Currency:100",
@@ -113,7 +115,7 @@ def get_columns(attendance):
 
 def get_active_cl():
     active_cl = frappe.db.sql(
-        """select emp.name,emp.employee_name,emp.contractor,emp.employment_type from `tabEmployee` emp where emp.status = "Active" and emp.employment_type="Contract" order by emp.name""", as_dict=1)
+        """select emp.name,emp.employee_name,emp.contractor,emp.department,emp.employment_type from `tabEmployee` emp where emp.status = "Active" and emp.employment_type="Contract" order by emp.name""", as_dict=1)
     return active_cl
 
 
