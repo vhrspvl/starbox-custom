@@ -138,15 +138,15 @@ def mark_on_leave(doc, method):
         attendances = frappe.db.sql("""select name,status from `tabAttendance`
                     where employee = %s and attendance_date between %s and %s
                 and docstatus = 1""", (lap.employee, lap.from_date, lap.to_date), as_dict=True)
-        for attendance in attendances:
-            att = frappe.get_doc("Attendance", attendance)
-            att.update({
-                "status": status,
-                "leave_type": lap.leave_type
-            })
-            att.db_update()
-            frappe.db.commit()
-
+        if attendances:
+            for attendance in attendances:
+                att = frappe.get_doc("Attendance", attendance)
+                att.update({
+                    "status": status,
+                    "leave_type": lap.leave_type
+                })
+                att.db_update()
+                frappe.db.commit()
 
 @frappe.whitelist()
 def cancel_on_leave(doc, method):
