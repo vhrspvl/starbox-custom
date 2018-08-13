@@ -14,7 +14,6 @@ import requests
 import math
 
 
-
 @frappe.whitelist()
 def update_in_biometric_machine(uid, uname):
     stgids = frappe.db.get_all("Service Tag")
@@ -148,6 +147,7 @@ def mark_on_leave(doc, method):
                 att.db_update()
                 frappe.db.commit()
 
+
 @frappe.whitelist()
 def cancel_on_leave(doc, method):
     lap = frappe.get_doc("Leave Application", doc.name)
@@ -199,43 +199,44 @@ def convert2present():
 @frappe.whitelist()
 def emp_absent_today():
     day = add_days(today(), -1)
-    # days = ["2018-06-16", "2018-06-17", "2018-06-18", "2018-06-19", "2018-06-20", "2018-06-21", "2018-06-22",
-    #         "2018-06-23", "2018-06-24", "2018-06-25", "2018-06-26", "2018-06-27", "2018-06-28", "2018-06-29", "2018-06-30"]
+    days = ["2018-07-05", "2018-07-11", "2018-07-24"]
+    # # days = ["2018-06-16", "2018-06-17", "2018-06-18", "2018-06-19", "2018-06-20", "2018-06-21", "2018-06-22",
+    # #         "2018-06-23", "2018-06-24", "2018-06-25", "2018-06-26", "2018-06-27", "2018-06-28", "2018-06-29", "2018-06-30"]
 
-    # for day in days:
-    holiday = frappe.get_list("Holiday List", filters={
-        'holiday_date': day})
-    if holiday:
-        pass
-    else:
-        query = """SELECT emp.name FROM `tabAttendance` att, `tabEmployee` emp
-        WHERE att.employee = emp.name AND (att.status='Present' OR att.status='On Duty') AND att.attendance_date = '%s'""" % (day)
-        present_emp = frappe.db.sql(query, as_dict=True)
-        for emp in frappe.get_list('Employee', filters={'status': 'Active'}):
-            joining_date = frappe.db.get_value(
-                "Employee", emp, ["date_of_joining"])
-            if datetime.strptime(day, '%Y-%m-%d').date() < joining_date:
-                pass
-            elif emp in present_emp:
-                pass
-            else:
-                doc = frappe.get_doc('Employee', emp)
-                leave = get_leave(doc.name, day)
-                if leave:
-                    status = 'On Leave'
+    for day in days:
+        holiday = frappe.get_list("Holiday List", filters={
+            'holiday_date': day})
+        if holiday:
+            pass
+        else:
+            query = """SELECT emp.name FROM `tabAttendance` att, `tabEmployee` emp
+            WHERE att.employee = emp.name AND (att.status='Present' OR att.status='Absent' OR att.status='On Duty' OR att.status='Late' OR att.status='On Leave') AND att.attendance_date = '%s'""" % (day)
+            present_emp = frappe.db.sql(query, as_dict=True)
+            for emp in frappe.get_list('Employee', filters={'status': 'Active'}):
+                joining_date = frappe.db.get_value(
+                    "Employee", emp, ["date_of_joining"])
+                if datetime.strptime(day, '%Y-%m-%d').date() < joining_date:
+                    pass
+                elif emp in present_emp:
+                    pass
                 else:
-                    status = 'Absent'
-                attendance = frappe.new_doc("Attendance")
-                attendance.update({
-                    "employee": doc.name,
-                    "employee_name": doc.employee_name,
-                    "attendance_date": day,
-                    "status": status,
-                    "company": doc.company
-                })
-                attendance.save(ignore_permissions=True)
-                attendance.submit()
-                frappe.db.commit()
+                    doc = frappe.get_doc('Employee', emp)
+                    leave = get_leave(doc.name, day)
+                    if leave:
+                        status = 'On Leave'
+                    else:
+                        status = 'Absent'
+                    attendance = frappe.new_doc("Attendance")
+                    attendance.update({
+                        "employee": doc.name,
+                        "employee_name": doc.employee_name,
+                        "attendance_date": day,
+                        "status": status,
+                        "company": doc.company
+                    })
+                    attendance.save(ignore_permissions=True)
+                    attendance.submit()
+                    frappe.db.commit()
 
 
 @frappe.whitelist()
@@ -254,10 +255,7 @@ def removeduplicateatt():
 @frappe.whitelist()
 def update_leave_application():
     # day = add_days(today(), -1)
-    days = ["2018-07-01", "2018-07-02", "2018-07-03", "2018-07-04", "2018-07-05", "2018-07-06",
-            "2018-07-07", "2018-07-08", "2018-07-09", "2018-07-10", "2018-07-11", "2018-07-12", "2018-07-13",
-            "2018-07-14", "2018-07-15", "2018-07-16", "2018-07-17", "2018-07-18", "2018-07-19", "2018-07-20", "2018-07-21", 
-            "2018-07-22", "2018-07-23","2018-07-24", "2018-07-25","2018-07-26", "2018-07-27","2018-07-28"]
+    days = ["2018-07-05", "2018-07-11", "2018-07-24"]
     for day in days:
         employees = frappe.get_all(
             'Employee', filters={"status": "Active", 'employment_type': ('!=', 'Contract')})
@@ -300,9 +298,13 @@ def get_leave(emp, day):
 
 @frappe.whitelist()
 def delete_bulk():
+    count = 0
     left_employees = frappe.get_list(
         "Employee", fields=["biometric_id"], filters={"status": "Left"})
+    # print len(left_employees)
     for l in left_employees:
+        count += 1
+        print count
         stgids = frappe.db.get_all("Service Tag")
         for stgid in stgids:
             uid = l.biometric_id
@@ -840,8 +842,7 @@ def get_active_emp():
 @frappe.whitelist()
 def emp_sunday_attendance():
 
-    days = ['2018-07-01', '2018-07-08',
-            '2018-07-15', '2018-07-22', '2018-07-29']
+    days = ['2018-07-29']
     for day in days:
         attendance_list = frappe.get_list(
             "Attendance", filters={"attendance_date": day, "status": "Present"})

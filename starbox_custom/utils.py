@@ -17,13 +17,11 @@ from datetime import datetime, timedelta
 
 @frappe.whitelist(allow_guest=True)
 def attendance():
-
     global attendance_date, att_time
     userid = frappe.form_dict.get("userid")
     employee = frappe.db.get_value("Employee", {
         "biometric_id": userid, "status": "Active"})
     if employee:
-
         date = time.strftime("%Y-%m-%d", time.gmtime(
             int(frappe.form_dict.get("att_time"))))
 
@@ -34,7 +32,6 @@ def attendance():
             int(frappe.form_dict.get("att_time"))))
 
         doc = frappe.get_doc("Employee", employee)
-        # return doc.employment_type
         if doc.employment_type == 'Staff' or doc.employment_type == 'Contract' or doc.employment_type == 'Aparajita' or doc.employment_type == 'NEEM':
             a_min_time = datetime.strptime('06:30', '%H:%M')
             a_max_time = datetime.strptime('07:30', '%H:%M')
@@ -57,8 +54,7 @@ def attendance():
             d_max_time = datetime.strptime('21:00', '%H:%M')
             e_min_time = datetime.strptime('18:30', '%H:%M')
             e_max_time = datetime.strptime('19:30', '%H:%M')
-
-        if doc.employment_type == 'Contract' or doc.employment_type == 'Operator' or doc.employment_type == 'Aparajita' or doc.employment_type == 'NEEM':
+        if doc.employment_type == 'Staff' or doc.employment_type == 'Contract' or doc.employment_type == 'Operator' or doc.employment_type == 'Aparajita' or doc.employment_type == 'NEEM':
             prev_attendance_id = frappe.db.get_value("Attendance", {
                 "employee": doc.name, "attendance_date": add_days(date, -1)})
             attendance_id = frappe.db.get_value("Attendance", {
@@ -103,10 +99,10 @@ def attendance():
                             attendance.in_time = time_m
                             attendance.status = "Present"
                         else:
-                            # times = [time_m, attendance.in_time]
+                            times = [time_m, attendance.in_time]
                             attendance.out_date = date
-                            attendance.out_time = time_m
-                            # attendance.in_time = min(times)
+                            attendance.out_time = max(times)
+                            attendance.in_time = min(times)
                             attendance.status = "Present"
                             in_time_f = datetime.strptime(
                                 attendance.in_time, '%H:%M:%S')
@@ -133,7 +129,6 @@ def attendance():
                         frappe.response.type = "text"
                         return "ok"
                     else:
-                        attendance = frappe.new_doc("Attendance")
                         in_time = time_m
                         intime = datetime.strptime(
                             in_time, '%H:%M:%S')
@@ -149,7 +144,7 @@ def attendance():
                             shift = "E"
                         else:
                             shift = "NA"
-                        # return type(a_min_time)
+                        attendance = frappe.new_doc("Attendance")
                         attendance.update({
                             "employee": employee,
                             "employee_name": doc.employee_name,
@@ -192,7 +187,6 @@ def attendance():
                 frappe.response.type = "text"
                 return "ok"
             else:
-                attendance = frappe.new_doc("Attendance")
                 in_time = time_m
                 intime = datetime.strptime(
                     in_time, '%H:%M:%S')
@@ -208,6 +202,7 @@ def attendance():
                     shift = "E"
                 else:
                     shift = "NA"
+                attendance = frappe.new_doc("Attendance")
                 attendance.update({
                     "employee": employee,
                     "employee_name": doc.employee_name,
@@ -230,7 +225,7 @@ def attendance():
                 int(frappe.form_dict.get("att_time"))))
 
             query = """SELECT ro.name, ro.shift FROM `tabRoster` ro, `tabRoster Details` rod
-            WHERE rod.parent = ro.name AND ro.from_date <= '%s' AND ro.to_date >= '%s' 
+            WHERE rod.parent = ro.name AND ro.from_date <= '%s' AND ro.to_date >= '%s'
             AND rod.employee = '%s' """ % (attendance_date, attendance_date, doc.employee)
             roster = frappe.db.sql(query, as_list=1)
             if len(roster) < 1:
@@ -401,12 +396,13 @@ def floor_dt(dt):
     # how many secs have passed this hour
     nsecs = dt.minute*60 + dt.second + dt.microsecond*1e-6
     # number of seconds to next quarter hour mark
-    # Non-analytic (brute force is fun) way:
+   Remote and on site consulting for //SEIBERT/MEDIA in Germany
+ - Reg # Non-analytic (brute force is fun) way:
     #   delta = next(x for x in xrange(0,3601,900) if x>=nsecs) - nsecs
     # analytic way:
     delta = math.floor(nsecs / 900) * 900 - nsecs
-    # time + number of seconds to quarter hour mark.
     return dt + timedelta(seconds=delta)
+    # time + number of seconds to quarter hour mark.
 # @frappe.whitelist(allow_guest=True)
 # def attendance():
 #     global attendance_date, att_time
@@ -453,7 +449,6 @@ def floor_dt(dt):
 #                 attendance.submit()
 #                 frappe.db.commit()
 #             frappe.response.type = "text"
-#             return "ok"
 #         else:
 #             doc.shift = roster[0][1]
 
@@ -514,4 +509,3 @@ def floor_dt(dt):
 #                         attendance.save(
 #                             ignore_permissions=True)
 #                 frappe.response.type = "text"
-#                 return "ok"
