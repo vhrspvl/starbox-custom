@@ -8,8 +8,8 @@ frappe.query_reports["Contractor wise CL Costing Report"] = {
 			"fieldname": "filtertype",
 			"label": __("Filter"),
 			"fieldtype": "Select",
-			"options": ["contractor", "department"],
-			// "default":"Contractor",
+			"options": ["Contractor", "Department"],
+			"default":"Contractor",
 			"reqd": 1
         },
 		{
