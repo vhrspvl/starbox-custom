@@ -15,13 +15,6 @@ import math
 
 
 @frappe.whitelist()
-def test_ctc():
-    for cl in get_active_cl():
-        ctc = frappe.db.get_value("Contractor", {'name': cl.contractor}, [
-            'ctc_per_day'], as_dict=True)
-
-
-@frappe.whitelist()
 def update_in_biometric_machine(uid, uname):
     stgids = frappe.db.get_all("Service Tag")
     for stgid in stgids:
@@ -144,14 +137,15 @@ def mark_on_leave(doc, method):
         attendances = frappe.db.sql("""select name,status from `tabAttendance`
                     where employee = %s and attendance_date between %s and %s
                 and docstatus = 1""", (lap.employee, lap.from_date, lap.to_date), as_dict=True)
-        for attendance in attendances:
-            att = frappe.get_doc("Attendance", attendance)
-            att.update({
-                "status": status,
-                "leave_type": lap.leave_type
-            })
-            att.db_update()
-            frappe.db.commit()
+        if attendances:
+            for attendance in attendances:
+                att = frappe.get_doc("Attendance", attendance)
+                att.update({
+                    "status": status,
+                    "leave_type": lap.leave_type
+                })
+                att.db_update()
+                frappe.db.commit()
 
 
 @frappe.whitelist()
@@ -204,44 +198,99 @@ def convert2present():
 
 @frappe.whitelist()
 def emp_absent_today():
-    day = add_days(today(), -1)
-    # days = ["2018-06-16", "2018-06-17", "2018-06-18", "2018-06-19", "2018-06-20", "2018-06-21", "2018-06-22",
+<<<<<<< HEAD
+    # days = add_days(today(), -1)
+    days = ["2018-08-05"]
     #         "2018-06-23", "2018-06-24", "2018-06-25", "2018-06-26", "2018-06-27", "2018-06-28", "2018-06-29", "2018-06-30"]
 
-    # for day in days:
-    holiday = frappe.get_list("Holiday List", filters={
-        'holiday_date': day})
-    if holiday:
-        pass
-    else:
+    for day in days:
         query = """SELECT emp.name FROM `tabAttendance` att, `tabEmployee` emp
-        WHERE att.employee = emp.name AND (att.status='Present' OR att.status='On Duty') AND att.attendance_date = '%s'""" % (day)
+        WHERE att.employee = emp.name AND att.attendance_date = '%s'""" % (day)
         present_emp = frappe.db.sql(query, as_dict=True)
         for emp in frappe.get_list('Employee', filters={'status': 'Active'}):
             joining_date = frappe.db.get_value(
                 "Employee", emp, ["date_of_joining"])
+            holiday = frappe.get_list("Holiday List", filters={
+            'holiday_date': day})    
             if datetime.strptime(day, '%Y-%m-%d').date() < joining_date:
                 pass
             elif emp in present_emp:
                 pass
+            elif holiday:
+                pre_day_att = frappe.db.get_value("Attendance", {
+                        "employee": emp.name, "attendance_date": add_days(day, -1)}, ['status'], as_dict=True)
+                if pre_day_att:
+                    if not (pre_day_att['status'] == 'Present' or pre_day_att['status'] == 'On Duty' or pre_day_att['status'] == 'Half Day'):
+                        pre_day_att == True
+                next_day_att = frappe.db.get_value("Attendance", {
+                        "employee": emp.name, "attendance_date": add_days(day,1)}, ['status'], as_dict=True)
+                if next_day_att:
+                    if not (next_day_att['status'] == 'Present' or next_day_att['status'] == 'On Duty' or next_day_att['status'] == 'Half Day'):               
+                        next_day_att == True
+                if pre_day_att and next_day_att: 
+                    doc = frappe.get_doc('Employee', emp)
+                    leave = get_leave(doc.name, day)
+                    if leave:
+                        status = 'On Leave'
+                    else:
+                        status = 'Absent'
+                    attendance = frappe.new_doc("Attendance")
+                    attendance.update({
+                        "employee": doc.name,
+                        "employee_name": doc.employee_name,
+                        "attendance_date": day,
+                        "status": status,
+                        "company": doc.company
+                    })
+                    attendance.save(ignore_permissions=True)
+                    attendance.submit()
+                    frappe.db.commit() 
             else:
                 doc = frappe.get_doc('Employee', emp)
                 leave = get_leave(doc.name, day)
                 if leave:
                     status = 'On Leave'
+=======
+    day = add_days(today(), -1)
+    days = ["2018-07-05", "2018-07-11", "2018-07-24"]
+    # # days = ["2018-06-16", "2018-06-17", "2018-06-18", "2018-06-19", "2018-06-20", "2018-06-21", "2018-06-22",
+    # #         "2018-06-23", "2018-06-24", "2018-06-25", "2018-06-26", "2018-06-27", "2018-06-28", "2018-06-29", "2018-06-30"]
+
+    for day in days:
+        holiday = frappe.get_list("Holiday List", filters={
+            'holiday_date': day})
+        if holiday:
+            pass
+        else:
+            query = """SELECT emp.name FROM `tabAttendance` att, `tabEmployee` emp
+            WHERE att.employee = emp.name AND (att.status='Present' OR att.status='Absent' OR att.status='On Duty' OR att.status='Late' OR att.status='On Leave') AND att.attendance_date = '%s'""" % (day)
+            present_emp = frappe.db.sql(query, as_dict=True)
+            for emp in frappe.get_list('Employee', filters={'status': 'Active'}):
+                joining_date = frappe.db.get_value(
+                    "Employee", emp, ["date_of_joining"])
+                if datetime.strptime(day, '%Y-%m-%d').date() < joining_date:
+                    pass
+                elif emp in present_emp:
+                    pass
+>>>>>>> 26ea206fd0baf52084f4a3d664ee3ecf9fbd94cc
                 else:
-                    status = 'Absent'
-                attendance = frappe.new_doc("Attendance")
-                attendance.update({
-                    "employee": doc.name,
-                    "employee_name": doc.employee_name,
-                    "attendance_date": day,
-                    "status": status,
-                    "company": doc.company
-                })
-                attendance.save(ignore_permissions=True)
-                attendance.submit()
-                frappe.db.commit()
+                    doc = frappe.get_doc('Employee', emp)
+                    leave = get_leave(doc.name, day)
+                    if leave:
+                        status = 'On Leave'
+                    else:
+                        status = 'Absent'
+                    attendance = frappe.new_doc("Attendance")
+                    attendance.update({
+                        "employee": doc.name,
+                        "employee_name": doc.employee_name,
+                        "attendance_date": day,
+                        "status": status,
+                        "company": doc.company
+                    })
+                    attendance.save(ignore_permissions=True)
+                    attendance.submit()
+                    frappe.db.commit()
 
 
 @frappe.whitelist()
@@ -260,8 +309,7 @@ def removeduplicateatt():
 @frappe.whitelist()
 def update_leave_application():
     # day = add_days(today(), -1)
-    days = ["2018-06-16", "2018-06-17", "2018-06-18", "2018-06-19", "2018-06-20", "2018-06-21", "2018-06-22",
-            "2018-06-23", "2018-06-24", "2018-06-25", "2018-06-26", "2018-06-27", "2018-06-28", "2018-06-29", "2018-06-30"]
+    days = ["2018-07-05", "2018-07-11", "2018-07-24"]
     for day in days:
         employees = frappe.get_all(
             'Employee', filters={"status": "Active", 'employment_type': ('!=', 'Contract')})
@@ -298,15 +346,19 @@ def update_leave_application():
 
 def get_leave(emp, day):
     leave = frappe.db.sql("""select name from `tabLeave Application`
-				where employee = %s and %s between from_date and to_date""", (emp, day), as_dict=1)
+                where employee = %s and %s between from_date and to_date""", (emp, day), as_dict=1)
     return leave
 
 
 @frappe.whitelist()
 def delete_bulk():
+    count = 0
     left_employees = frappe.get_list(
         "Employee", fields=["biometric_id"], filters={"status": "Left"})
+    # print len(left_employees)
     for l in left_employees:
+        count += 1
+        print count
         stgids = frappe.db.get_all("Service Tag")
         for stgid in stgids:
             uid = l.biometric_id
@@ -315,41 +367,6 @@ def delete_bulk():
             frappe.errprint(url)
             r = requests.post(url)
             print r.content
-
-
-@frappe.whitelist()
-def removelop(doc, method):
-    if doc.status == 'Present' or doc.status == 'On Duty' or doc.status == 'Late':
-        lop = frappe.get_list("Leave Application", filters={
-            'from_date': doc.attendance_date, 'to_date': doc.attendance_date, 'employee': doc.employee, 'leave_type': 'Leave without Pay'})
-        for l in lop:
-            lop = frappe.get_doc("Leave Application", l)
-            if lop.leave_type == 'Leave Without Pay':
-                lop.db_set("docstatus", "Cancelled")
-                frappe.delete_doc("Leave Application", lop.name)
-                frappe.db.commit()
-    elif doc.status == 'Absent':
-        day = doc.attendance_date
-        leave_approvers = [l.leave_approver for l in frappe.db.sql("""select leave_approver from `tabEmployee Leave Approver` where parent = %s""",
-                                                                   (doc.employee), as_dict=True)]
-        lap = frappe.new_doc("Leave Application")
-        lap.leave_type = "Leave Without Pay"
-        lap.status = "Approved"
-        lap.follow_via_email = 0
-        lap.description = "Absent Auto Marked"
-        lap.from_date = day
-        lap.to_date = day
-        lap.employee = doc.employee
-        if leave_approvers:
-            lap.leave_approver = leave_approvers[0]
-        else:
-            lap.leave_approver = "Administrator"
-        lap.posting_date = day
-        lap.company = frappe.db.get_value(
-            "Employee", doc.employee, "company")
-        lap.save(ignore_permissions=True)
-        lap.submit()
-        frappe.db.commit()
 
 
 @frappe.whitelist()
@@ -376,52 +393,60 @@ def bulkremovelop():
 
 
 # @frappe.whitelist()
-# def update_leave_application():
+# def update_sunday_leave_application():
 #     # day = add_days(today(), -1)
-#     days = ["2018-05-02", "2018-05-03", "2018-05-04", "2018-05-05", "2018-05-06", "2018-05-07", "2018-05-08", "2018-05-09", "2018-05-10", "2018-05-11", "2018-05-12", "2018-05-13", "2018-05-14",
-#             "2018-05-15", "2018-05-16", "2018-05-17", "2018-05-18", "2018-05-19", "2018-05-20", "2018-05-21", "2018-05-22", "2018-05-23", "2018-05-24", "2018-05-25", "2018-05-26", "2018-05-27", "2018-05-28", "2018-05-29", "2018-05-28", "2018-05-29" "2018-05-30", "2018-05-31"]
+#     days = ["2018-07-02", "2018-07-03", "2018-07-04", "2018-07-05", "2018-07-06", "2018-07-07", "2018-07-08", "2018-07-09", "2018-07-10", "2018-07-11", "2018-07-12", "2018-07-13", "2018-07-14",
+#              "2018-07-15", "2018-07-16", "2018-07-17", "2018-07-18", "2018-07-19", "2018-07-20", "2018-07-21", "2018-07-22", "2018-07-23", "2018-07-24", "2018-07-25", "2018-07-26", "2018-07-27", "2018-07-28", "2018-07-29", "2018-07-28", "2018-07-29" "2018-07-30", "2018-07-31"]
+#     # holiday = frappe.get_list("Holiday List")
 #     for day in days:
-#         pre_day = False
+#         # pre_day = False
+#         # next_day = False
 #         employees = frappe.get_all('Employee', filters={"status": "Active"})
 #         for employee in employees:
-#             lwp = get_leave(employee.name, day)
-#         if lwp:
-#             pass
-#         else:
-#             holiday = frappe.get_list("Holiday List", filters={
-#                 'holiday_date': day})
-#             if holiday:
+#             # lwp = get_leave(employee.name, day)
+#             # if lwp:
+#             #     pass
+#             # else:
+#                 # holiday = frappe.get_list("Holiday List", filters={
+#                 #     'holiday_date': day})
+#                 # if holiday:
 #                 pre_day_att = frappe.db.get_value("Attendance", {
 #                     "employee": employee.name, "attendance_date": add_days(day, -1)}, ['status'], as_dict=True)
 #                 if pre_day_att['status'] != 'Present' or pre_day_att['status'] != 'On Duty' or pre_day_att['status'] != 'Half Day':
 #                     pre_day = True
-#                 print pre_day
-#             else:
-#                 print "hhi"
+#                 print pre_day   
+#                 next_day_att = frappe.db.get_value("Attendance", {
+#                     "employee": employee.name, "attendance_date": add_days(day, +1)}, ['status'], as_dict=True)
+#                 if next_day_att['status'] != 'Present' or next_day_att['status'] != 'On Duty' or next_day_att['status'] != 'Half Day':
+#                     next_day = True
+#                 print next_day
+#                 else:
+#                     print "hi"
 #             query = """SELECT emp.name FROM `tabAttendance` att, `tabEmployee` emp
 #                         WHERE att.employee = emp.name AND att.status = 'Absent' AND att.attendance_date = '%s'""" % (day)
 #             absent_emp = frappe.db.sql(query, as_dict=True)
-#             if employee in absent_emp or pre_day:
+#             if satt in pre_day and next_day:
 #                 leave_approvers = [l.leave_approver for l in frappe.db.sql("""select leave_approver from `tabEmployee Leave Approver` where parent = %s""",
 #                                                                            (employee.name), as_dict=True)]
-#                 lap = frappe.new_doc("Leave Application")
-#                 lap.leave_type = "Leave Without Pay"
-#                 lap.status = "Approved"
-#                 lap.follow_via_email = 0
-#                 lap.description = "Absent Auto Marked"
-#                 lap.from_date = day
-#                 lap.to_date = day
-#                 lap.employee = employee.name
-#                 if leave_approvers:
-#                     lap.leave_approver = leave_approvers[0]
-#                 else:
-#                     lap.leave_approver = "Administrator"
-#                 lap.posting_date = day
-#                 lap.company = frappe.db.get_value(
-#                     "Employee", employee.name, "company")
-#                 lap.save(ignore_permissions=True)
-#                 # lap.submit()
-#                 frappe.db.commit()
+                # lap = frappe.new_doc("Leave Application")
+                # lap.leave_type = "Leave Without Pay"
+                # lap.status = "Approved"
+                # lap.follow_via_email = 0
+                # lap.description = "Absent Auto Marked"
+                # lap.from_date = day
+                # lap.to_date = day
+                # lap.employee = employee.name
+                # if leave_approvers:
+                #     lap.leave_approver = leave_approvers[0]
+                # else:
+                #     lap.leave_approver = "Administrator"
+                # lap.posting_date = day
+                # lap.company = frappe.db.get_value(
+                #     "Employee", employee.name, "company")
+                # lap.save(ignore_permissions=True)
+                # # lap.submit()
+                # frappe.db.commit()
+
 
 
 @frappe.whitelist()
@@ -430,7 +455,7 @@ def mark_comp_off():
     from_date = add_days(day, 1)
     to_date = add_months(day, 1)
     query = """SELECT emp.name FROM `tabAttendance` att, `tabEmployee` emp
-		WHERE att.employee = emp.name AND att.attendance_date = '%s'""" % (day)
+        WHERE att.employee = emp.name AND att.attendance_date = '%s'""" % (day)
     present_emp = frappe.db.sql(query, as_dict=True)
 
     for emp in frappe.get_list('Employee', filters={'status': 'Active', 'employment_type': ("!=", "Contract")}):
@@ -466,18 +491,18 @@ def mark_comp_off():
 
 def get_lal(emp, day):
     lal = frappe.db.sql("""select name from `tabLeave Allocation`
-				where employee = %s and %s between from_date and to_date and leave_type='Compensatory Off'
-			and docstatus = 1""", (emp, day), as_dict=True)
+                where employee = %s and %s between from_date and to_date and leave_type='Compensatory Off'
+            and docstatus = 1""", (emp, day), as_dict=True)
     return lal
 
 
 def get_holidays_for_employee(employee, day):
     holiday_list = get_holiday_list_for_employee(employee)
     holidays = frappe.db.sql_list('''select holiday_date from `tabHoliday`
-			where
-				parent=%(holiday_list)s
-				and holiday_date >= %(start_date)s
-				and holiday_date <= %(end_date)s''', {
+            where
+                parent=%(holiday_list)s
+                and holiday_date >= %(start_date)s
+                and holiday_date <= %(end_date)s''', {
         "holiday_list": holiday_list,
         "start_date": day,
         "end_date": day
@@ -568,23 +593,27 @@ def bulk_mark_department():
 
 @frappe.whitelist()
 def clc_calculator():
-    ctc_per_day = 0
-    ot_earnings = 0
-    actual_hours = 0
-    ot_hours = 0
-    ot_cost = 0
-    total = 0
-    days = ['2018-07-01']
+    #     days = ["2018-07-01", "2018-07-02", "2018-07-03", "2018-07-04", "2018-07-06",
+    #             "2018-07-07", "2018-07-08", "2018-07-09", "2018-07-10", "2018-07-11", "2018-07-12", "2018-07-13",
+    #             "2018-07-14", "2018-07-15", "2018-07-16", "2018-07-17", "2018-07-18", "2018-07-19", "2018-07-20",
+    #             "2018-07-20", "2018-07-21", "2018-07-22", "2018-07-23", "2018-07-24", "2018-07-25"]
+    days = ['2018-07-21']
     for day in days:
         attendance_list = frappe.get_list("Attendance", fields=['name', 'employee', 'employee_name', 'employment_type', 'in_time', 'out_time',
                                                                 'total_working_hours', 'department', 'contractor', 'attendance_date'], filters={"attendance_date": day, "status": "Present", "employment_type": "Contract"})
         for attendance in attendance_list:
-            att = frappe.get_doc("Attendance", attendance['name'])
+            ctc_per_day = 0
+            ot_earnings = 0
+            actual_hours = 0
+            ot_hours = 0
+            ot_cost = 0
+            total = 0
             earned_ctc = 0
+            att = frappe.get_doc("Attendance", attendance['name'])
             if att.department == "Boiler":
                 ctc_per_day = frappe.get_value(
                     "Contractor", attendance["contractor"], "boiler")
-            elif att.department == "Mould":
+            elif att.department == "MOULD":
                 ctc_per_day = frappe.get_value(
                     "Contractor", attendance["contractor"], "mould_operator")
             else:
@@ -592,37 +621,22 @@ def clc_calculator():
                     "Contractor", attendance["contractor"], "ctc_per_day")
             working_hours = frappe.db.get_value(
                 "Employee", attendance['employee'], 'working_hours')
-            actual_working_hours = math.ceil(working_hours.seconds / 3600)
-
+            actual_working_hours = (working_hours.seconds / 3600.00)
             if ctc_per_day:
                 total_working_hours = att.total_working_hours
-                ot_hours = total_working_hours - actual_working_hours
                 if total_working_hours > 0:
-                    actual_hours = total_working_hours - actual_working_hours
-                    if total_working_hours > actual_working_hours:
-                        earned_ctc = flt((total_working_hours - actual_hours) *
-                                         (ctc_per_day / actual_working_hours))
-                    else:
-                        earned_ctc = flt(total_working_hours *
-                                         (ctc_per_day / actual_working_hours))
-<<<<<<< Updated upstream
-            ot_hours = total_working_hours - actual_working_hours
-            
-            if ot_hours > 0:
-                ot_cost = (ctc_per_day / actual_working_hours) * 2
-                ot_earnings = flt(ot_hours * ot_cost)
-=======
-
-                ot_hours = total_working_hours - actual_working_hours
-                if ot_hours > 0:
-                    ot_cost = (ctc_per_day / actual_working_hours) * 2
+                    earned_ctc = flt(total_working_hours *
+                                     (ctc_per_day / actual_working_hours))
+                if total_working_hours > actual_working_hours:
+                    ot_hours = total_working_hours - actual_working_hours
+                    earned_ctc = flt((total_working_hours - ot_hours) *
+                                     (ctc_per_day / actual_working_hours))
+                    ot_cost = (ctc_per_day / actual_working_hours)
                     ot_earnings = flt(ot_hours * ot_cost)
-
->>>>>>> Stashed changes
             total = earned_ctc + ot_earnings
-
             clc = frappe.new_doc("Contract Labour Costing")
             clc.update({
+                "attendance_id": att.name,
                 "employee": att.employee,
                 "employee_name": att.employee_name,
                 "employment_type": att.employment_type,
@@ -635,7 +649,6 @@ def clc_calculator():
                 "contractor": att.contractor,
                 "ctc_per_day": ctc_per_day,
                 "earned_ctc": earned_ctc,
-                "working_hours": working_hours,
                 "ot_hours": ot_hours,
                 "ot_cost": ot_cost,
                 "ot_earnings": ot_earnings,
@@ -886,3 +899,32 @@ def get_active_emp():
     #                         frappe.db.commit()
     #             frappe.response.type = "text"
     #             return "ok"
+
+
+@frappe.whitelist()
+def emp_sunday_attendance():
+
+    days = ['2018-07-29']
+    for day in days:
+        attendance_list = frappe.get_list(
+            "Attendance", filters={"attendance_date": day, "status": "Present"})
+        for attendance in attendance_list:
+            att = frappe.get_doc("Attendance", attendance)
+            sunday_attendance = frappe.new_doc("Sunday Attendance")
+            sunday_attendance.update({
+                "employee": att.employee,
+                "employee_name": att.employee_name,
+                "attendance_date": att.attendance_date,
+                "in_time": att.in_time,
+                "out_time": att.out_time,
+                "total_working_hours": att.total_working_hours,
+                "out_date": att.out_date,
+                "status": att.status,
+                "company": att.company
+            })
+            sunday_attendance.save(ignore_permissions=True)
+            sunday_attendance.submit()
+            frappe.db.commit()
+
+
+           

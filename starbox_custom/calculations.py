@@ -17,7 +17,7 @@ from datetime import datetime, timedelta
 from erpnext.hr.doctype.employee.employee import get_holiday_list_for_employee
 from frappe.core.doctype.sms_settings.sms_settings import send_sms
 
- 
+
 @frappe.whitelist()
 def create_ts_submit(doc, method):
     if doc.in_time and doc.out_time:
@@ -71,66 +71,62 @@ def create_ts_submit(doc, method):
 
 @frappe.whitelist()
 def create_ts():
-    # day = add_days(today(), -1)
-    days = ["2018-07-01", "2018-07-02", "2018-07-03", "2018-07-04", "2018-07-05", "2018-07-06",
-            "2018-07-07", "2018-07-08", "2018-07-09", "2018-07-10", "2018-07-11", "2018-07-12", "2018-07-13",
-            "2018-07-14", "2018-07-15", "2018-07-16", "2018-07-17", "2018-07-18", "2018-07-19", "2018-07-20", "2018-07-21", 
-            "2018-07-22", "2018-07-23","2018-07-24", "2018-07-25","2018-07-26", "2018-07-27","2018-07-28"]
-    # days = ["2018-07-03"]
-    for day in days:
-        attendance = frappe.get_all("Attendance", fields=[
-                                    'name', 'employee', 'attendance_date', 'out_date', 'in_time', 'out_time', 'total_working_hours'], filters={'attendance_date': day})
-        for doc in attendance:
-            if doc.in_time and doc.out_time:
-                employee = frappe.get_doc("Employee", doc.employee)
+    day = add_days(today(), -1)
+    # days = ["2018-07-30"]
+    # for day in days:
+    attendance = frappe.get_all("Attendance", fields=[
+                                'name', 'employee', 'attendance_date', 'out_date', 'in_time', 'out_time', 'total_working_hours'], filters={'attendance_date': day})
+    for doc in attendance:
+        if doc.attendance_date and doc.out_date and doc.in_time and doc.out_time:
+            employee = frappe.get_doc("Employee", doc.employee)
 
-                if employee.employment_type == 'Operator':
-                    ot_hours = calculate_hours(
-                        doc.in_time, doc.out_time, doc.employee)
-                    if ot_hours:
-                        from_date = doc.attendance_date
-                        to_date = doc.out_date
-                        from_time = str(from_date) + " " + doc.in_time
-                        from_time_f = datetime.strptime(
-                            from_time, '%Y-%m-%d %H:%M:%S') + timedelta(hours=((employee.working_hours).seconds // 3600))
-                        to_time = str(to_date) + " " + doc.out_time
-                        to_time_f = datetime.strptime(
-                            to_time, '%Y-%m-%d %H:%M:%S')
-                        ts_id = frappe.db.get_value(
-                            "Timesheet", {"employee": doc.employee, "start_date": from_date, "end_date": to_date})
-                        if ts_id:
-                            ts = frappe.get_doc("Timesheet", ts_id)
-                            ts.update({
-                                "company": doc.company,
-                                "employee": doc.employee,
-                                "start_date": from_date,
-                                "end_date": to_date,
-                            })
-                            ts.time_logs[0].activity_type = "OT"
-                            ts.time_logs[0].hours = round(
-                                flt(ot_hours / 3600.00))
-                            ts.time_logs[0].from_time = from_time_f
-                            ts.time_logs[0].to_time = to_time_f
-                            ts.save(ignore_permissions=True)
-                            frappe.db.commit()
-                        else:
-                            ts = frappe.new_doc("Timesheet")
-                            ts.company = doc.company
-                            ts.employee = doc.employee
-                            ts.start_date = from_date
-                            ts.end_date = to_date
-                            ts.append("time_logs", {
-                                "activity_type": "OT",
-                                "hours": round(flt(ot_hours / 3600.00)),
-                                "from_time": from_time_f,
-                                "to_time": to_time_f
-                            })
-                            ts.insert()
-                            ts.save(ignore_permissions=True)
-                            frappe.db.commit()
+            if employee.employment_type == 'Operator':
+                ot_hours = calculate_hours(
+                    doc.attendance_date, doc.out_date, doc.in_time, doc.out_time, doc.employee)
+                if ot_hours:
+                    from_date = doc.attendance_date
+                    to_date = doc.out_date
+                    from_time = str(from_date) + " " + doc.in_time
+                    from_time_f = datetime.strptime(
+                        from_time, '%Y-%m-%d %H:%M:%S') + timedelta(hours=((employee.working_hours).seconds // 3600))
+                    to_time = str(to_date) + " " + doc.out_time
+                    to_time_f = datetime.strptime(
+                        to_time, '%Y-%m-%d %H:%M:%S')
+                    ts_id = frappe.db.get_value(
+                        "Timesheet", {"employee": doc.employee, "start_date": from_date, "end_date": to_date})
+                    if ts_id:
+                        ts = frappe.get_doc("Timesheet", ts_id)
+                        ts.update({
+                            "company": doc.company,
+                            "employee": doc.employee,
+                            "start_date": from_date,
+                            "end_date": to_date,
+                        })
+                        ts.time_logs[0].activity_type = "OT"
+                        ts.time_logs[0].hours = round(
+                            flt(ot_hours / 3600.00))
+                        ts.time_logs[0].from_time = from_time_f
+                        ts.time_logs[0].to_time = to_time_f
+                        ts.save(ignore_permissions=True)
+                        frappe.db.commit()
+                    else:
+                        ts = frappe.new_doc("Timesheet")
+                        ts.company = doc.company
+                        ts.employee = doc.employee
+                        ts.start_date = from_date
+                        ts.end_date = to_date
+                        ts.append("time_logs", {
+                            "activity_type": "OT",
+                            "hours": round(flt(ot_hours / 3600.00)),
+                            "from_time": from_time_f,
+                            "to_time": to_time_f
+                        })
+                        ts.insert()
+                        ts.save(ignore_permissions=True)
+                        frappe.db.commit()
 
 
-def calculate_hours(in_time, out_time, employee):
+def calculate_hours(in_date, out_date, in_time, out_time, employee):
     working_hrs = frappe.db.get_value("Employee", employee, "working_hours")
     if working_hrs:
         shift_hrs = working_hrs.seconds
@@ -139,7 +135,7 @@ def calculate_hours(in_time, out_time, employee):
         out_time_f = datetime.strptime(
             out_time, '%H:%M:%S')
 
-        if out_time_f <= in_time_f:
+        if in_date < out_date:
             next_day = timedelta(hours=24)
             worked_hrs = time_diff_in_seconds(
                 out_time_f + next_day, in_time_f)

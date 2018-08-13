@@ -99,13 +99,13 @@ doc_events = {
         "before_save": "starbox_custom.custom.calculate_total"
     },
     "Attendance": {
-        "on_submit": "starbox_custom.starbox_custom.validations.attendance.onsubmit",
+        "on_submit": "starbox_custom.starbox_custom.validations.attendance.total_working_hours",
         # "on_update_after_submit": "starbox_custom.calculations.total_working_hours"
         "on_update_after_submit": "starbox_custom.starbox_custom.validations.attendance.updateaftersubmit"
     },
     "Leave Application": {
-        "on_submit": "starbox_custom.custom.mark_on_leave",
-        "on_cancel":"starbox_custom.custom.cancel_on_leave"
+        # "on_submit": "starbox_custom.custom.mark_on_leave",
+        "on_cancel": "starbox_custom.custom.cancel_on_leave"
     }
     # "Salary Slip": {
     #     "onload": "starbox_custom.calculations.calculate_present_days"
