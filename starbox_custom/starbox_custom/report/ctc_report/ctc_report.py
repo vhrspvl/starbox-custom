@@ -31,6 +31,11 @@ def execute(filters=None):
     grand_da = 0
     grand_hra = 0
     grand_basic = 0
+    pf = 0
+    esi = 0
+    canteen = 0
+    pt = 0
+    total_deduction = 0
     from_date = datetime.strptime(filters.get("from_date"), '%Y-%m-%d')
     present_days = 0
     working_days = monthrange(
@@ -83,9 +88,7 @@ def execute(filters=None):
         #     row += [payable_days]
         # else:
         #     row += [""]
-
-        sse = frappe.db.get_value("Salary Structure Employee", {'employee': emp.name}, [
-            'base'], as_dict=True)
+        sse = frappe.db.get_value("Salary Structure Employee", {'employee': emp.name}, ['base'], as_dict=True)
 
         if sse:
             gross = sse.base
@@ -104,6 +107,8 @@ def execute(filters=None):
                 daily_ca = flt(act_ca) / flt(working_days)
                 act_ma = flt("1250")
                 daily_ma = flt(act_ma) / flt(working_days)
+
+                
                 if emp.employment_type == 'Staff':
                     act_oa = flt(gross) - (act_basic +
                                            act_hra + act_ca + act_ma)
@@ -170,6 +175,8 @@ def execute(filters=None):
                     earned_ma = flt(daily_ma) * flt(payable_days)
                     earned_oa = flt(daily_oa) * flt(payable_days)
                     total_earnings = 0
+                    
+             
                     if earned_basic:
                         row += [round(earned_basic)]
                         grand_basic += earned_basic
@@ -223,6 +230,48 @@ def execute(filters=None):
                         row += [round(total_earnings)]
                     else:
                         row += ["0"]
+                    if earned_basic :
+                        pf = (earned_basic)*0.12
+                        row += [round(pf)]
+                    else:
+                        row += [""]
+                    if gross:
+                        esi =(gross)*0.0175
+                        row += [round(esi)]
+                    else:
+                        row += [""]
+                    if emp.employment_type == 'Staff' or  emp.employment_type == 'DET': 
+                        canteen = (365.00/ flt(working_days)) * flt(present_days) 
+                        row += [round(canteen)]
+                    elif emp.employment_type == 'Operator':
+                        canteen = (265.00/ flt(working_days)) * flt(present_days) 
+                        row += [round(canteen)]  
+                    else:
+                        row += [""]
+                    
+                    if gross >= 3501 and gross <= 5000:
+                        pt = flt("20")
+                        row += [round(pt)]
+                    elif gross > 5001 and gross < 7500:
+                        pt = flt("50")
+                        row += [round(pt)]
+                    elif gross >= 7501 and gross <= 10000:
+                        pt = flt("98")
+                        row += [round(pt)]
+                    elif gross >= 10001 and gross <= 12500:
+                        pt = flt("147")
+                        row += [round(pt)]
+                    elif gross >= 12501:
+                        pt = flt("196")
+                        row += [round(pt)]
+                    else:
+                        row += [""]
+                    if pf and esi and canteen and pt:
+                        total_deduction = (pf + esi + canteen + pt)
+                        row += [round(total_deduction)]
+                    else:
+                        row += [""]
+
                 else:
                     row += [""]
             else:
@@ -230,7 +279,7 @@ def execute(filters=None):
         else:
             row += ["0"]
         totals = ["Totals", "", "", "", "", "", "", "", "", "",
-                  "", "", "", "", "", "", "", grand_basic, grand_hra, grand_da, grand_wa, grand_ca, grand_ma, grand_oa, grand_earnings]
+                  "", "", "", "", "", "", "", grand_basic, grand_hra, grand_da, grand_wa, grand_ca, grand_ma, grand_oa, grand_earnings,pf,esi,canteen,pt,total_deduction]
         data.append(row)
     data.append(totals)
 
@@ -264,8 +313,13 @@ def get_columns(attendance):
         _("Earned CA") + ":Currency:100",
         _("Earned MA") + ":Currency:100",
         _("Earned OA") + ":Currency:100",
-        _("Total Earnings") + ":Currency:100"
-
+        _("Total Earnings") + ":Currency:100",
+        _("PF") + ":Currency:100",
+        _("ESI") + ":Currency:100",
+        _("Canteen") + ":Currency:100",
+        _("PT") + ":Currency:100",
+        _("Total Deduction") + ":Currency:100"
+    
     ]
     return columns
 
@@ -279,10 +333,10 @@ def get_active_employees():
 def get_holidays_for_employee(employee, filters):
     holiday_list = get_holiday_list_for_employee(employee)
     holidays = frappe.db.sql_list('''select holiday_date from `tabHoliday`
-			where
-				parent=%(holiday_list)s
-				and holiday_date >= %(start_date)s
-				and holiday_date <= %(end_date)s''', {
+            where
+                parent=%(holiday_list)s
+                and holiday_date >= %(start_date)s
+                and holiday_date <= %(end_date)s''', {
         "holiday_list": holiday_list,
         "start_date": filters.get("from_date"),
         "end_date": filters.get("to_date")

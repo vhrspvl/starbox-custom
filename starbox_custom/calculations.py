@@ -377,17 +377,17 @@ def markattfrompr():
 
 @frappe.whitelist()
 def send_message():
-    att = frappe.db.sql(
-        "select contractor as `Contractor` from tabAttendance where attendance_date='2018-07-05' group by contractor", as_dict=1)
-    context = []
-    for each in att:
-        context.append(each)
+    att = frappe.db.sql("Attendance",filters={"status": "Present"})
+        # "select count(*) from tabAttendance where attendance_date='2018-07-05' and status = 'Absent'", as_dict=1)
+    # for each in att:
+    # text.append()
         # jinja to string convertion happens here
     # print context
-    message = context
-    # message = frappe.render_template(message, context)
-    # print message
-    # number = ['8939837002']
+    message = att
+
+    # message = frappe.render_template(message, text)
+    print (message) 
+    # number = ['7823993315']
     # send_sms(number, message)
 
     # try:
