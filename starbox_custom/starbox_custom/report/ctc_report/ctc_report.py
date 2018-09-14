@@ -236,8 +236,12 @@ def execute(filters=None):
                     else:
                         row += [""]
                     if gross:
-                        esi =(gross)*0.0175
-                        row += [round(esi)]
+                        if act_basic <= 21000:
+                            esi =(gross)*0.0175
+                            row += [round(esi)]
+                        else:
+                            row +=[""]
+
                     else:
                         row += [""]
                     if emp.employment_type == 'Staff' or  emp.employment_type == 'DET': 

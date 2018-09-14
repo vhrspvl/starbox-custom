@@ -12,7 +12,7 @@ import time
 import math
 from frappe.utils.data import today, get_timestamp
 from frappe.utils import getdate, cint, add_months, date_diff, add_days, flt, nowdate, \
-    get_datetime_str, cstr, get_datetime, time_diff, time_diff_in_seconds, time_diff_in_hours
+get_datetime_str, cstr, get_datetime, time_diff, time_diff_in_seconds, time_diff_in_hours
 from datetime import datetime, timedelta
 from erpnext.hr.doctype.employee.employee import get_holiday_list_for_employee
 from frappe.core.doctype.sms_settings.sms_settings import send_sms
@@ -71,11 +71,11 @@ def create_ts_submit(doc, method):
 
 @frappe.whitelist()
 def create_ts():
-    day = add_days(today(), -1)
-    # days = ["2018-07-30"]
-    # for day in days:
-    attendance = frappe.get_all("Attendance", fields=[
-                                'name', 'employee', 'attendance_date', 'out_date', 'in_time', 'out_time', 'total_working_hours'], filters={'attendance_date': day})
+    # day = add_days(today(), -1)
+    days = ["2018-08-19"]
+    for day in days:
+        attendance = frappe.get_all("Attendance", fields=[
+                                'name', 'employee', 'attendance_date', 'out_date', 'in_time', 'out_time', 'total_working_hours'], filters={'attendance_date': day,"employee":4050})
     for doc in attendance:
         if doc.attendance_date and doc.out_date and doc.in_time and doc.out_time:
             employee = frappe.get_doc("Employee", doc.employee)
@@ -377,19 +377,18 @@ def markattfrompr():
 
 @frappe.whitelist()
 def send_message():
-    att = frappe.db.sql("Attendance",filters={"status": "Present"})
-        # "select count(*) from tabAttendance where attendance_date='2018-07-05' and status = 'Absent'", as_dict=1)
+    # att = frappe.db.sql(
+    #     "select contractor as `Contractor` from tabAttendance where attendance_date='2018-07-05' group by contractor", as_dict=1)
+    # context = []
     # for each in att:
-    # text.append()
+    #     context.append(each)
         # jinja to string convertion happens here
     # print context
-    message = att
-
-    # message = frappe.render_template(message, text)
-    print (message) 
-    # number = ['7823993315']
-    # send_sms(number, message)
-
+    message = 'Hello Message!!!'
+    # message = frappe.render_template(message, context)
+    # print message
+    number = ['9629854829']
+    send_sms(number, message)
     # try:
     #     time.strptime(doc.in_time, '%H:%M:%S')
     #     return True

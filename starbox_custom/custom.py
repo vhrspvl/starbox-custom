@@ -6,7 +6,7 @@ from __future__ import unicode_literals
 import frappe
 from frappe import _
 from frappe.utils.data import today
-from frappe.utils import formatdate, getdate, cint, add_months, date_diff, add_days, flt, cstr
+from frappe.utils import formatdate, getdate, cint, add_months, date_diff, add_days, flt, cstr, time_diff, time_diff_in_seconds, time_diff_in_hours
 from datetime import date, datetime
 from dateutil.relativedelta import relativedelta
 from erpnext.hr.doctype.employee.employee import get_holiday_list_for_employee
@@ -216,17 +216,22 @@ def emp_absent_today():
             elif emp in present_emp:
                 pass
             elif holiday:
-                pre_day_att = frappe.db.get_value("Attendance", {
-                        "employee": emp.name, "attendance_date": add_days(day, -1)}, ['status'], as_dict=True)
-                if pre_day_att:
-                    if not (pre_day_att['status'] == 'Present' or pre_day_att['status'] == 'On Duty' or pre_day_att['status'] == 'Half Day'):
-                        pre_day_att == True
-                next_day_att = frappe.db.get_value("Attendance", {
-                        "employee": emp.name, "attendance_date": add_days(day,1)}, ['status'], as_dict=True)
-                if next_day_att:
-                    if not (next_day_att['status'] == 'Present' or next_day_att['status'] == 'On Duty' or next_day_att['status'] == 'Half Day'):               
-                        next_day_att == True
-                if pre_day_att and next_day_att: 
+                pre_day = frappe.db.get_value("Attendance", {
+                            "employee": employee.name,"status":"Absent", "attendance_date": add_days(day,-1)})
+                next_day = frappe.db.get_value("Attendance", {
+                        "employee": employee.name,"status":"Absent", "attendance_date": add_days(day,1)})
+                if pre_day and next_day:
+                #     pre_day_att = frappe.db.get_value("Attendance", {
+                #         "employee": emp.name, "attendance_date": add_days(day, -1)}, ['status'], as_dict=True)
+                # if pre_day_att:
+                #     if not (pre_day_att['status'] == 'Present' or pre_day_att['status'] == 'On Duty' or pre_day_att['status'] == 'Half Day'):
+                #         pre_day_att == True
+                # next_day_att = frappe.db.get_value("Attendance", {
+                #         "employee": emp.name, "attendance_date": add_days(day,1)}, ['status'], as_dict=True)
+                # if next_day_att:
+                #     if not (next_day_att['status'] == 'Present' or next_day_att['status'] == 'On Duty' or next_day_att['status'] == 'Half Day'):               
+                #         next_day_att == True
+                # if pre_day_att and next_day_att: 
                     doc = frappe.get_doc('Employee', emp)
                     leave = get_leave(doc.name, day)
                     if leave:
@@ -888,3 +893,82 @@ def emp_sunday_attendance():
             sunday_attendance.save(ignore_permissions=True)
             sunday_attendance.submit()
             frappe.db.commit()
+
+@frappe.whitelist()
+def emp_ot():
+    days = ['2018-08-19']
+    for day in days:
+        holiday = frappe.get_list("Holiday List",filters={'holiday_date': day})
+        if holiday:
+            attendance_list = frappe.get_list(
+            "Attendance", filters={"attendance_date":day,"status": "Present","employment_type":"Operator","employee":30101})
+            for attendance in attendance_list:
+                att = frappe.get_doc("Attendance", attendance)
+                from_time = str(att.attendance_date) + " " + att.in_time
+                from_time_f = datetime.strptime(
+                        from_time,  '%Y-%m-%d %H:%M:%S')
+                to_time = str(att.attendance_date) + " " + att.out_time
+                to_time_f = datetime.strptime(
+                        to_time, '%Y-%m-%d %H:%M:%S')
+                ts = frappe.new_doc("Timesheet")
+                ts.company = att.company
+                ts.employee = att.employee
+                ts.start_date = att.attendance_date 
+                ts.end_date = att.attendance_date
+                ts.append("time_logs", {
+                    "activity_type": "OT",
+                    "hours": att.total_working_hours,
+                    "from_time": from_time_f,
+                    "to_time": to_time_f
+                })
+                ts.save(ignore_permissions=True)
+                frappe.db.commit()
+
+@ frappe.whitelist()
+def holiday_att():
+    employees = frappe.get_list('Employee', filters={"status": "Active"})
+    for employee in employees:
+        pre_day = frappe.db.get_value("Attendance", {
+                        "employee": employee.name, "attendance_date": '2018-08-14'})
+        next_day = frappe.db.get_value("Attendance", {
+                        "employee": employee.name, "attendance_date": '2018-08-16'})
+        if pre_day and next_day: 
+            emp = frappe.get_doc("Employee", employee['name'])                      
+            att_id = frappe.db.get_value("Attendance", {
+                        "employee": employee.name, "attendance_date": '2018-08-15'})
+            if att_id:
+                pass
+            else:
+                att = frappe.new_doc("Attendance")
+                att.update({
+                    "employee":emp.employee,
+                    "employee_name":emp.employee_name,
+                    "biometric_id":emp.biometric_id,
+                    "attendance_date":'2018-08-15',
+                    "status": "Present",
+                    "company":emp.company,
+                    "department":emp.department,
+                    "contractor":emp.contractor
+                })
+                att.save(ignore_permissions=True)
+
+@ frappe.whitelist()
+def holiday_lop():
+    days = ["2018-07-01", "2018-07-02", "2018-07-03", "2018-07-04", "2018-07-05","2018-07-06",
+            "2018-07-07", "2018-07-08", "2018-07-09", "2018-07-10", "2018-07-11", "2018-07-12", "2018-07-13",
+            "2018-07-14", "2018-07-15", "2018-07-16", "2018-07-17", "2018-07-18", "2018-07-19", "2018-07-20",
+            "2018-07-21", "2018-07-22", "2018-07-23", "2018-07-24", "2018-07-25", "2018-07-26","2018-07-27","2018-07-28","2018-07-29","2018-07-30"]
+    for day in days:
+        employees = frappe.get_list('Employee', filters={"status": "Active"})
+        for employee in employees:
+            holiday = frappe.get_list("Holiday List", filters={'holiday_date': day})
+            if holiday:
+                count = 0
+                pre_day = frappe.db.get_value("Attendance", {
+                            "employee": employee.name,"status":"Absent", "attendance_date": add_days(day,-1)})
+                next_day = frappe.db.get_value("Attendance", {
+                        "employee": employee.name,"status":"Absent", "attendance_date": add_days(day,1)})
+                if pre_day and next_day:
+                    print employee 
+
+                

@@ -37,8 +37,8 @@ def execute(filters=None):
         else:
             row += ["0"]
 
-        ctc = frappe.db.get_value("Contractor", {'name': cl.contractor}, [
-            'ctc_per_day'], as_dict=True)
+        ctc = frappe.db.get_value("Employee", {'name': cl.name}, [
+            'cost'], as_dict=True)
         if ctc:
             ctc_day = ctc.ctc_per_day
             if ctc_day:
