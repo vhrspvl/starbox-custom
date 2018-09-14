@@ -68,36 +68,21 @@ def execute(filters=None):
         else:
             row += ["", "", ""]
 
-        if cl.department == "Boiler":
-            ctc_per_day = frappe.get_value(
-                "Contractor", cl.contractor, "boiler")
-        elif cl.department == "MOULD":
-            ctc_per_day = frappe.get_value(
-                "Contractor", cl.contractor, "mould_operator")
-        else:
-            ctc_per_day = frappe.get_value(
-                "Contractor", cl.contractor, "ctc_per_day")
-        # frappe.errprint(ctc_per_day)
-        # ctc = frappe.db.get_value("Contractor", {'name': cl.contractor}, [
-        #     'ctc_per_day'], as_dict=True)
-        if ctc_per_day:
-            ctc_day = ctc_per_day
-            if ctc_day:
-                row += [ctc_day]
-                if total_working_hours > 0:
-                    actual_hours = total_working_hours - actual_working_hours
-                    if total_working_hours > actual_working_hours:
-                        earned_ctc = flt((total_working_hours - actual_hours) *
-                                         (ctc_day / actual_working_hours))
-                    else:
-                        earned_ctc = flt(total_working_hours *
-                                         (ctc_day / actual_working_hours))
-                    if earned_ctc:
-                        row += [round(earned_ctc)]
-                        total_earnings += earned_ctc
-                        grand_earnings += earned_ctc
-                    else:
-                        row += ["0"]
+        ctc_day = cl.cost
+        if ctc_day:
+            row += [ctc_day]
+            if total_working_hours > 0:
+                actual_hours = total_working_hours - actual_working_hours
+                if total_working_hours > actual_working_hours:
+                    earned_ctc = flt((total_working_hours - actual_hours) *
+                                     (ctc_day / actual_working_hours))
+                else:
+                    earned_ctc = flt(total_working_hours *
+                                     (ctc_day / actual_working_hours))
+                if earned_ctc:
+                    row += [round(earned_ctc)]
+                    total_earnings += earned_ctc
+                    grand_earnings += earned_ctc
                 else:
                     row += ["0"]
             else:
@@ -110,7 +95,7 @@ def execute(filters=None):
             row += [ot_hours]
         else:
             row += ["0"]
-        
+
         ot_day = (ctc_day / actual_working_hours)
         if ot_hours > 0:
             row += [ot_day]
@@ -157,7 +142,7 @@ def get_columns(attendance):
 
 def get_active_cl(conditions, filters):
     active_cl = frappe.db.sql(
-        """select emp.name,emp.biometric_id,emp.working_hours,emp.employee_name,emp.contractor,emp.employment_type,emp.department from `tabEmployee` emp where %s emp.status = "Active" and emp.employment_type="Contract" order by emp.name""" % conditions, filters, as_dict=1)
+        """select emp.name,emp.biometric_id,emp.cost,emp.working_hours,emp.employee_name,emp.contractor,emp.employment_type,emp.department from `tabEmployee` emp where %s emp.status = "Active" and emp.employment_type="Contract" order by emp.name""" % conditions, filters, as_dict=1)
     return active_cl
 
 

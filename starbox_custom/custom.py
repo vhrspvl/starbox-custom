@@ -14,7 +14,6 @@ import requests
 import math
 
 
-
 @frappe.whitelist()
 def update_in_biometric_machine(uid, uname):
     stgids = frappe.db.get_all("Service Tag")
@@ -148,6 +147,7 @@ def mark_on_leave(doc, method):
                 att.db_update()
                 frappe.db.commit()
 
+
 @frappe.whitelist()
 def cancel_on_leave(doc, method):
     lap = frappe.get_doc("Leave Application", doc.name)
@@ -198,24 +198,29 @@ def convert2present():
 
 @frappe.whitelist()
 def emp_absent_today():
-    # days = add_days(today(), -1)
-    days = ["2018-08-05"]
+    days = add_days(today(), -1)
+    # days = ["2018-07-01"]
+    # days = ["2018-07-01", "2018-07-08",
+    #         "2018-07-15", "2018-07-22", "2018-07-29"]
     #         "2018-06-23", "2018-06-24", "2018-06-25", "2018-06-26", "2018-06-27", "2018-06-28", "2018-06-29", "2018-06-30"]
 
     for day in days:
         query = """SELECT emp.name FROM `tabAttendance` att, `tabEmployee` emp
         WHERE att.employee = emp.name AND att.attendance_date = '%s'""" % (day)
         present_emp = frappe.db.sql(query, as_dict=True)
-        for emp in frappe.get_list('Employee', filters={'status': 'Active'}):
+        pre_abs = False
+        next_abs = False
+        for emp in frappe.get_list('Employee', filters={'status': 'Active', 'employment_type': 'Staff'}):
             joining_date = frappe.db.get_value(
                 "Employee", emp, ["date_of_joining"])
             holiday = frappe.get_list("Holiday List", filters={
-            'holiday_date': day})    
+                'holiday_date': day})
             if datetime.strptime(day, '%Y-%m-%d').date() < joining_date:
                 pass
             elif emp in present_emp:
                 pass
             elif holiday:
+<<<<<<< f4fa2402a033c49f00a8dc881d0f64fc3076c553
                 pre_day = frappe.db.get_value("Attendance", {
                             "employee": employee.name,"status":"Absent", "attendance_date": add_days(day,-1)})
                 next_day = frappe.db.get_value("Attendance", {
@@ -249,6 +254,38 @@ def emp_absent_today():
                     attendance.save(ignore_permissions=True)
                     attendance.submit()
                     frappe.db.commit() 
+=======
+                pass
+                # pre_day_att = frappe.db.get_value("Attendance", {
+                #     "employee": emp.name, "attendance_date": add_days(day, -1)}, ['status'], as_dict=True)
+                # if pre_day_att:
+                #     if pre_day_att['status'] == 'Absent':
+                #         pre_abs = True
+                # next_day_att = frappe.db.get_value("Attendance", {
+                #     "employee": emp.name, "attendance_date": add_days(day, 1)}, ['status'], as_dict=True)
+                # if next_day_att:
+                #     if next_day_att['status'] == 'Absent':
+                #         next_abs = True
+                # print emp, pre_day_att['status'], next_day_att['status'], pre_abs, next_abs
+                # if pre_abs == True and next_abs == True:
+                #     doc = frappe.get_doc('Employee', emp)
+                #     leave = get_leave(doc.name, day)
+                #     if leave:
+                #         status = 'On Leave'
+                #     else:
+                #         status = 'Absent'
+                #     attendance = frappe.new_doc("Attendance")
+                #     attendance.update({
+                #         "employee": doc.name,
+                #         "employee_name": doc.employee_name,
+                #         "attendance_date": day,
+                #         "status": status,
+                #         "company": doc.company
+                # })
+                # attendance.save(ignore_permissions=True)
+                # attendance.submit()
+                # frappe.db.commit()
+>>>>>>> changes in starbox custom
             else:
                 doc = frappe.get_doc('Employee', emp)
                 leave = get_leave(doc.name, day)
@@ -287,8 +324,8 @@ def update_leave_application():
     # day = add_days(today(), -1)
     days = ["2018-07-01", "2018-07-02", "2018-07-03", "2018-07-04", "2018-07-05", "2018-07-06",
             "2018-07-07", "2018-07-08", "2018-07-09", "2018-07-10", "2018-07-11", "2018-07-12", "2018-07-13",
-            "2018-07-14", "2018-07-15", "2018-07-16", "2018-07-17", "2018-07-18", "2018-07-19", "2018-07-20", "2018-07-21", 
-            "2018-07-22", "2018-07-23","2018-07-24", "2018-07-25","2018-07-26", "2018-07-27","2018-07-28"]
+            "2018-07-14", "2018-07-15", "2018-07-16", "2018-07-17", "2018-07-18", "2018-07-19", "2018-07-20", "2018-07-21",
+            "2018-07-22", "2018-07-23", "2018-07-24", "2018-07-25", "2018-07-26", "2018-07-27", "2018-07-28"]
     for day in days:
         employees = frappe.get_all(
             'Employee', filters={"status": "Active", 'employment_type': ('!=', 'Contract')})
@@ -339,7 +376,7 @@ def delete_bulk():
             uid = l.biometric_id
             url = "http://robot.camsunit.com/external/1.0/user/delete?uid=%s&stgid=%s" % (
                 uid, stgid.name)
-            frappe.errprint(url)
+            print url
             r = requests.post(url)
             print r.content
 
@@ -347,7 +384,7 @@ def delete_bulk():
 @frappe.whitelist()
 def bulkremovelop():
     employees = frappe.get_all('Employee', fields=['name'], filters={
-                               "status": "Active", "employment_type": ("!=", "Contract")})
+        "status": "Active", "employment_type": ("!=", "Contract")})
     days = ["2018-04-01", "2018-04-02", "2018-04-03", "2018-04-04", "2018-04-05", "2018-04-06", "2018-04-07", "2018-04-08", "2018-04-09", "2018-04-10", "2018-04-11", "2018-04-12", "2018-04-13", "2018-04-14",
             "2018-04-15", "2018-04-16", "2018-04-17", "2018-04-18", "2018-04-19", "2018-04-20", "2018-04-21", "2018-04-22", "2018-04-23", "2018-04-24", "2018-04-25", "2018-04-26", "2018-04-27", "2018-04-28", "2018-04-29", "2018-04-30"]
     for day in days:
@@ -543,18 +580,30 @@ def bulk_mark_contractor():
 
 
 @frappe.whitelist()
-def bulk_mark_department():
-    attendance = frappe.db.sql("""
-        select name,employee from tabAttendance where department is null 
+def bulk_markSalary_slip():
+    salary_slip = frappe.db.sql("""
+        select name,employee from `tabSalary Slip`
             """, as_dict=1)
-    print attendance
-    for att in attendance:
-        department = frappe.db.get_value(
-            "Employee", att["employee"], "department")
-        if department:
-            att = frappe.get_doc("Attendance", att["name"])
-            att.department = department
-            att.db_update()
+    # print salary_slip
+    for slip in salary_slip:
+        doj = frappe.db.get_value(
+            "Employee", slip["employee"], "date_of_joining")
+        pf = frappe.db.get_value(
+            "Employee", slip["employee"], "pf_number")
+        esi = frappe.db.get_value(
+            "Employee", slip["employee"], "esi_number")
+        ss = frappe.get_doc("Salary Slip", slip["name"])
+        if doj:
+            ss.date_of_joining = doj
+            ss.db_update()
+            frappe.db.commit()
+        if pf:
+            ss.pf_number = pf
+            ss.db_update()
+            frappe.db.commit()
+        if esi:
+            ss.esi_number = esi
+            ss.db_update()
             frappe.db.commit()
 
 
@@ -866,6 +915,41 @@ def get_active_emp():
     #                         frappe.db.commit()
     #             frappe.response.type = "text"
     #             return "ok"
+
+
+@frappe.whitelist()
+def emp_ot():
+    days = ['2018-08-26']
+    for day in days:
+        holiday = frappe.get_list(
+            "Holiday List", filters={'holiday_date': day})
+    if holiday:
+        attendance_list = frappe.get_list(
+            "Attendance", filters={"attendance_date": day, "status": "Present", "employment_type": "Operator"})
+        for attendance in attendance_list:
+            att = frappe.get_doc("Attendance", attendance)
+            if att.in_time and att.attendance_date and att.out_time and att.out_date:
+                from_time = str(att.attendance_date) + \
+                    " " + str(att.in_time)
+                from_time_f = datetime.strptime(
+                    from_time,  '%Y-%m-%d %H:%M:%S')
+                to_time = str(att.out_date) + \
+                    " " + str(att.out_time)
+                to_time_f = datetime.strptime(
+                    to_time, '%Y-%m-%d %H:%M:%S')
+                ts = frappe.new_doc("Timesheet")
+                ts.company = att.company
+                ts.employee = att.employee
+                ts.start_date = att.attendance_date
+                ts.end_date = att.out_date
+                ts.append("time_logs", {
+                    "activity_type": "OT",
+                    "hours": att.total_working_hours,
+                    "from_time": from_time_f,
+                    "to_time": to_time_f
+                })
+                ts.save(ignore_permissions=True)
+                frappe.db.commit()
 
 
 @frappe.whitelist()

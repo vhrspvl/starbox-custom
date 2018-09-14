@@ -396,8 +396,7 @@ def floor_dt(dt):
     # how many secs have passed this hour
     nsecs = dt.minute*60 + dt.second + dt.microsecond*1e-6
     # number of seconds to next quarter hour mark
-   Remote and on site consulting for //SEIBERT/MEDIA in Germany
- - Reg # Non-analytic (brute force is fun) way:
+    # Non-analytic (brute force is fun) way:
     #   delta = next(x for x in xrange(0,3601,900) if x>=nsecs) - nsecs
     # analytic way:
     delta = math.floor(nsecs / 900) * 900 - nsecs
