@@ -6,7 +6,7 @@ from __future__ import unicode_literals
 import frappe
 from frappe import _
 from frappe.utils.data import today
-from frappe.utils import formatdate, getdate, cint, add_months, date_diff, add_days, flt, cstr, time_diff, time_diff_in_seconds, time_diff_in_hours
+from frappe.utils import formatdate, getdate, cint, add_months, date_diff, add_days, flt, cstr, time_diff, time_diff_in_seconds, time_diff_in_hours,today
 from datetime import date, datetime
 from dateutil.relativedelta import relativedelta
 from erpnext.hr.doctype.employee.employee import get_holiday_list_for_employee
@@ -609,11 +609,10 @@ def bulk_markSalary_slip():
 
 @frappe.whitelist()
 def clc_calculator():
-    #     days = ["2018-07-01", "2018-07-02", "2018-07-03", "2018-07-04", "2018-07-06",
-    #             "2018-07-07", "2018-07-08", "2018-07-09", "2018-07-10", "2018-07-11", "2018-07-12", "2018-07-13",
-    #             "2018-07-14", "2018-07-15", "2018-07-16", "2018-07-17", "2018-07-18", "2018-07-19", "2018-07-20",
-    #             "2018-07-20", "2018-07-21", "2018-07-22", "2018-07-23", "2018-07-24", "2018-07-25"]
-    days = ['2018-07-21']
+    days = ["2018-09-01", "2018-09-02", "2018-09-03", "2018-09-04", "2018-09-06",
+            "2018-09-07", "2018-09-08", "2018-09-09", "2018-09-10", "2018-09-11", "2018-09-12", "2018-09-13",
+            "2018-09-14", "2018-09-15", "2018-09-16"]
+    # days = ["2018-09-01"]
     for day in days:
         attendance_list = frappe.get_list("Attendance", fields=['name', 'employee', 'employee_name', 'employment_type', 'in_time', 'out_time',
                                                                 'total_working_hours', 'department', 'contractor', 'attendance_date'], filters={"attendance_date": day, "status": "Present", "employment_type": "Contract"})
@@ -626,15 +625,9 @@ def clc_calculator():
             total = 0
             earned_ctc = 0
             att = frappe.get_doc("Attendance", attendance['name'])
-            if att.department == "Boiler":
-                ctc_per_day = frappe.get_value(
-                    "Contractor", attendance["contractor"], "boiler")
-            elif att.department == "MOULD":
-                ctc_per_day = frappe.get_value(
-                    "Contractor", attendance["contractor"], "mould_operator")
-            else:
-                ctc_per_day = frappe.get_value(
-                    "Contractor", attendance["contractor"], "ctc_per_day")
+            ctc_per_day = frappe.get_value(
+                    "Employee", attendance["employee"], "cost")
+            # print (ctc_per_day)
             working_hours = frappe.db.get_value(
                 "Employee", attendance['employee'], 'working_hours')
             actual_working_hours = (working_hours.seconds / 3600.00)
@@ -646,7 +639,7 @@ def clc_calculator():
                 if total_working_hours > actual_working_hours:
                     ot_hours = total_working_hours - actual_working_hours
                     earned_ctc = flt((total_working_hours - ot_hours) *
-                                     (ctc_per_day / actual_working_hours))
+                        (ctc_per_day / actual_working_hours))
                     ot_cost = (ctc_per_day / actual_working_hours)
                     ot_earnings = flt(ot_hours * ot_cost)
             total = earned_ctc + ot_earnings
@@ -668,8 +661,7 @@ def clc_calculator():
                 "ot_hours": ot_hours,
                 "ot_cost": ot_cost,
                 "ot_earnings": ot_earnings,
-                "total": total
-
+                "total": round(flt(total)),
             })
             clc.save(ignore_permissions=True)
 
@@ -1054,5 +1046,7 @@ def holiday_lop():
                         "employee": employee.name,"status":"Absent", "attendance_date": add_days(day,1)})
                 if pre_day and next_day:
                     print employee 
+
+
 
                 
