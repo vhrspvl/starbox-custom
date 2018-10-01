@@ -28,7 +28,7 @@ page_js = {"employee-attendance-tool": "public/js/employee_attendance_tool.js"}
 
 
 # include js in doctype views
-# doctype_js = {"doctype" : "public/js/doctype.js"}
+# doctype_js = {"doctype" : "public/js/job_applicant.js"}
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "p
 # Includes in <head>
@@ -124,13 +124,21 @@ scheduler_events = {
         "starbox_custom.custom.send_daily_report",
         "starbox_custom.custom.send_ctc_report",
         "starbox_custom.custom.removeduplicateatt",
-        "starbox_custom.custom.mark_comp_off"
+        "starbox_custom.custom.mark_comp_off",
+        "starbox_custom.custom.emp_ot"
     ],
     "cron": {
         "00 10 * * *": [
             "starbox_custom.calculations.create_ts"
+        ],
+        "45 11 * * *": [
+            "starbox_custom.calculations.clc_calculator"
         ]
+
     },
+
+
+
     # "hourly": [
     #     "starbox_custom.calculations.create_ts"
     # ],

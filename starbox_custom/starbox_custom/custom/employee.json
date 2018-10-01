@@ -10,6 +10,7 @@
    "collapsible": 0, 
    "collapsible_depends_on": null, 
    "columns": 0, 
+<<<<<<< Updated upstream
    "creation": "2018-09-17 18:56:39.598855", 
    "default": "08:00:00", 
    "depends_on": null, 
@@ -61,16 +62,26 @@
    "collapsible_depends_on": null, 
    "columns": 0, 
    "creation": "2018-09-17 17:31:29.634801", 
+=======
+   "creation": "2018-09-17 16:58:59.108792", 
+>>>>>>> Stashed changes
    "default": null, 
    "depends_on": null, 
    "description": null, 
    "docstatus": 0, 
    "dt": "Employee", 
+<<<<<<< Updated upstream
    "fetch_from": null, 
    "fieldname": "cost", 
    "fieldtype": "Currency", 
    "hidden": 0, 
    "idx": 22, 
+=======
+   "fieldname": "cost", 
+   "fieldtype": "Currency", 
+   "hidden": 0, 
+   "idx": 21, 
+>>>>>>> Stashed changes
    "ignore_user_permissions": 0, 
    "ignore_xss_filter": 0, 
    "in_global_search": 0, 
@@ -78,7 +89,11 @@
    "in_standard_filter": 0, 
    "insert_after": "employment_type", 
    "label": "Cost", 
+<<<<<<< Updated upstream
    "modified": "2018-09-17 17:31:29.634801", 
+=======
+   "modified": "2018-09-17 16:58:59.108792", 
+>>>>>>> Stashed changes
    "modified_by": "Administrator", 
    "name": "Employee-cost", 
    "no_copy": 0, 
@@ -96,7 +111,10 @@
    "report_hide": 0, 
    "reqd": 0, 
    "search_index": 0, 
+<<<<<<< Updated upstream
    "translatable": 0, 
+=======
+>>>>>>> Stashed changes
    "unique": 0, 
    "width": null
   }, 
@@ -170,7 +188,11 @@
    "fieldname": "nominee_address", 
    "fieldtype": "Data", 
    "hidden": 0, 
+<<<<<<< Updated upstream
    "idx": 101, 
+=======
+   "idx": 105, 
+>>>>>>> Stashed changes
    "ignore_user_permissions": 0, 
    "ignore_xss_filter": 0, 
    "in_global_search": 0, 
@@ -220,7 +242,11 @@
    "fieldname": "x1", 
    "fieldtype": "Column Break", 
    "hidden": 0, 
+<<<<<<< Updated upstream
    "idx": 100, 
+=======
+   "idx": 104, 
+>>>>>>> Stashed changes
    "ignore_user_permissions": 0, 
    "ignore_xss_filter": 0, 
    "in_global_search": 0, 
@@ -270,7 +296,11 @@
    "fieldname": "nominee_age", 
    "fieldtype": "Int", 
    "hidden": 0, 
+<<<<<<< Updated upstream
    "idx": 102, 
+=======
+   "idx": 106, 
+>>>>>>> Stashed changes
    "ignore_user_permissions": 0, 
    "ignore_xss_filter": 0, 
    "in_global_search": 0, 
@@ -320,7 +350,11 @@
    "fieldname": "relationship", 
    "fieldtype": "Data", 
    "hidden": 0, 
+<<<<<<< Updated upstream
    "idx": 99, 
+=======
+   "idx": 103, 
+>>>>>>> Stashed changes
    "ignore_user_permissions": 0, 
    "ignore_xss_filter": 0, 
    "in_global_search": 0, 
@@ -370,7 +404,11 @@
    "fieldname": "nominee_name", 
    "fieldtype": "Data", 
    "hidden": 0, 
+<<<<<<< Updated upstream
    "idx": 98, 
+=======
+   "idx": 102, 
+>>>>>>> Stashed changes
    "ignore_user_permissions": 0, 
    "ignore_xss_filter": 0, 
    "in_global_search": 0, 
@@ -420,7 +458,11 @@
    "fieldname": "nominee", 
    "fieldtype": "Section Break", 
    "hidden": 0, 
+<<<<<<< Updated upstream
    "idx": 97, 
+=======
+   "idx": 101, 
+>>>>>>> Stashed changes
    "ignore_user_permissions": 0, 
    "ignore_xss_filter": 0, 
    "in_global_search": 0, 
@@ -520,7 +562,11 @@
    "fieldname": "nationality", 
    "fieldtype": "Data", 
    "hidden": 0, 
+<<<<<<< Updated upstream
    "idx": 73, 
+=======
+   "idx": 77, 
+>>>>>>> Stashed changes
    "ignore_user_permissions": 0, 
    "ignore_xss_filter": 0, 
    "in_global_search": 0, 
@@ -570,7 +616,11 @@
    "fieldname": "column_break61", 
    "fieldtype": "Column Break", 
    "hidden": 0, 
+<<<<<<< Updated upstream
    "idx": 60, 
+=======
+   "idx": 64, 
+>>>>>>> Stashed changes
    "ignore_user_permissions": 0, 
    "ignore_xss_filter": 0, 
    "in_global_search": 0, 
@@ -620,7 +670,11 @@
    "fieldname": "country", 
    "fieldtype": "Data", 
    "hidden": 0, 
+<<<<<<< Updated upstream
    "idx": 72, 
+=======
+   "idx": 76, 
+>>>>>>> Stashed changes
    "ignore_user_permissions": 0, 
    "ignore_xss_filter": 0, 
    "in_global_search": 0, 
@@ -670,7 +724,11 @@
    "fieldname": "pin_code", 
    "fieldtype": "Int", 
    "hidden": 0, 
+<<<<<<< Updated upstream
    "idx": 71, 
+=======
+   "idx": 75, 
+>>>>>>> Stashed changes
    "ignore_user_permissions": 0, 
    "ignore_xss_filter": 0, 
    "in_global_search": 0, 
@@ -720,7 +778,11 @@
    "fieldname": "state", 
    "fieldtype": "Data", 
    "hidden": 0, 
+<<<<<<< Updated upstream
    "idx": 70, 
+=======
+   "idx": 74, 
+>>>>>>> Stashed changes
    "ignore_user_permissions": 0, 
    "ignore_xss_filter": 0, 
    "in_global_search": 0, 
@@ -770,7 +832,11 @@
    "fieldname": "district", 
    "fieldtype": "Data", 
    "hidden": 0, 
+<<<<<<< Updated upstream
    "idx": 69, 
+=======
+   "idx": 73, 
+>>>>>>> Stashed changes
    "ignore_user_permissions": 0, 
    "ignore_xss_filter": 0, 
    "in_global_search": 0, 
@@ -820,7 +886,11 @@
    "fieldname": "column_break68", 
    "fieldtype": "Column Break", 
    "hidden": 0, 
+<<<<<<< Updated upstream
    "idx": 68, 
+=======
+   "idx": 72, 
+>>>>>>> Stashed changes
    "ignore_user_permissions": 0, 
    "ignore_xss_filter": 0, 
    "in_global_search": 0, 
@@ -870,7 +940,11 @@
    "fieldname": "taluk", 
    "fieldtype": "Data", 
    "hidden": 0, 
+<<<<<<< Updated upstream
    "idx": 67, 
+=======
+   "idx": 71, 
+>>>>>>> Stashed changes
    "ignore_user_permissions": 0, 
    "ignore_xss_filter": 0, 
    "in_global_search": 0, 
@@ -920,7 +994,11 @@
    "fieldname": "village", 
    "fieldtype": "Data", 
    "hidden": 0, 
+<<<<<<< Updated upstream
    "idx": 66, 
+=======
+   "idx": 70, 
+>>>>>>> Stashed changes
    "ignore_user_permissions": 0, 
    "ignore_xss_filter": 0, 
    "in_global_search": 0, 
@@ -970,7 +1048,11 @@
    "fieldname": "street", 
    "fieldtype": "Data", 
    "hidden": 0, 
+<<<<<<< Updated upstream
    "idx": 65, 
+=======
+   "idx": 69, 
+>>>>>>> Stashed changes
    "ignore_user_permissions": 0, 
    "ignore_xss_filter": 0, 
    "in_global_search": 0, 
@@ -1020,7 +1102,11 @@
    "fieldname": "door_number", 
    "fieldtype": "Data", 
    "hidden": 0, 
+<<<<<<< Updated upstream
    "idx": 64, 
+=======
+   "idx": 68, 
+>>>>>>> Stashed changes
    "ignore_user_permissions": 0, 
    "ignore_xss_filter": 0, 
    "in_global_search": 0, 
@@ -1070,7 +1156,11 @@
    "fieldname": "address", 
    "fieldtype": "Section Break", 
    "hidden": 0, 
+<<<<<<< Updated upstream
    "idx": 63, 
+=======
+   "idx": 67, 
+>>>>>>> Stashed changes
    "ignore_user_permissions": 0, 
    "ignore_xss_filter": 0, 
    "in_global_search": 0, 
@@ -1120,7 +1210,11 @@
    "fieldname": "pan_number", 
    "fieldtype": "Data", 
    "hidden": 0, 
+<<<<<<< Updated upstream
    "idx": 62, 
+=======
+   "idx": 66, 
+>>>>>>> Stashed changes
    "ignore_user_permissions": 0, 
    "ignore_xss_filter": 0, 
    "in_global_search": 0, 
@@ -1170,7 +1264,11 @@
    "fieldname": "family_card", 
    "fieldtype": "Data", 
    "hidden": 0, 
+<<<<<<< Updated upstream
    "idx": 61, 
+=======
+   "idx": 65, 
+>>>>>>> Stashed changes
    "ignore_user_permissions": 0, 
    "ignore_xss_filter": 0, 
    "in_global_search": 0, 
@@ -1220,7 +1318,11 @@
    "fieldname": "aadhar_card", 
    "fieldtype": "Data", 
    "hidden": 0, 
+<<<<<<< Updated upstream
    "idx": 59, 
+=======
+   "idx": 63, 
+>>>>>>> Stashed changes
    "ignore_user_permissions": 0, 
    "ignore_xss_filter": 0, 
    "in_global_search": 0, 
@@ -1270,7 +1372,11 @@
    "fieldname": "voter_id", 
    "fieldtype": "Data", 
    "hidden": 0, 
+<<<<<<< Updated upstream
    "idx": 58, 
+=======
+   "idx": 62, 
+>>>>>>> Stashed changes
    "ignore_user_permissions": 0, 
    "ignore_xss_filter": 0, 
    "in_global_search": 0, 
@@ -1320,7 +1426,11 @@
    "fieldname": "identity_details", 
    "fieldtype": "Section Break", 
    "hidden": 0, 
+<<<<<<< Updated upstream
    "idx": 57, 
+=======
+   "idx": 61, 
+>>>>>>> Stashed changes
    "ignore_user_permissions": 0, 
    "ignore_xss_filter": 0, 
    "in_global_search": 0, 
@@ -1370,7 +1480,11 @@
    "fieldname": "mother_tongue", 
    "fieldtype": "Data", 
    "hidden": 0, 
+<<<<<<< Updated upstream
    "idx": 84, 
+=======
+   "idx": 88, 
+>>>>>>> Stashed changes
    "ignore_user_permissions": 0, 
    "ignore_xss_filter": 0, 
    "in_global_search": 0, 
@@ -1420,7 +1534,11 @@
    "fieldname": "religion", 
    "fieldtype": "Data", 
    "hidden": 0, 
+<<<<<<< Updated upstream
    "idx": 83, 
+=======
+   "idx": 87, 
+>>>>>>> Stashed changes
    "ignore_user_permissions": 0, 
    "ignore_xss_filter": 0, 
    "in_global_search": 0, 
@@ -1470,7 +1588,11 @@
    "fieldname": "marriage_date", 
    "fieldtype": "Date", 
    "hidden": 0, 
+<<<<<<< Updated upstream
    "idx": 87, 
+=======
+   "idx": 91, 
+>>>>>>> Stashed changes
    "ignore_user_permissions": 0, 
    "ignore_xss_filter": 0, 
    "in_global_search": 0, 
@@ -1520,7 +1642,11 @@
    "fieldname": "mother_name", 
    "fieldtype": "Data", 
    "hidden": 0, 
+<<<<<<< Updated upstream
    "idx": 82, 
+=======
+   "idx": 86, 
+>>>>>>> Stashed changes
    "ignore_user_permissions": 0, 
    "ignore_xss_filter": 0, 
    "in_global_search": 0, 
@@ -1570,7 +1696,11 @@
    "fieldname": "father_name", 
    "fieldtype": "Data", 
    "hidden": 0, 
+<<<<<<< Updated upstream
    "idx": 81, 
+=======
+   "idx": 85, 
+>>>>>>> Stashed changes
    "ignore_user_permissions": 0, 
    "ignore_xss_filter": 0, 
    "in_global_search": 0, 
@@ -1670,7 +1800,11 @@
    "fieldname": "pf_number", 
    "fieldtype": "Data", 
    "hidden": 0, 
+<<<<<<< Updated upstream
    "idx": 118, 
+=======
+   "idx": 42, 
+>>>>>>> Stashed changes
    "ignore_user_permissions": 0, 
    "ignore_xss_filter": 0, 
    "in_global_search": 0, 
@@ -1720,7 +1854,11 @@
    "fieldname": "esi_number", 
    "fieldtype": "Data", 
    "hidden": 0, 
+<<<<<<< Updated upstream
    "idx": 117, 
+=======
+   "idx": 41, 
+>>>>>>> Stashed changes
    "ignore_user_permissions": 0, 
    "ignore_xss_filter": 0, 
    "in_global_search": 0, 
@@ -1980,14 +2118,22 @@
    "_comments": null, 
    "_liked_by": null, 
    "_user_tags": null, 
+<<<<<<< Updated upstream
    "creation": "2018-09-17 18:56:37.711091", 
+=======
+   "creation": "2018-09-17 16:58:58.914251", 
+>>>>>>> Stashed changes
    "default_value": null, 
    "doc_type": "Employee", 
    "docstatus": 0, 
    "doctype_or_field": "DocType", 
    "field_name": null, 
    "idx": 0, 
+<<<<<<< Updated upstream
    "modified": "2018-09-17 18:56:37.711091", 
+=======
+   "modified": "2018-09-17 16:58:58.914251", 
+>>>>>>> Stashed changes
    "modified_by": "Administrator", 
    "name": "Employee-read_only_onload", 
    "owner": "Administrator", 

@@ -22,25 +22,37 @@ def execute(filters=None):
     total = 0
     epsw = 0
     edlic = 0
-    salary_slips = get_salary_slips(conditions,filters)
-    
+    salary_slips = get_salary_slips(conditions, filters)
+
     for ss in salary_slips:
-        pfno = frappe.db.get_value("Employee", {'employee':ss.employee},['pf_number'])
-        if pfno:row = [pfno]
-        else:row = [""]
+        pfno = frappe.db.get_value(
+            "Employee", {'employee': ss.employee}, ['pf_number'])
+        if pfno:
+            row = [pfno]
+        else:
+            row = [""]
 
-        if ss.employee:row += [ss.employee]
-        else:row += [""]
+        if ss.employee:
+            row += [ss.employee]
+        else:
+            row += [""]
 
-        if ss.employee_name:row += [ss.employee_name]
-        else:row += [""]
+        if ss.employee_name:
+            row += [ss.employee_name]
+        else:
+            row += [""]
 
-        if ss.gp:row += [ss.gp]
-        else:row += [""] 
-        
-        basic = frappe.db.get_value("Salary Detail", {'abbr':'B','parent':ss.name},['amount'])
-        if basic:row += [basic]
-        else:row += [""] 
+        if ss.gp:
+            row += [ss.gp]
+        else:
+            row += [""]
+
+        basic = frappe.db.get_value(
+            "Salary Detail", {'abbr': 'B', 'parent': ss.name}, ['amount'])
+        if basic:
+            row += [basic]
+        else:
+            row += [""]
 
         epsw = flt("15000")
         if basic >= epsw:
@@ -48,23 +60,36 @@ def execute(filters=None):
         else:
             epfw = basic
 
-        if epfw:row +=[epfw,epfw]
-        else:row += ["",""]
+        if epfw:
+            row += [epfw, epfw]
+        else:
+            row += ["", ""]
 
-        epf = frappe.db.get_value("Salary Detail", {'abbr':'PF','parent':ss.name},['amount'])
-        if epf:row += [epf]
-        else:row += [""]
+        epf = frappe.db.get_value(
+            "Salary Detail", {'abbr': 'PF', 'parent': ss.name}, ['amount'])
+        if epf:
+            row += [epf]
+        else:
+            row += [""]
 
-        eps = frappe.db.get_value("Salary Detail", {'abbr':'EPS','parent':ss.name},['amount'])
-        if eps:row += [eps]
-        else:row += [""]
+        eps = frappe.db.get_value(
+            "Salary Detail", {'abbr': 'EPS', 'parent': ss.name}, ['amount'])
+        if eps:
+            row += [eps]
+        else:
+            row += [""]
 
-        ee = frappe.db.get_value("Salary Detail", {'abbr':'EPF','parent':ss.name},['amount'])
-        if ee:row += [ee]
-        else:row += [""]
+        ee = frappe.db.get_value(
+            "Salary Detail", {'abbr': 'EPF', 'parent': ss.name}, ['amount'])
+        if ee:
+            row += [ee]
+        else:
+            row += [""]
 
-        if ss.lop:row += [ss.lop]
-        else:row += [""]
+        if ss.lop:
+            row += [ss.lop]
+        else:
+            row += [""]
 
         data.append(row)
 
@@ -86,19 +111,22 @@ def get_columns():
         _("NCP Days ") + ":Currency:100",
         _("Refund of Advances") + ":Currency:100",
 
-        
+
     ]
     return columns
 
-def get_salary_slips(conditions,filters):
+
+def get_salary_slips(conditions, filters):
     salary_slips = frappe.db.sql("""select ss.employee as employee,ss.employee_name as employee_name,ss.name as name,ss.leave_without_pay as lop,ss.gross_pay as gp from `tabSalary Slip` ss 
-    where ss.docstatus = 0 %s order by employee""" % conditions, filters, as_dict=1)
+    where %s order by employee""" % conditions, filters, as_dict=1)
     return salary_slips
 
 
 def get_conditions(filters):
     conditions = ""
-    if filters.get("from_date"): conditions += " and start_date >= %(from_date)s"
-    if filters.get("to_date"): conditions += " and end_date >= %(to_date)s"   
-    if filters.get("employee"): conditions += " and employee = %(employee)s"
+    if filters.get("from_date"):
+        conditions += " start_date >= %(from_date)s"
+    if filters.get("to_date"):
+        conditions += " and end_date >= %(to_date)s"
+
     return conditions, filters

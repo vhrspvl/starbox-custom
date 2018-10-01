@@ -20,27 +20,41 @@ def execute(filters=None):
     row = []
     conditions, filters = get_conditions(filters)
     total = 0
-    salary_slips = get_salary_slips(conditions,filters)
-    
+    salary_slips = get_salary_slips(conditions, filters)
+
     for ss in salary_slips:
-        esino = frappe.db.get_value("Employee", {'employee':ss.employee},['esi_number'])
-        if esino:row = [esino]
-        else:row = [""]
+        esino = frappe.db.get_value(
+            "Employee", {'employee': ss.employee}, ['esi_number'])
+        if esino:
+            row = [esino]
+        else:
+            row = [""]
 
-        if ss.employee:row += [ss.employee]
-        else:row += [""]
+        if ss.employee:
+            row += [ss.employee]
+        else:
+            row += [""]
 
-        if ss.employee_name:row += [ss.employee_name]
-        else:row += [""]
+        if ss.employee_name:
+            row += [ss.employee_name]
+        else:
+            row += [""]
 
-        if ss.md:row += [ss.md]
-        else:row += [""]
+        if ss.md:
+            row += [ss.md]
+        else:
+            row += [""]
 
-        if ss.gp:row += [ss.gp]
-        else:row += [""] 
-        esic = frappe.db.get_value("Salary Detail", {'abbr':'ESI','parent':ss.name},['amount'])
-        if esic:row += [esic]
-        else:row += [""] 
+        if ss.gp:
+            row += [ss.gp]
+        else:
+            row += [""]
+        esic = frappe.db.get_value(
+            "Salary Detail", {'abbr': 'ESI', 'parent': ss.name}, ['amount'])
+        if esic:
+            row += [esic]
+        else:
+            row += [""]
 
         data.append(row)
 
@@ -57,19 +71,22 @@ def get_columns():
         _("ESI") + ":Currency:100",
         _("Reason Code") + ":Currency:100",
         _("Last Working Days") + ":Currency:100",
-        
+
     ]
     return columns
 
-def get_salary_slips(conditions,filters):
+
+def get_salary_slips(conditions, filters):
     salary_slips = frappe.db.sql("""select ss.employee as employee,ss.employee_name as employee_name,ss.name as name,ss.payment_days as md,ss.gross_pay as gp from `tabSalary Slip` ss 
-    where ss.docstatus = 0 %s order by employee""" % conditions, filters, as_dict=1)
+    where %s order by employee""" % conditions, filters, as_dict=1)
     return salary_slips
 
 
 def get_conditions(filters):
     conditions = ""
-    if filters.get("from_date"): conditions += " and start_date >= %(from_date)s"
-    if filters.get("to_date"): conditions += " and end_date >= %(to_date)s"   
-    if filters.get("employee"): conditions += " and employee = %(employee)s"
+    if filters.get("from_date"):
+        conditions += " sssstart_date >= %(from_date)s"
+    if filters.get("to_date"):
+        conditions += " and end_date >= %(to_date)s"
+
     return conditions, filters

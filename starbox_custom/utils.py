@@ -30,7 +30,7 @@ def attendance():
 
         time_m = time.strftime("%H:%M:%S", time.gmtime(
             int(frappe.form_dict.get("att_time"))))
-
+        total_working_hours = 0
         doc = frappe.get_doc("Employee", employee)
         if doc.employment_type == 'Staff' or doc.employment_type == 'Contract' or doc.employment_type == 'Aparajita' or doc.employment_type == 'NEEM':
             a_min_time = datetime.strptime('06:30', '%H:%M')

@@ -9,7 +9,7 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.model.naming import make_autoname
 import time
-import math
+import math,calendar
 from frappe.utils.data import today, get_timestamp
 from frappe.utils import getdate, cint, add_months, date_diff, add_days, flt, nowdate, \
     get_datetime_str, cstr, get_datetime, time_diff, time_diff_in_seconds, time_diff_in_hours
@@ -69,11 +69,22 @@ def create_ts_submit(doc, method):
                     frappe.db.commit()
 
 
+
+    # year = datetime.now().year
+    # month = datetime.now().month
+    # num_days = calendar.monthrange(year, month)[1]
+    # print num_days
+    # days1 = [datetime.date(year, month, day) for day in range(1, num_days+1)]
+    # for day1 in days1:
+    #     print day1
+    
+    # days = ["2018-09-01", "2018-09-02", "2018-09-03", "2018-09-04","2018-09-05", "2018-09-06",
+    #         "2018-09-07", "2018-09-08", "2018-09-09", "2018-09-10", "2018-09-11", "2018-09-12", "2018-09-13",
+    #         "2018-09-14", "2018-09-15", "2018-09-16", "2018-09-17", "2018-09-18", "2018-09-19", "2018-09-20","2018-09-21","2018-09-22","2018-09-23","2018-09-24","2018-09-25","2018-09-26","2018-09-27","2018-09-28","2018-09-29"]
+    # for day in days:
 @frappe.whitelist()
 def create_ts():
     day = add_days(today(), -1)
-    # days = ["2018-07-30"]
-    # for day in days:
     attendance = frappe.get_all("Attendance", fields=[
                                 'name', 'employee', 'attendance_date', 'out_date', 'in_time', 'out_time', 'total_working_hours'], filters={'attendance_date': day})
     for doc in attendance:
@@ -373,6 +384,63 @@ def markattfrompr():
             pr = frappe.get_doc("Punch Record", pr_id)
             prt = frappe.get_doc("Punch Time", max(pr.time_table))
             print prt
+
+@frappe.whitelist()
+def clc_calculator():
+    # day = (today(), -1)
+    days = ["2018-09-18","2018-09-19"]
+    for day in days:
+        attendance_list = frappe.get_list("Attendance", fields=['name', 'employee', 'employee_name', 'employment_type', 'in_time', 'out_time',
+                                                            'total_working_hours', 'department', 'contractor', 'attendance_date'], filters={"attendance_date": day, "status": "Present", "employment_type": "Contract"})
+    for attendance in attendance_list:
+        ctc_per_day = 0
+        ot_earnings = 0
+        actual_hours = 0
+        ot_hours = 0
+        ot_cost = 0
+        total = 0
+        earned_ctc = 0
+        if attendance.in_time and attendance.out_time:
+            att = frappe.get_doc("Attendance", attendance['name'])
+            ctc_per_day = frappe.get_value(
+                "Employee", attendance["employee"], "cost")
+            # print (ctc_per_day)
+            working_hours = frappe.db.get_value(
+                "Employee", attendance['employee'], 'working_hours')
+            actual_working_hours = (working_hours.seconds / 3600.00)
+        if ctc_per_day:
+            total_working_hours = att.total_working_hours
+            if total_working_hours > 0:
+                earned_ctc = flt(total_working_hours *
+                                 (ctc_per_day / actual_working_hours))
+            if total_working_hours > actual_working_hours:
+                ot_hours = total_working_hours - actual_working_hours
+                earned_ctc = flt((total_working_hours - ot_hours) *
+                                 (ctc_per_day / actual_working_hours))
+                ot_cost = (ctc_per_day / actual_working_hours)
+                ot_earnings = flt(ot_hours * ot_cost)
+        total = earned_ctc + ot_earnings
+        clc = frappe.new_doc("Contract Labour Costing")
+        clc.update({
+            "attendance_id": att.name,
+            "employee": att.employee,
+            "employee_name": att.employee_name,
+            "employment_type": att.employment_type,
+            "attendance_date": att.attendance_date,
+            "department": att.department,
+            "in_time": att.in_time,
+            "out_time": att.out_time,
+            "total_working_hours": att.total_working_hours,
+            "actual_working_hours": actual_working_hours,
+            "contractor": att.contractor,
+            "ctc_per_day": ctc_per_day,
+            "earned_ctc": earned_ctc,
+            "ot_hours": ot_hours,
+            "ot_cost": ot_cost,
+            "ot_earnings": ot_earnings,
+            "total": round(flt(total)),
+        })
+        clc.save(ignore_permissions=True)
 
 
 @frappe.whitelist()
