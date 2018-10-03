@@ -127,7 +127,7 @@ def create_ts():
                         ts.time_logs[0].hours = ot
                         ts.time_logs[0].from_time = from_time_f
                         ts.time_logs[0].to_time = to_time_f
-                        ts.save(ignore_ permissions=True)
+                        ts.save(ignore_permissions=True)
                         frappe.db.commit()
                     else:
                         ts = frappe.new_doc("Timesheet")
