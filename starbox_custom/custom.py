@@ -339,34 +339,38 @@ def get_active_emp():
 
 @frappe.whitelist()
 def emp_ot():
-    day = add_days(today(), -1)
-    holiday = frappe.get_list(
-        "Holiday List", filters={'holiday_date': day})
-    if holiday:
-        attendance_list = frappe.get_list(
-            "Attendance", filters={"attendance_date": day, "status": "Present", "employment_type": "Operator"})
-        for attendance in attendance_list:
-            att = frappe.get_doc("Attendance", attendance)
-            from_time = str(att.attendance_date) + " " + att.in_time
-            from_time_f = datetime.strptime(
-                from_time,  '%Y-%m-%d %H:%M:%S')
-            to_time = str(att.attendance_date) + " " + att.out_time
-            to_time_f = datetime.strptime(
-                to_time, '%Y-%m-%d %H:%M:%S')
-            ts = frappe.new_doc("Timesheet")
-            ts.company = att.company
-            ts.employee = att.employee
-            ts.start_date = att.attendance_date
-            ts.end_date = att.attendance_date
-            ts.note = "Holiday OT"
-            ts.append("time_logs", {
-                "activity_type": "OT",
-                "hours": att.total_working_hours,
-                "from_time": from_time_f,
-                "to_time": to_time_f
-            })
-            ts.save(ignore_permissions=True)
-            frappe.db.commit()
+    # day = add_days(today(), -1)
+    days = ["2018-09-01", "2018-09-02", "2018-09-03", "2018-09-04","2018-09-05", "2018-09-06",
+            "2018-09-07", "2018-09-08", "2018-09-09", "2018-09-10", "2018-09-11", "2018-09-12", "2018-09-13",
+            "2018-09-14", "2018-09-15", "2018-09-16", "2018-09-17", "2018-09-18", "2018-09-19", "2018-09-20","2018-09-21","2018-09-22","2018-09-23","2018-09-24","2018-09-25","2018-09-26","2018-09-27","2018-09-28","2018-09-29","2018-09-30"]
+    for day in days:
+        holiday = frappe.get_list(
+            "Holiday List", filters={'holiday_date': day})
+        if holiday:
+            attendance_list = frappe.get_list(
+                "Attendance", filters={"attendance_date": day, "status": "Present", "employment_type": "Operator"})
+            for attendance in attendance_list:
+                att = frappe.get_doc("Attendance", attendance)
+                from_time = str(att.attendance_date) + " " + att.in_time
+                from_time_f = datetime.strptime(
+                    from_time,  '%Y-%m-%d %H:%M:%S')
+                to_time = str(att.attendance_date) + " " + att.out_time
+                to_time_f = datetime.strptime(
+                    to_time, '%Y-%m-%d %H:%M:%S')
+                ts = frappe.new_doc("Timesheet")
+                ts.company = att.company
+                ts.employee = att.employee
+                ts.start_date = att.attendance_date
+                ts.end_date = att.attendance_date
+                ts.note = "Holiday OT"
+                ts.append("time_logs", {
+                    "activity_type": "OT",
+                    "hours": att.total_working_hours,
+                    "from_time": from_time_f,
+                    "to_time": to_time_f
+                })
+                ts.save(ignore_permissions=True)
+                frappe.db.commit()
 
 
 
