@@ -10,6 +10,7 @@ from frappe.model.document import Document
 from frappe.model.naming import make_autoname
 import time
 import math,calendar
+from dateutil.parser import parse
 from frappe.utils.data import today, get_timestamp
 from frappe.utils import getdate, cint, add_months, date_diff, add_days, flt, nowdate, \
     get_datetime_str, cstr, get_datetime, time_diff, time_diff_in_seconds, time_diff_in_hours
@@ -68,8 +69,6 @@ def create_ts_submit(doc, method):
                     ts.save(ignore_permissions=True)
                     frappe.db.commit()
 
-
-
     # year = datetime.now().year
     # month = datetime.now().month
     # num_days = calendar.monthrange(year, month)[1]
@@ -82,15 +81,16 @@ def create_ts_submit(doc, method):
     #         "2018-09-07", "2018-09-08", "2018-09-09", "2018-09-10", "2018-09-11", "2018-09-12", "2018-09-13",
     #         "2018-09-14", "2018-09-15", "2018-09-16", "2018-09-17", "2018-09-18", "2018-09-19", "2018-09-20","2018-09-21","2018-09-22","2018-09-23","2018-09-24","2018-09-25","2018-09-26","2018-09-27","2018-09-28","2018-09-29"]
     # for day in days:
+
 @frappe.whitelist()
 def create_ts():
-    day = add_days(today(), -1)
+    # day = add_days(today(), -1)
+    day = "2018-09-01"
     attendance = frappe.get_all("Attendance", fields=[
                                 'name', 'employee', 'attendance_date', 'out_date', 'in_time', 'out_time', 'total_working_hours'], filters={'attendance_date': day})
     for doc in attendance:
         if doc.attendance_date and doc.out_date and doc.in_time and doc.out_time:
             employee = frappe.get_doc("Employee", doc.employee)
-
             if employee.employment_type == 'Operator':
                 ot_hours = calculate_hours(
                     doc.attendance_date, doc.out_date, doc.in_time, doc.out_time, doc.employee)
@@ -103,6 +103,16 @@ def create_ts():
                     to_time = str(to_date) + " " + doc.out_time
                     to_time_f = datetime.strptime(
                         to_time, '%Y-%m-%d %H:%M:%S')
+                    timediff = to_time_f - from_time_f
+                    dt = parse(str(timediff))
+                    print from_time_f,to_time_f,timediff
+                    if dt.minute < 25:
+                        ot = math.floor(ot_hours)
+                    if dt.minute in range(25,45): 
+                        ot = ot_hours
+                    if dt.minute > 45:    
+                        ot = math.ceil(ot_hours)
+                    print ot   
                     ts_id = frappe.db.get_value(
                         "Timesheet", {"employee": doc.employee, "start_date": from_date, "end_date": to_date})
                     if ts_id:
@@ -114,11 +124,10 @@ def create_ts():
                             "end_date": to_date,
                         })
                         ts.time_logs[0].activity_type = "OT"
-                        ts.time_logs[0].hours = round(
-                            flt(ot_hours / 3600.00))
+                        ts.time_logs[0].hours = ot
                         ts.time_logs[0].from_time = from_time_f
                         ts.time_logs[0].to_time = to_time_f
-                        ts.save(ignore_permissions=True)
+                        ts.save(ignore_ permissions=True)
                         frappe.db.commit()
                     else:
                         ts = frappe.new_doc("Timesheet")
@@ -128,14 +137,13 @@ def create_ts():
                         ts.end_date = to_date
                         ts.append("time_logs", {
                             "activity_type": "OT",
-                            "hours": round(flt(ot_hours / 3600.00)),
+                            "hours": ot,
                             "from_time": from_time_f,
                             "to_time": to_time_f
                         })
                         ts.insert()
                         ts.save(ignore_permissions=True)
                         frappe.db.commit()
-
 
 def calculate_hours(in_date, out_date, in_time, out_time, employee):
     working_hrs = frappe.db.get_value("Employee", employee, "working_hours")
@@ -159,7 +167,7 @@ def calculate_hours(in_date, out_date, in_time, out_time, employee):
         min_hr = timedelta(seconds=3600)
         ot_f = timedelta(seconds=overtime)
         if ot_f > min_hr:
-            return ot_f.seconds
+            return (ot_f.seconds / 3600.00)
 
 
 def calculate_present_days(doc, method):
@@ -277,9 +285,9 @@ def round_dt(dt, dttype):
     #   delta = next(x for x in xrange(0,3601,900) if x>=nsecs) - nsecs
     # analytic way:
     if dttype == 'out':
-        delta = math.floor(nsecs / 900) * 900 - nsecs
+        delta = math.floor(nsecs / 1800) * 1800 - nsecs
     else:
-        delta = math.ceil(nsecs / 900) * 900 - nsecs
+        delta = math.ceil(nsecs / 1800) * 1800 - nsecs
     # time + number of seconds to quarter hour mark.
     return dt + timedelta(seconds=delta)
 
