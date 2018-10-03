@@ -1,0 +1,31 @@
+{
+ "custom_fields": [], 
+ "custom_perms": [], 
+ "doctype": "Salary Structure Employee", 
+ "property_setters": [
+  {
+   "_assign": null, 
+   "_comments": null, 
+   "_liked_by": null, 
+   "_user_tags": null, 
+   "creation": "2018-01-26 18:12:01.165298", 
+   "default_value": null, 
+   "doc_type": "Salary Structure Employee", 
+   "docstatus": 0, 
+   "doctype_or_field": "DocField", 
+   "field_name": "employee", 
+   "idx": 0, 
+   "modified": "2018-01-26 18:12:01.165298", 
+   "modified_by": "hari@starboxes.in", 
+   "name": "Salary Structure Employee-employee-width", 
+   "owner": "hari@starboxes.in", 
+   "parent": null, 
+   "parentfield": null, 
+   "parenttype": null, 
+   "property": "width", 
+   "property_type": null, 
+   "value": "207"
+  }
+ ], 
+ "sync_on_migrate": 1
+}
