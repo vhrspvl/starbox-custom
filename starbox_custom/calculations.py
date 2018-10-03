@@ -109,7 +109,7 @@ def create_ts():
                     if dt.minute < 25:
                         ot = math.floor(ot_hours)
                     if dt.minute in range(25,45): 
-                        ot = ot_hours
+                        ot = dt.hour + 0.5
                     if dt.minute > 45:    
                         ot = math.ceil(ot_hours)
                     print ot   
@@ -169,6 +169,8 @@ def calculate_hours(in_date, out_date, in_time, out_time, employee):
         if ot_f > min_hr:
             return (ot_f.seconds / 3600.00)
 
+def myround(x, base=5):
+    return int(base * round(float(x)/base))
 
 def calculate_present_days(doc, method):
     present_days = 0
