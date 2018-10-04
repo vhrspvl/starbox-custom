@@ -220,9 +220,21 @@ def get_leave(emp, start_date, end_date):
     }, as_dict=1)
 
     for l in leave:
-        count += l["total_leave_days"]
+        counr = ['8939837002']
+    # send_st += l["total_leave_days"]
     return count
 
+@frappe.whitelist()
+def send_message():
+    day = add_days(today(), -1)
+    query = """select department as Department,count(*) as Count from `tabAttendance` where attendance_date = '%s' group by department""" % day
+    att = frappe.db.sql(query, as_dict=1)
+    if att:
+        message = "DEPTWISE PRESENT COUNT - %s " % frappe.utils.formatdate(day)
+        for at in att:
+            message += "%(Department)s : %(Count)s\n" % at
+        number = ['8939837002']
+        send_sms(number, message)
 
 def floor_dt(dt):
     nsecs = dt.minute*60+dt.second+dt.microsecond*1e-6
@@ -452,19 +464,7 @@ def clc_calculator():
         clc.save(ignore_permissions=True)
 
 
-@frappe.whitelist()
-def send_message():
-    att = frappe.db.sql("Attendance",filters={"status": "Present"})
-        # "select count(*) from tabAttendance where attendance_date='2018-07-05' and status = 'Absent'", as_dict=1)
-    # for each in att:
-    # text.append()
-        # jinja to string convertion happens here
-    # print context
-    message = context
-    # message = frappe.render_template(message, context)
-    # print message
-    # # number = ['8939837002']
-    # # send_sms(number, message)
+
 
     # try:
     #     time.strptime(doc.in_time, '%H:%M:%S')
