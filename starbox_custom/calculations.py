@@ -233,7 +233,7 @@ def send_message():
     query = """select department as Department,count(*) as Count from `tabAttendance` where attendance_date = '%s' group by department""" % day
     att = frappe.db.sql(query, as_dict=1)
     # if att:
-    message = "DEPTWISE PRESENT COUNT - %s " % frappe.utils.formatdate(day)
+    message = "DEPTWISE PRESENT COUNT - %s\n " % frappe.utils.formatdate(day)
     for at in att:
         message += "%(Department)s : %(Count)s\n" % at
     number = numbers
