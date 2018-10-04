@@ -220,21 +220,24 @@ def get_leave(emp, start_date, end_date):
     }, as_dict=1)
 
     for l in leave:
-        counr = ['8939837002']
-    # send_st += l["total_leave_days"]
+        count += l["total_leave_days"]
     return count
 
 @frappe.whitelist()
 def send_message():
+    get_numbers = frappe.db.get_single_value("Starbox settings","sms_numbers")
+    numbers = []
+    for n in get_numbers.split('\n'):
+        numbers.append(n)
     day = add_days(today(), -1)
     query = """select department as Department,count(*) as Count from `tabAttendance` where attendance_date = '%s' group by department""" % day
     att = frappe.db.sql(query, as_dict=1)
-    if att:
-        message = "DEPTWISE PRESENT COUNT - %s " % frappe.utils.formatdate(day)
-        for at in att:
-            message += "%(Department)s : %(Count)s\n" % at
-        number = ['8939837002']
-        send_sms(number, message)
+    # if att:
+    message = "DEPTWISE PRESENT COUNT - %s " % frappe.utils.formatdate(day)
+    for at in att:
+        message += "%(Department)s : %(Count)s\n" % at
+    number = numbers
+    send_sms(number, message)
 
 def floor_dt(dt):
     nsecs = dt.minute*60+dt.second+dt.microsecond*1e-6
