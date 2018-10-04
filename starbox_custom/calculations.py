@@ -102,13 +102,8 @@ def create_ts():
                     from_date = doc.attendance_date
                     to_date = doc.out_date
                     from_time = str(from_date) + " " + doc.in_time
-                    holiday = frappe.get_list(
-                        "Holiday List", filters={'holiday_date': doc.attendance_date})
-                    if holiday:
-                        from_time_f = datetime.strptime(from_time, '%Y-%m-%d %H:%M:%S') 
-                    else:
-                        from_time_f = datetime.strptime(
-                            from_time, '%Y-%m-%d %H:%M:%S') + timedelta(hours=((employee.working_hours).seconds // 3600))
+                    from_time_f = datetime.strptime(
+                        from_time, '%Y-%m-%d %H:%M:%S') + timedelta(hours=((employee.working_hours).seconds // 3600))
                     to_time = str(to_date) + " " + doc.out_time
                     to_time_f = datetime.strptime(
                         to_time, '%Y-%m-%d %H:%M:%S')
