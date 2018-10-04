@@ -224,7 +224,7 @@ def get_leave(emp, start_date, end_date):
     return count
 
 @frappe.whitelist()
-def send_message():
+def send_contract_deptwise_att():
     get_numbers = frappe.db.get_single_value("Starbox settings","sms_numbers")
     numbers = []
     for n in get_numbers.split('\n'):
@@ -239,6 +239,22 @@ def send_message():
     number = numbers
     send_sms(number, message)
 
+@frappe.whitelist()
+def send_contractorwise_att():
+    get_numbers = frappe.db.get_single_value("Starbox settings","sms_numbers")
+    numbers = []
+    for n in get_numbers.split('\n'):
+        numbers.append(n)
+    day = add_days(today(), -1)
+    query = """select contractor as Contractor,count(*) as Count from `tabAttendance` where attendance_date = '%s' and employment_type="Contract" group by contractor""" % day
+    att = frappe.db.sql(query, as_dict=1)
+    # if att:
+    message = "CONTRACTORWISE EMPLOYEES PRESENT COUNT - %s\n " % frappe.utils.formatdate(day)
+    for at in att:
+        message += "%(Contractor)s : %(Count)s\n" % at
+    number = numbers
+    send_sms(number, message)
+    
 def floor_dt(dt):
     nsecs = dt.minute*60+dt.second+dt.microsecond*1e-6
     delta = math.floor(nsecs / 900) * 900 - nsecs
