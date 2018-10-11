@@ -16,10 +16,12 @@ from datetime import datetime, timedelta
 def onsubmit(doc,method):
     removelop(doc, method)
     total_working_hours(doc, method)
+    removedoublepunch(doc,method)
 
 def updateaftersubmit(doc, method):
     removelop(doc, method)
     total_working_hours(doc, method)
+    removedoublepunch(doc,method)
 
 
 def total_working_hours(doc, method):
@@ -85,3 +87,14 @@ def removelop(doc, method):
         lap.save(ignore_permissions=True)
         lap.submit()
         frappe.db.commit()
+
+@frappe.whitelist()
+def removedoublepunch(doc,method):
+    if doc.in_time and doc.out_time:
+        if doc.in_time == doc.out_time:
+            att = frappe.get_doc("Attendance",doc.name)
+            att.update({
+            "out_time": ""
+                })  
+            att.db_update()
+            frappe.db.commit()

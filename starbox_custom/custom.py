@@ -156,6 +156,8 @@ def removeduplicateatt():
             frappe.delete_doc("Attendance", obj.name)
             frappe.db.commit()
 
+
+
 @frappe.whitelist()
 def emp_absent_today():
     # day = add_days(today(), -1)
