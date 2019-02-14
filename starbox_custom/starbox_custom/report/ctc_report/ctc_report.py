@@ -258,7 +258,7 @@ def execute(filters=None):
                     elif total_earnings > 5001 and total_earnings < 7500:
                         pt = flt("50")
                         row += [round(pt)]
-                    elif total_earnings >= 7501 and total_leave_days <= 10000:
+                    elif total_earnings >= 7501 and total_earnings <= 10000:
                         pt = flt("98")
                         row += [round(pt)]
                     elif total_earnings >= 10001 and total_earnings <= 12500:

@@ -131,9 +131,9 @@ scheduler_events = {
         "00 10 * * *": [
             "starbox_custom.calculations.create_ts"
         ],
-        "45 11 * * *": [
-            "starbox_custom.calculations.clc_calculator"
-        ]
+        # "45 11 * * *": [
+        #     "starbox_custom.calculations.clc_calculator"
+        # ]
 
     },
 

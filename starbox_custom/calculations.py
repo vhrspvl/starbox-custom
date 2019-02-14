@@ -84,9 +84,8 @@ def create_ts_submit(doc, method):
 
 @frappe.whitelist()
 def create_ts():
-    # days = ["2018-09-01", "2018-09-02", "2018-09-03", "2018-09-04","2018-09-05", "2018-09-06",
-    #         "2018-09-07", "2018-09-08", "2018-09-09", "2018-09-10", "2018-09-11", "2018-09-12", "2018-09-13",
-    #         "2018-09-14", "2018-09-15", "2018-09-16", "2018-09-17", "2018-09-18", "2018-09-19", "2018-09-20","2018-09-21","2018-09-22","2018-09-23","2018-09-24","2018-09-25","2018-09-26","2018-09-27","2018-09-28","2018-09-29","2018-09-30"]
+    # days = ["2018-10-01", "2018-10-02", "2018-10-03", "2018-10-04","2018-10-05", "2018-10-06","2018-10-07", "2018-10-08", "2018-10-09", "2018-10-10", "2018-10-11", "2018-10-12", "2018-10-13","2018-10-14", "2018-10-15", "2018-10-16", "2018-10-17", "2018-10-18", "2018-10-19", "2018-10-20","2018-10-21","2018-10-22","2018-10-23","2018-10-24","2018-10-25","2018-10-26"]
+    # # "2018-10-20","2018-10-21",]
     day = add_days(today(), -1)
     # day = "2018-09-01"
     # for day in days:
@@ -102,12 +101,16 @@ def create_ts():
                     from_date = doc.attendance_date
                     to_date = doc.out_date
                     from_time = str(from_date) + " " + doc.in_time
+                    print doc.attendance_date,doc.out_date,doc.in_time,doc.out_time,employee.name
                     from_time_f = datetime.strptime(
                         from_time, '%Y-%m-%d %H:%M:%S') + timedelta(hours=((employee.working_hours).seconds // 3600))
                     to_time = str(to_date) + " " + doc.out_time
                     to_time_f = datetime.strptime(
                         to_time, '%Y-%m-%d %H:%M:%S')
                     timediff = to_time_f - from_time_f
+                    # if "1 day" in timediff:
+                    #     timediff = timediff - timedelta(days=1) 
+                    print timediff    
                     dt = parse(str(timediff))
                     if dt.minute < 25:
                         ot = math.floor(ot_hours)

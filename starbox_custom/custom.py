@@ -4,6 +4,7 @@
 
 from __future__ import unicode_literals
 import frappe
+import json
 from frappe import _
 from frappe.utils.data import today
 from frappe.utils import formatdate, getdate, cint, add_months, date_diff, add_days, flt, cstr, time_diff, time_diff_in_seconds, time_diff_in_hours, today
@@ -23,10 +24,11 @@ def update_in_biometric_machine(uid, uname):
         r = requests.post(url)
     return r.content
 
+
 @frappe.whitelist()
 def delete_bulk():
     left_employees = frappe.get_list(
-        "Employee", fields=["biometric_id"], filters={"status": "Left"})
+        "Employee", fields=["biometric_id", "name"], filters={"status": "Left"}, limit=1)
     for l in left_employees:
         stgids = frappe.db.get_all("Service Tag")
         for stgid in stgids:
@@ -36,6 +38,7 @@ def delete_bulk():
             print url
             r = requests.post(url)
             print r.content
+
 
 @frappe.whitelist()
 def get_employee_attendance(doc, method):
@@ -107,6 +110,7 @@ def calculate_total(doc, method):
 
     doc.total_score = total
 
+
 @frappe.whitelist()
 def mark_on_leave(doc, method):
     lap = frappe.get_doc("Leave Application", doc.name)
@@ -144,18 +148,25 @@ def cancel_on_leave(doc, method):
             att.db_update()
             frappe.db.commit()
 
+
 @frappe.whitelist()
 def removeduplicateatt():
-    day = add_days(today(), -1)
-    get_att = frappe.db.sql("""SELECT name FROM `tabAttendance` WHERE attendance_date = %s GROUP BY employee
-                    HAVING COUNT(employee) >1""", (day), as_dict=1)
-    if get_att:
-        for att in get_att:
-            obj = frappe.get_doc("Attendance", att["name"])
-            obj.db_set("docstatus", 2)
-            frappe.delete_doc("Attendance", obj.name)
-            frappe.db.commit()
+    for dt in daterange(date(2018, 12, 1), date(2018, 12, 31)):
+        day = dt
+        # day = add_days(today(), -1)
+        get_att = frappe.db.sql("""SELECT name FROM `tabAttendance` WHERE attendance_date = %s GROUP BY employee
+                        HAVING COUNT(employee) >1""", (day), as_dict=1)
+        if get_att:
+            for att in get_att:
+                obj = frappe.get_doc("Attendance", att["name"])
+                obj.db_set("docstatus", 2)
+                frappe.delete_doc("Attendance", obj.name)
+                frappe.db.commit()
 
+
+def daterange(date1, date2):
+    for n in range(int((date2 - date1).days)+1):
+        yield date1 + timedelta(n)
 
 
 @frappe.whitelist()
@@ -171,7 +182,7 @@ def emp_absent_today():
         present_emp = frappe.db.sql(query, as_dict=True)
         pre_abs = False
         next_abs = False
-        for emp in frappe.get_list('Employee', filters={'status': 'Active', 'employment_type': ( '!=','Contract')}):
+        for emp in frappe.get_list('Employee', filters={'status': 'Active', 'employment_type': ('!=', 'Contract')}):
             joining_date = frappe.db.get_value(
                 "Employee", emp, ["date_of_joining"])
             holiday = frappe.get_list("Holiday List", filters={
@@ -222,14 +233,15 @@ def emp_absent_today():
                 attendance.submit()
                 frappe.db.commit()
 
+
 @frappe.whitelist()
 def update_leave_application():
     # day = add_days(today(), -1)
-    days = ["2018-09-01","2018-09-02","2018-09-03", "2018-09-04","2018-09-05", "2018-09-06",
+    days = ["2018-09-01", "2018-09-02", "2018-09-03", "2018-09-04", "2018-09-05", "2018-09-06",
             "2018-09-07", "2018-09-08", "2018-09-09", "2018-09-10", "2018-09-11", "2018-09-12", "2018-09-13",
             "2018-09-14", "2018-09-15", "2018-09-16", "2018-09-17", "2018-09-18", "2018-09-19", "2018-09-20",
-            "2018-09-21","2018-09-22","2018-09-23","2018-09-24","2018-09-25","2018-09-26","2018-09-27",
-            "2018-09-28","2018-09-29","2018-09-30"]
+            "2018-09-21", "2018-09-22", "2018-09-23", "2018-09-24", "2018-09-25", "2018-09-26", "2018-09-27",
+            "2018-09-28", "2018-09-29", "2018-09-30"]
     for day in days:
         employees = frappe.get_all(
             'Employee', filters={"status": "Active", 'employment_type': 'DET'})
@@ -333,6 +345,7 @@ def get_holidays_for_employee(employee, day):
 
     return holidays
 
+
 def get_active_emp():
     active_emp = frappe.db.sql(
         """select emp.working_hours from `tabEmployee` emp where emp.status = "Active" and emp.employment_type="Contract" order by emp.name""", as_dict=1)
@@ -371,6 +384,22 @@ def emp_ot():
                 ts.save(ignore_permissions=True)
                 frappe.db.commit()
 
+
+@frappe.whitelist()
+def send_reference_mail(job_title, role):
+    from frappe.utils.user import get_enabled_system_users
+    users = None
+    if not users:
+        users = [u.email_id or u.name for u in get_enabled_system_users()]
+        for u in users:
+            frappe.sendmail(recipients=("ramya.a@voltechgroup.com"),
+                            subject=_("New Job Opening"),
+                            message=_("""Job Title:{0},
+                                        Role Specification:{1}""").format(
+                                job_title, role),
+                            now=True)
+        return "ok"
+        # reply_to=e.company_email or e.personal_email or e.user_id)
 
 
 # @frappe.whitelist()
@@ -481,7 +510,7 @@ def emp_ot():
 #                 mtime = att.timestamp.time()
 #                 userid = att.user_id
 #                 employee = frappe.db.get_value("Employee", {
-#                     "biometric_id": userid, "status": "Active"})
+#                     "biometric_id": userid, "status": mmonth"Active"})
 #                 if employee:
 #                     doc = frappe.get_doc("Employee", employee)
 #                     pr_id = frappe.db.get_value("Punch Record", {
@@ -766,3 +795,94 @@ def emp_ot():
 #                     "employee": employee.name, "status": "Absent", "attendance_date": add_days(day, 1)})
 #                 if pre_day and next_day:
 #                     print employee
+
+
+# @frappe.whitelist()
+# def remove_left_employee_list():
+#     temp = frappe.get_list("Temproary")
+
+#     for emp in temp:
+#         print emp.name
+#         emp_no = frappe.db.get_value(
+#             "Employee", {"employee_number": emp.name}, "employee")
+
+        #         emp_att = frappe.get_list("Attendance", filters={
+        #             "employee": emp_no}, fields=['name'])
+        #         for att in emp_att:
+        #             print emp_no
+        #             if frappe.db.exists("Attendance", att.name):
+        #                 at = frappe.get_doc("Attendance", att.name)
+        #                 print at
+        #                 # at.cancel()
+        #                 # frappe.delete_doc('Attendance', att.name)
+        #                 # frappe.db.commit()
+
+        #         # emp_la = frappe.get_list("Leave Application", filters={
+        #         #     "employee": emp_no})
+        #         # for la in emp_la:
+        #         #     if frappe.db.exists("Leave Application", la.name):
+        #         # ela = frappe.get_doc("Leave Application", la.name)
+        #         # ela.cancel()
+        #         # frappe.delete_doc('Leave Application', la.name)
+        #         # frappe.db.commit()
+
+        #         emp_sa = frappe.get_list("Sunday Attendance", filters={
+        #             "employee": emp_no})
+        #         # for sa in emp_sa:
+        #         #     if frappe.db.exists("Sunday Attendance", sa.name):
+        #         # esa = frappe.get_doc("Sunday Attendance", sa.name)
+        #         # esa.cancel()
+        #         # frappe.delete_doc('Sunday Attendance', sa.name)
+        #         # frappe.db.commit()
+
+        #         emp_lat = frappe.get_list("Leave Allocation", filters={
+        #             "employee": emp_no})
+        #         # for lat in emp_lat:
+        #         # if frappe.db.exists("Leave Allocation", lat.name):
+        #         # elat = frappe.get_doc("Leave Allocation", lat.name)
+        #         # elat.cancel()
+        #         # frappe.delete_doc('Leave Allocation', lat.name)
+        #         # frappe.db.commit()
+
+        #         emp_up = frappe.get_list("User Permission", filters={
+        #             "for_value": emp_no})
+        #         # for up in emp_up:
+        #         # if frappe.db.exists("User Permission", up.name):
+        #         #     eup = frappe.get_doc("User Permission", up.name)
+        #         # up.cancel()
+        #         # frappe.delete_doc('User Permission', up.name)
+        #         # frappe.db.commit()
+
+        # emp_list = frappe.get_list(
+        #     "Employee", filters={"employee_number": emp_no})
+        # for e in emp_list:
+        #     print e
+        #     if frappe.db.exists("Employee", e.name):
+        #         el = frappe.get_doc("Employee", e.name)
+        #     frappe.delete_doc('Employee', e.name)
+        #     frappe.db.commit()
+
+
+# @frappe.whitelist()
+# def bulk_restore():
+#     ddd = frappe.get_all("Deleted Document", {'creation': (
+#         '>', '2019-02-05'), "deleted_doctype": "Leave Application", "restored": 0})
+#     for d in ddd:
+#         deleted = frappe.get_doc('Deleted Document', d)
+#         print deleted.deleted_name
+#         doc = frappe.gsttaffet_doc(json.loads(deleted.data))
+#         if not doc.employee == 'Israel':
+#             try:
+#                 doc.insert()
+#             except frappe.DocstatusTransitionError:
+#                 doc.docstatus = 0
+#                 doc.insert()
+
+#             doc.add_comment('Edit', _('restored {0} as {1}').format(
+#                 deleted.deleted_name, doc.name))
+
+#             deleted.new_name = doc.name
+#             deleted.restored = 1
+#             deleted.db_update()
+
+    # frappe.msgprint(_('Document Restored'))
