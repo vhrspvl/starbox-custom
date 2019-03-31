@@ -30,6 +30,8 @@ def total_working_hours(doc, method):
             doc.in_time, '%H:%M:%S')
         out_time_f = datetime.strptime(
             doc.out_time, '%H:%M:%S')
+        frappe.errprint(type(doc.attendance_date))
+        frappe.errprint(type(doc.out_date))
         actual_working_hours = frappe.db.get_value(
             "Employee", doc.employee, "working_hours")
         td = (out_time_f - in_time_f) - actual_working_hours

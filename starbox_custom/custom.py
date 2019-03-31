@@ -802,38 +802,37 @@ def send_reference_mail(job_title, role):
 #     temp = frappe.get_list("Temproary")
 
 #     for emp in temp:
-#         print emp.name
 #         emp_no = frappe.db.get_value(
-#             "Employee", {"employee_number": emp.name}, "employee")
-
-        #         emp_att = frappe.get_list("Attendance", filters={
-        #             "employee": emp_no}, fields=['name'])
-        #         for att in emp_att:
-        #             print emp_no
-        #             if frappe.db.exists("Attendance", att.name):
-        #                 at = frappe.get_doc("Attendance", att.name)
-        #                 print at
-        #                 # at.cancel()
-        #                 # frappe.delete_doc('Attendance', att.name)
-        #                 # frappe.db.commit()
-
-        #         # emp_la = frappe.get_list("Leave Application", filters={
-        #         #     "employee": emp_no})
-        #         # for la in emp_la:
-        #         #     if frappe.db.exists("Leave Application", la.name):
-        #         # ela = frappe.get_doc("Leave Application", la.name)
-        #         # ela.cancel()
-        #         # frappe.delete_doc('Leave Application', la.name)
-        #         # frappe.db.commit()
-
-        #         emp_sa = frappe.get_list("Sunday Attendance", filters={
-        #             "employee": emp_no})
-        #         # for sa in emp_sa:
-        #         #     if frappe.db.exists("Sunday Attendance", sa.name):
-        #         # esa = frappe.get_doc("Sunday Attendance", sa.name)
-        #         # esa.cancel()
-        #         # frappe.delete_doc('Sunday Attendance', sa.name)
-        #         # frappe.db.commit()
+#             "Employee", emp.name, "employee")
+#         emp_att = frappe.get_list("Attendance", filters={
+#             "employee": emp_no}, fields=['name'])
+#         for att in emp_att:
+#             if frappe.db.exists("Attendance", att.name):
+#                 at = frappe.get_doc("Attendance", att.name)
+#                 print at.name
+#                 at.cancel()
+#                 frappe.delete_doc('Attendance', att.name)
+#                 frappe.db.commit()
+#         emp_la = frappe.get_list("Leave Application", filters={
+#             "employee": emp_no})
+#         for la in emp_la:
+#             if frappe.db.exists("Leave Application", la.name):
+#                 ela = frappe.get_doc("Leave Application", la.name)
+#                 ela.cancel()
+#                 frappe.delete_doc('Leave Application', la.name)
+#                 frappe.db.commit()
+#         emp_sa = frappe.get_list("Sunday Attendance", filters={
+#             "employee": emp_no})
+#         for sa in emp_sa:
+#             if frappe.db.exists("Sunday Attendance", sa.name):
+#                 esa = frappe.get_doc("Sunday Attendance", sa.name)
+#                 esa.cancel()
+#                 frappe.delete_doc('Sunday Attendance', sa.name)
+#                 frappe.db.commit()
+#         if frappe.db.exists("Employee", emp.name):
+#             print frappe.db.exists("Employee", emp.name)
+#             frappe.delete_doc('Employee', emp.name)
+#             frappe.db.commit()
 
         #         emp_lat = frappe.get_list("Leave Allocation", filters={
         #             "employee": emp_no})
@@ -853,36 +852,27 @@ def send_reference_mail(job_title, role):
         #         # frappe.delete_doc('User Permission', up.name)
         #         # frappe.db.commit()
 
-        # emp_list = frappe.get_list(
-        #     "Employee", filters={"employee_number": emp_no})
-        # for e in emp_list:
-        #     print e
-        #     if frappe.db.exists("Employee", e.name):
-        #         el = frappe.get_doc("Employee", e.name)
-        #     frappe.delete_doc('Employee', e.name)
-        #     frappe.db.commit()
 
+@frappe.whitelist()
+def bulk_restore():
+    ddd = frappe.get_all("Deleted Document", {'creation': (
+        '>', '2019-02-05'), "deleted_doctype": "Leave Application", "restored": 0})
+    for d in ddd:
+        deleted = frappe.get_doc('Deleted Document', d)
+        print deleted.deleted_name
+        doc = frappe.gsttaffet_doc(json.loads(deleted.data))
+        if not doc.employee == 'Israel':
+            try:
+                doc.insert()
+            except frappe.DocstatusTransitionError:
+                doc.docstatus = 0
+                doc.insert()
 
-# @frappe.whitelist()
-# def bulk_restore():
-#     ddd = frappe.get_all("Deleted Document", {'creation': (
-#         '>', '2019-02-05'), "deleted_doctype": "Leave Application", "restored": 0})
-#     for d in ddd:
-#         deleted = frappe.get_doc('Deleted Document', d)
-#         print deleted.deleted_name
-#         doc = frappe.gsttaffet_doc(json.loads(deleted.data))
-#         if not doc.employee == 'Israel':
-#             try:
-#                 doc.insert()
-#             except frappe.DocstatusTransitionError:
-#                 doc.docstatus = 0
-#                 doc.insert()
+            doc.add_comment('Edit', _('restored {0} as {1}').format(
+                deleted.deleted_name, doc.name))
 
-#             doc.add_comment('Edit', _('restored {0} as {1}').format(
-#                 deleted.deleted_name, doc.name))
-
-#             deleted.new_name = doc.name
-#             deleted.restored = 1
-#             deleted.db_update()
+            deleted.new_name = doc.name
+            deleted.restored = 1
+            deleted.db_update()
 
     # frappe.msgprint(_('Document Restored'))

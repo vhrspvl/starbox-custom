@@ -1,0 +1,29 @@
+/* .list-item--head {
+    
+     background-color: #ffbf80;
+    border-bottom: 1px solid #dfd9d9;
+    cursor: auto;
+
+}
+.page-form {
+
+    margin: 0px;
+    padding-right: 15px;
+    padding-top: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    border-bottom: 1px solid #d1d8dd;
+    background-color: #3D9EDE;
+
+} */
+/* 
+.module-section {
+
+    border-bottom: 1px solid #EBEFF2;
+
+} */
+.hero-and-content {
+    background-image:url("/files/back.jpeg");
+    /* background-color: #fafbfc; */
+
+}

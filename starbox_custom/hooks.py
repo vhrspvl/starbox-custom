@@ -35,7 +35,7 @@ page_js = {"employee-attendance-tool": "public/js/employee_attendance_tool.js"}
 # ------------------
 
 # include js, css files in header of desk.html
-# app_include_css = "/assets/starbox_custom/css/starbox_custom.css"
+app_include_css = "/assets/starbox_custom/css/starbox_custom.css"
 # app_include_js = "/assets/starbox_custom/js/starbox_custom.js"
 
 # include js, css files in headerublic/js/doctype_tree.js"}

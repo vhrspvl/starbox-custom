@@ -35,85 +35,86 @@ def execute(filters=None):
         cl_present_days = get_cl_attendance(cl.name, filters)
         working_hours = cl.working_hours
         actual_working_hours = (working_hours.seconds / 3600.00)
-        for present in cl_present_days:
-            in_time = present.in_time
-            out_time = present.out_time
-            # from_date = present.attendance_date
-            # to_date = present.out_date
-            # from_time = str(from_date) + " " + in_time
-            # from_time_f = datetime.strptime(
-            #     from_time, '%Y-%m-%d %H:%M:%S')
-            # if to_date:
-            #     to_time = str(to_date) + " " + out_time
-            #     to_time_f = datetime.strptime(
-            #         to_time, '%Y-%m-%d %H:%M:%S')
-            #     worked_hrs = time_diff_in_seconds(
-            #         to_time_f, from_time_f)
-            #     ot_f = timedelta(seconds=worked_hrs)
-            #     frappe.errprint(ot_f // 3600)
-            total_working_hours = present.total_working_hours
-        if cl_present_days:
-            if in_time:
-                row += [in_time]
-            else:
-                row += ["00:00:00"]
-            if out_time:
-                row += [out_time]
-            else:
-                row += ["00:00:00"]
-            if in_time:
-                row += [total_working_hours]
-            else:
-                row += ["0.00"]
-        else:
-            row += ["", "", ""]
-
-        ctc_day = cl.cost
-        if ctc_day:
-            row += [ctc_day]
-            if total_working_hours > 0:
-                actual_hours = total_working_hours - actual_working_hours
-                if total_working_hours > actual_working_hours:
-                    earned_ctc = flt((total_working_hours - actual_hours) *
-                                     (ctc_day / actual_working_hours))
+        if actual_working_hours > 0:
+            for present in cl_present_days:
+                in_time = present.in_time
+                out_time = present.out_time
+                # from_date = present.attendance_date
+                # to_date = present.out_date
+                # from_time = str(from_date) + " " + in_time
+                # from_time_f = datetime.strptime(
+                #     from_time, '%Y-%m-%d %H:%M:%S')
+                # if to_date:
+                #     to_time = str(to_date) + " " + out_time
+                #     to_time_f = datetime.strptime(
+                #         to_time, '%Y-%m-%d %H:%M:%S')
+                #     worked_hrs = time_diff_in_seconds(
+                #         to_time_f, from_time_f)
+                #     ot_f = timedelta(seconds=worked_hrs)
+                #     frappe.errprint(ot_f // 3600)
+                total_working_hours = present.total_working_hours
+            if cl_present_days:
+                if in_time:
+                    row += [in_time]
                 else:
-                    earned_ctc = flt(total_working_hours *
-                                     (ctc_day / actual_working_hours))
-                if earned_ctc:
-                    row += [round(earned_ctc)]
-                    total_earnings += earned_ctc
-                    grand_earnings += earned_ctc
+                    row += ["00:00:00"]
+                if out_time:
+                    row += [out_time]
+                else:
+                    row += ["00:00:00"]
+                if in_time:
+                    row += [total_working_hours]
+                else:
+                    row += ["0.00"]
+            else:
+                row += ["", "", ""]
+
+            ctc_day = cl.cost
+            if ctc_day:
+                row += [ctc_day]
+                if total_working_hours > 0:
+                    actual_hours = total_working_hours - actual_working_hours
+                    if total_working_hours > actual_working_hours:
+                        earned_ctc = flt((total_working_hours - actual_hours) *
+                                        (ctc_day / actual_working_hours))
+                    else:
+                        earned_ctc = flt(total_working_hours *
+                                        (ctc_day / actual_working_hours))
+                    if earned_ctc:
+                        row += [round(earned_ctc)]
+                        total_earnings += earned_ctc
+                        grand_earnings += earned_ctc
+                    else:
+                        row += ["0"]
+                else:
+                    row += ["0", "0"]
+            else:
+                row += ["0", "0", "0"]
+
+            ot_hours = total_working_hours - actual_working_hours
+            if ot_hours > 0:
+                row += [ot_hours]
+            else:
+                row += ["0"]
+
+            ot_day = (ctc_day / actual_working_hours)
+            if ot_hours > 0:
+                row += [ot_day]
+                earned_ot = flt(ot_hours * ot_day)
+                if earned_ot:
+                    row += [round(earned_ot)]
+                    total_earnings += earned_ot
                 else:
                     row += ["0"]
             else:
                 row += ["0", "0"]
-        else:
-            row += ["0", "0", "0"]
 
-        ot_hours = total_working_hours - actual_working_hours
-        if ot_hours > 0:
-            row += [ot_hours]
-        else:
-            row += ["0"]
-
-        ot_day = (ctc_day / actual_working_hours)
-        if ot_hours > 0:
-            row += [ot_day]
-            earned_ot = flt(ot_hours * ot_day)
-            if earned_ot:
-                row += [round(earned_ot)]
-                total_earnings += earned_ot
+            if total_earnings:
+                grand_totals += total_earnings
+                row += [round(total_earnings)]
             else:
-                row += ["0"]
-        else:
-            row += ["0", "0"]
-
-        if total_earnings:
-            grand_totals += total_earnings
-            row += [round(total_earnings)]
-        else:
-            row += [""]
-        data.append(row)
+                row += [""]
+            data.append(row)
 
     return columns, data
 
