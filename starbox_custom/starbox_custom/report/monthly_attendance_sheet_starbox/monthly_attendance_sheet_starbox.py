@@ -31,7 +31,7 @@ def execute(filters=None):
         if not emp_det:
             continue
 
-        row = [emp, emp_det.employee_name, emp_det.branch, emp_det.department, emp_det.designation,
+        row = [emp, emp_det.employee_name, emp_det.employment_type,emp_det.branch, emp_det.department, emp_det.designation,
                emp_det.company]
 
         total_p = total_a = total_l = 0.0
@@ -66,7 +66,7 @@ def execute(filters=None):
 def get_columns(filters):
     columns = [
         _("Employee") + ":Link/Employee:120", _("Employee Name") +
-        "::140", _("Branch") + ":Link/Branch:120",
+        "::140", _("Employment Type") + "::140",_("Branch") + ":Link/Branch:120",
         _("Department") + ":Link/Department:120", _("Designation") +
         ":Link/Designation:120",
         _("Company") + ":Link/Company:120"
@@ -116,7 +116,7 @@ def get_conditions(filters):
 
 def get_employee_details():
     emp_map = frappe._dict()
-    for d in frappe.db.sql("""select name, employee_name, designation, department, branch, company,
+    for d in frappe.db.sql("""select name, employee_name, employment_type,designation, department, branch, company,
 		holiday_list from tabEmployee""", as_dict=1):
         emp_map.setdefault(d.name, d)
 

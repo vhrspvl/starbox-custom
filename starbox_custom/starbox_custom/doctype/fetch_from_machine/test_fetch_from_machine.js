@@ -2,15 +2,15 @@
 // rename this file from _test_[name] to test_[name] to activate
 // and remove above this line
 
-QUnit.test("test: Manual Attendance Corrections", function (assert) {
+QUnit.test("test: Fetch From Machine", function (assert) {
 	let done = assert.async();
 
 	// number of asserts
 	assert.expect(1);
 
 	frappe.run_serially([
-		// insert a new Manual Attendance Corrections
-		() => frappe.tests.make('Manual Attendance Corrections', [
+		// insert a new Fetch From Machine
+		() => frappe.tests.make('Fetch From Machine', [
 			// values to be set
 			{key: 'value'}
 		]),

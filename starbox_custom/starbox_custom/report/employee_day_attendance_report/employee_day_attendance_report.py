@@ -21,7 +21,7 @@ def execute(filters=None):
     data = []
     row = []
     for emp in get_employees():
-        row = [emp.name, emp.biometric_id, emp.employee_name,
+        row = [emp.name, emp.biometric_id, emp.employee_name,emp.employment_type,
                emp.designation, emp.department, emp.contractor]
         att_details = frappe.db.get_value("Attendance", {'attendance_date': date, 'employee': emp.name}, [
                                           'name', 'total_working_hours', 'attendance_date', 'status', 'in_time', 'out_time'], as_dict=True)
@@ -60,7 +60,7 @@ def execute(filters=None):
                     row += [""]
 
                 if att_details.in_time and not att_details.out_time:
-                    row += ['Failed Out Punch']
+                    row += ['Miss Punch']
                 else:
                     row += [""]
 
@@ -75,6 +75,7 @@ def get_columns(filters):
         _("Employee") + ":Link/Employee:90",
         _("Employee ID") + ":Data:90",
         _("Employee Name") + "::150",
+         _("Employment Type") + "::150",
         _("Designation") + "::180",
         _("Department") + "::180",
         _("Contractor") + "::180",
@@ -90,7 +91,7 @@ def get_columns(filters):
 
 def get_employees():
     employees = frappe.db.sql(
-        """select name,biometric_id,employee_name,designation,department,contractor from tabEmployee where status = 'Active'""", as_dict=1)
+        """select name,biometric_id,employee_name,employment_type,designation,department,contractor from tabEmployee where status = 'Active'""", as_dict=1)
     return employees
 
 

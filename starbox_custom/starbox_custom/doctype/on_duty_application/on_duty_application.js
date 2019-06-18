@@ -92,5 +92,36 @@ frappe.ui.form.on('On Duty Application', {
 					frappe.msgprint(__("Approved successful"));
 				}
 			});
-		}
+		},
+		employee: function(frm){
+			frm.trigger("set_leave_approver")
+		},
+		set_leave_approver: function(frm) {
+			if(frm.doc.employee) {
+					// server call is done to include holidays in leave days calculations
+				return frappe.call({
+					method: 'erpnext.hr.doctype.leave_application.leave_application.get_leave_approver',
+					args: {
+						"employee": frm.doc.employee,
+					},
+					callback: function(r) {
+						if (r && r.message) {
+							frm.set_value('approver', r.message);
+						}
+					}
+				});
+			}
+		},
+		after_save: function(frm){
+			if(frm.doc.is_from_ar && frm.doc.status == "Applied"){
+				frappe.set_route("query-report", "Attendance Recapitulation")
+			}
+		},
+		refresh: function(frm){
+			if(frm.doc.is_from_ar){
+				frm.add_custom_button(__('Back'), function () {
+					frappe.set_route("query-report", "Attendance Recapitulation")
+				});
+			}
+		},
 	});

@@ -185,10 +185,12 @@ def calculate_present_days(doc, method):
         if (present["attendance_date"].strftime('%Y-%m-%d')) in holidays:
             present_days -= 1
     doc.present_days = present_days
-    doc.holidays = len(holidays)
-    leave = get_leave(doc.employee,
-                      doc.start_date, doc.end_date)
-    doc.leaves_availed = leave
+    doc.db_update()
+    # doc.present_days = present_days
+    # doc.holidays = len(holidays)
+    # leave = get_leave(doc.employee,
+    #                   doc.start_date, doc.end_date)
+    # doc.leaves_availed = leave
 
 
 def get_holidays_for_employee(emp, start_date, end_date):

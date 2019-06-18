@@ -38,6 +38,7 @@ def execute(filters=None):
             day += 1
             if day:
                 day_f = str(filters.year) + '-'+str(filters.month)+'-'+str(day)
+                
             day_f = datetime.strptime(day_f, "%Y-%m-%d").date()
             # holiday_list = get_holiday_list_for_employee(emp.name)
             holiday_list = frappe.db.get_value("Employee", {'employee':emp.name},['holiday_list'])
@@ -53,40 +54,43 @@ def execute(filters=None):
                 if assigned_shift:
                     working_shift = assigned_shift[0]['shift']
                 if att.in_time:
-                    from_time = datetime.strptime(att.in_time, "%H:%M:%S")
-                    # from_time = dt.time()
+                    dt = datetime.strptime(att.in_time, "%Y-%m-%d %H:%M:%S")
+                    from_time = dt.time()
                     shift_in_time = frappe.db.get_value("Shift Details",working_shift,"in_time")
                     emp_in_time = timedelta(hours=from_time.hour,minutes=from_time.minute,seconds=from_time.second)
                      #Check Movement Register
                     # if get_mr_in(att.employee,att.attendance_date):
                     #     emp_in_time = emp_in_time - get_mr_in(att.employee,att.attendance_date)
-
-                    if emp_in_time > shift_in_time:
-                        late_in = emp_in_time - shift_in_time
-                    else:
-                        late_in = timedelta(seconds=0)  
+                    if emp_in_time and shift_in_time:
+                        if emp_in_time > shift_in_time:
+                            late_in = emp_in_time - shift_in_time
+                        else:
+                            late_in = timedelta(seconds=0)  
 
                 if att.out_time:
-                    end_time = datetime.strptime(att.out_time, "%H:%M:%S")
+                    end_time = datetime.strptime(att.out_time, "%Y-%m-%d %H:%M:%S")
+                    end_time = end_time.time()
                     shift_out_time = frappe.db.get_value("Shift Details",working_shift,"out_time")
                     emp_out_time = timedelta(hours=end_time.hour,minutes=end_time.minute,seconds=end_time.second)
                     #Check Movement Register
                     # if get_mr_out(att.employee,att.attendance_date):
                     #     emp_out_time = emp_out_time + get_mr_out(att.employee,att.attendance_date)
-
-                    if emp_out_time < shift_out_time:
-                        early_out = shift_out_time - emp_out_time
-                    else:
-                        early_out = timedelta(seconds=0)
+                    if emp_out_time and shift_out_time:
+                        if emp_out_time < shift_out_time:
+                            early_out = shift_out_time - emp_out_time
+                        else:
+                            early_out = timedelta(seconds=0)
 
                 if holiday_date:
+                    
                     for h in holiday_date:
                         leave_record = get_leaves(att.employee,att.attendance_date)
-                        frappe.errprint(leave_record)
+                        if att.status == "Present":
+                            status = 'P'
                         # od_record = get_od(att.employee,att.attendance_date)
                         # elif get_continuous_absents(att.employee,att.attendance_date):
                         #     status = 'A'
-                        if leave_record[0]:
+                        elif leave_record[0]:
                             status = [leave_record[0]]
                             l += 1.0   
                         # elif od_record[0]:
@@ -119,27 +123,38 @@ def execute(filters=None):
                 elif att.status == "Absent":
                 # Check if employee on Leave
                     leave_record = get_leaves(att.employee,att.attendance_date)
-                    # od_record = get_od(att.employee,att.attendance_date)
+                    od_record = get_od(att.employee,att.attendance_date)
                     if leave_record[0]:
-                        if leave_record[1] == "Second Half":
-                            for lv in leave_record[0]:row +=["A"+'/'+lv]
-                            ab += 0.5
-                            l += 0.5
+                        if leave_record[1] == "First Half":
+                            for lv in leave_record[0]:
+                                row +=[lv+'/'+'A']
+                                ab += 0.5
+                                l += 0.5
+                        elif leave_record[1] == "Second Half":
+                            for lv in leave_record[0]:
+                                row +=["A"+'/'+lv]
+                                ab += 0.5
+                                l += 0.5
                         else:
                             row += [leave_record[0]]
                             l += 1.0
-
-                    elif att.in_time and att.attendance_date == date.today():
+                    if od_record[0]:
+                        if od_record[1] == "First Half":
+                            for lv in od_record[0]:
+                                row +=[lv+'/'+'A']
+                                od += 0.5
+                                l += 0.5
+                        elif od_record[1] == "Second Half":
+                            for lv in od_record[0]:
+                                row +=["A"+'/'+lv]
+                                od += 0.5
+                                l += 0.5
+                        else:
+                            row += [od_record[0]]
+                            od += 1.0
+                    elif att.in_time and not att.out_time:
                         row += ["In/A"]
                         ab += 0.5
-                    # elif od_record[0]:
-                    #     if od_record[1] == "Second Half":
-                    #         for o in od_record[0]:row +=["A"+'/'+o]
-                    #         p += 0.5
-                    #         od += 0.5
-                    #     else:
-                    #         row += ["OD"]
-                    #         od += 1.0
                     elif not att.in_time and not att.out_time:
                         row += ["A"]
                         ab += 1.0
@@ -157,13 +172,20 @@ def execute(filters=None):
                         ab += 1.0
 
                 elif att.status == "Half Day":
-                    leave_record = get_leaves(att.employee,att.attendance_date)
+                    leave_session = get_leaves(att.employee,att.attendance_date)
                     # od_session = get_od(att.employee,att.attendance_date)
-                    if leave_record:
+                    if leave_session[1]:
                         if leave_session[1] == "Second Half":
-                            for lv in leave_session[0]:row +=["P"+'/'+lv]
-                            p += 0.5
-                            l += 0.5  
+                            for lv in leave_session[0]:
+                                row +=["P"+'/'+lv]
+                                p += 0.5
+                                l += 0.5  
+                            else: 
+                                row +=["P/A"]    
+                    else: 
+                        row +=["P/A"]
+                        p += 0.5
+                        ab += 0.5
                     # elif od_session[1]:
                     #     if od_session[1] == "Second Half":
                     #         for o in od_session[0]:row +=["P"+'/'+o]
@@ -189,7 +211,6 @@ def execute(filters=None):
             elif holiday_date:
                     for h in holiday_date:
                         leave_record = get_leaves(emp.name,day_f)
-                        frappe.errprint(leave_record)
                         # od_record = get_od(att.employee,att.attendance_date)
                         # elif get_continuous_absents(att.employee,att.attendance_date):
                         #     status = 'A'
@@ -208,13 +229,12 @@ def execute(filters=None):
                                 wo += 1.0
                     row += [status]
             else:
-                row += ["A"]
-                ab += 1.0    
-        row += [p,ab,od,wo,ph,l]
+                row += [""]
+            #     ab += 1.0    
+        row += [p,ab,l,wo,ph,od]
         data.append(row)
 
-    columns += [_("Total Present") + ":Float:80", _("Total Leaves") +
-                ":Float:80",  _("Total Absent") + ":Float:80"]
+    columns += [_("P") + ":Float:40", _("A") + ":Float:40",  _("L") + ":Float:40",_("WO") + ":Float:40",_("PH") + ":Float:40", _("OD") + ":Float:40"]
     return columns, data
 
 
@@ -248,7 +268,6 @@ def get_employee_details(filters):
         conditions += " and employment_type = '%s'" % filters.get("employment_type")    
     query = """SELECT name, employee_name, biometric_id,designation,contractor,department, branch, employment_type, company FROM `tabEmployee` WHERE status='Active' %s and employment_type != 'Contract'
         ORDER BY employee""" % conditions
-    frappe.errprint(query)   
     emp_list = frappe.db.sql(query, as_dict=1)
     return emp_list
 

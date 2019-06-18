@@ -3,7 +3,8 @@
 /* eslint-disable */
 
 frappe.query_reports["Monthly Attendance Sheet Starbox"] = {
-	"filters": [{
+	"filters": [
+		{
 		"fieldname": "month",
 		"label": __("Month"),
 		"fieldtype": "Select",
@@ -16,6 +17,7 @@ frappe.query_reports["Monthly Attendance Sheet Starbox"] = {
 		"fieldname": "year",
 		"label": __("Year"),
 		"fieldtype": "Select",
+		"options": "2018\n2019",
 		"reqd": 1
 	},
 	{

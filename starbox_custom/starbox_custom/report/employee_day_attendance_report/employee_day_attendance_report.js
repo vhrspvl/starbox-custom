@@ -12,17 +12,17 @@ frappe.query_reports["Employee Day Attendance Report"] = {
 			"reqd": 1
 		},
 	],
-	"formatter": function (row, cell, value, columnDef, dataContext, default_formatter) {
-		value = default_formatter(row, cell, value, columnDef, dataContext)
-		if (columnDef.id == "Status") {
-			if (dataContext["Status"] === "Present") {
-				if (dataContext["Remarks"] === "Failed Out Punch") {
-					value = "<span style='color:yellow!important;font-weight:bold'>" + value + "</span>";
+	"formatter": function (value, row, column, data, default_formatter) {
+		value = default_formatter(value, row, column, data);
+		if (column.id == "Status") {
+			if (data["Status"] === "Present") {
+				if (data["Remarks"] === "Failed Out Punch") {
+					value = "<span style='color:dark-yellow!important;font-weight:bold'>" + value + "</span>";
 				} else {
 					value = "<span style='color:green!important;font-weight:bold'>" + value + "</span>";
 				}
 			}
-			if (dataContext["Status"] === "Absent") {
+			if (data["Status"] === "Absent") {
 				value = "<span style='color:red!important;font-weight:bold'>" + value + "</span>";
 			}
 

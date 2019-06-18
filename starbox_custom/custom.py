@@ -8,22 +8,53 @@ import json
 from frappe import _
 from frappe.utils.data import today
 from frappe.utils import formatdate, getdate, cint, add_months, date_diff, add_days, flt, cstr, time_diff, time_diff_in_seconds, time_diff_in_hours, today
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from dateutil.relativedelta import relativedelta
 from erpnext.hr.doctype.employee.employee import get_holiday_list_for_employee
 import requests
 import math
 
 
+
+@frappe.whitelist()
+def bulk_update_in_biometric_machine():
+    employees = frappe.get_list("Employee", filters={"status": "Active","employment_type":("not in",["Operator","Contract","Staff"])}, fields=["biometric_id","employee_name"])
+    for emp in employees:
+        empid = frappe.get_doc("Employee",emp)
+        print empid.employment_type
+        uid = emp.biometric_id
+        uname = emp.employee_name
+        stgids = frappe.db.get_all("Service Tag")
+        for stgid in stgids:
+            url = "http://robot.camsunit.com/external/1.0/user/add?uid=%s&uname=%s&stgid=%s" % (
+                uid, uname, stgid.name)
+            r = requests.post(url)
+            print r.content
+
+
+
 @frappe.whitelist()
 def update_in_biometric_machine(uid, uname):
     stgids = frappe.db.get_all("Service Tag")
     for stgid in stgids:
-        url = "http://robot.camsunit.com/external/1.0/user/update?uid=%s&uname=%s&stgid=%s" % (
+        url = "http://robot.camsunit.com/external/1.0/user/add?uid=%s&uname=%s&stgid=%s" % (
             uid, uname, stgid.name)
         r = requests.post(url)
+        frappe.errprint(r.content)
     return r.content
 
+
+
+@frappe.whitelist()
+def delete_from_biometric_machine(uid, uname):
+    left_employee = frappe.get_doc("Employee", uid)
+    # for l in left_employees:
+    stgids = frappe.db.get_all("Service Tag")
+    for stgid in stgids:
+        url = "http://robot.camsunit.com/external/1.0/user/delete?uid=%s&stgid=%s" % (
+            uid, stgid.name)
+        r = requests.post(url)
+    return r.content
 
 @frappe.whitelist()
 def delete_bulk():
@@ -68,6 +99,21 @@ def send_daily_report():
         formatdate(add_days(today(), -1)),
         message=html
     )
+
+
+@frappe.whitelist()
+def removeduplicatepunch():
+    # day = '2019-04-10'
+    day = today()
+    get_att = frappe.db.sql("""SELECT name FROM `tabPunch Record` WHERE attendance_date = %s GROUP BY employee
+                    HAVING COUNT(employee) >1""", (day), as_dict=1)
+
+    if get_att:
+        for att in get_att:
+            obj = frappe.get_doc("Punch Record", att["name"])
+            frappe.delete_doc("Punch Record", obj.name)
+            frappe.db.commit()
+        removeduplicatepunch()
 
 
 @frappe.whitelist()
@@ -151,22 +197,33 @@ def cancel_on_leave(doc, method):
 
 @frappe.whitelist()
 def removeduplicateatt():
-    for dt in daterange(date(2018, 12, 1), date(2018, 12, 31)):
-        day = dt
-        # day = add_days(today(), -1)
-        get_att = frappe.db.sql("""SELECT name FROM `tabAttendance` WHERE attendance_date = %s GROUP BY employee
-                        HAVING COUNT(employee) >1""", (day), as_dict=1)
-        if get_att:
-            for att in get_att:
-                obj = frappe.get_doc("Attendance", att["name"])
-                obj.db_set("docstatus", 2)
-                frappe.delete_doc("Attendance", obj.name)
-                frappe.db.commit()
+    get_att = frappe.db.sql("""SELECT name FROM `tabAttendance` WHERE attendance_date = %s GROUP BY employee
+                    HAVING COUNT(employee) >1""", (today()), as_dict=1)
+    if get_att:
+        for att in get_att:
+            obj = frappe.get_doc("Attendance", att["name"])
+            obj.db_set("docstatus", 2)
+            frappe.delete_doc("Attendance", obj.name)
+            frappe.db.commit()
+
+# @frappe.whitelist()
+# def removeduplicateatt():
+#     for dt in daterange(date(2018, 12, 1), date(2018, 12, 31)):
+#         day = dt
+#         # day = add_days(today(), -1)
+#         get_att = frappe.db.sql("""SELECT name FROM `tabAttendance` WHERE attendance_date = %s GROUP BY employee
+#                         HAVING COUNT(employee) >1""", (day), as_dict=1)
+#         if get_att:
+#             for att in get_att:
+#                 obj = frappe.get_doc("Attendance", att["name"])
+#                 obj.db_set("docstatus", 2)
+#                 frappe.delete_doc("Attendance", obj.name)
+#                 frappe.db.commit()
 
 
-def daterange(date1, date2):
-    for n in range(int((date2 - date1).days)+1):
-        yield date1 + timedelta(n)
+# def daterange(date1, date2):
+#     for n in range(int((date2 - date1).days)+1):
+#         yield date1 + timedelta(n)
 
 
 @frappe.whitelist()
@@ -400,6 +457,18 @@ def send_reference_mail(job_title, role):
                             now=True)
         return "ok"
         # reply_to=e.company_email or e.personal_email or e.user_id)
+
+
+@frappe.whitelist()
+def update_comp_off(child):
+    parts = child.split(",")
+    for p in parts:
+        la = frappe.get_doc("Leave Allocation", p)
+        la.update({
+            "leave_taken": 1
+        })
+        la.db_update()
+        frappe.db.commit()
 
 
 # @frappe.whitelist()
@@ -851,28 +920,3 @@ def send_reference_mail(job_title, role):
         #         # up.cancel()
         #         # frappe.delete_doc('User Permission', up.name)
         #         # frappe.db.commit()
-
-
-@frappe.whitelist()
-def bulk_restore():
-    ddd = frappe.get_all("Deleted Document", {'creation': (
-        '>', '2019-02-05'), "deleted_doctype": "Leave Application", "restored": 0})
-    for d in ddd:
-        deleted = frappe.get_doc('Deleted Document', d)
-        print deleted.deleted_name
-        doc = frappe.gsttaffet_doc(json.loads(deleted.data))
-        if not doc.employee == 'Israel':
-            try:
-                doc.insert()
-            except frappe.DocstatusTransitionError:
-                doc.docstatus = 0
-                doc.insert()
-
-            doc.add_comment('Edit', _('restored {0} as {1}').format(
-                deleted.deleted_name, doc.name))
-
-            deleted.new_name = doc.name
-            deleted.restored = 1
-            deleted.db_update()
-
-    # frappe.msgprint(_('Document Restored'))

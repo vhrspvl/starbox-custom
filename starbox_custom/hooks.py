@@ -16,7 +16,7 @@ app_license = "MIT"
 
 # include js, css files in header of desk.html
 # app_include_css = "/assets/starbox_custom/css/starbox_custom.css"
-# app_include_js = "/assets/starbox_custom/js/starbox_custom.js"
+# app_include_js = "/assets/starbox_custom/js/mute_learn.js"
 
 # include js, css files in header of web template
 # web_include_css = "/assets/starbox_custom/css/starbox_custom.css"
@@ -99,16 +99,16 @@ doc_events = {
         "before_save": "starbox_custom.custom.calculate_total"
     },
     "Attendance": {
-        "on_submit": "starbox_custom.starbox_custom.validations.attendance.total_working_hours",
+        # "on_submit": "starbox_custom.starbox_custom.validations.attendance.total_working_hours",
         # "on_update_after_submit": "starbox_custom.calculations.total_working_hours"
-        "on_update_after_submit": "starbox_custom.starbox_custom.validations.attendance.updateaftersubmit"
+        # "on_update_after_submit": "starbox_custom.starbox_custom.validations.attendance.updateaftersubmit"
     },
     "Leave Application": {
         # "on_submit": "starbox_custom.custom.mark_on_leave",
         "on_cancel": "starbox_custom.custom.cancel_on_leave"
-    }
+    },
     # "Salary Slip": {
-    #     "onload": "starbox_custom.calculations.calculate_present_days"
+    #     "before_insert": "starbox_custom.calculations.calculate_present_days"
     # }
 }
 
@@ -116,10 +116,11 @@ doc_events = {
 # ---------------
 
 scheduler_events = {
-    # 	"all": [
-    # 		"starbox_custom.tasks.all"
-    # 	],
+    "all": [
+        "starbox_custom.custom.removeduplicatepunch"
+    ],
     "daily_long": [
+        "starbox_custom.utils.prev_day_attendance"
         "starbox_custom.custom.emp_absent_today",
         "starbox_custom.custom.send_daily_report",
         "starbox_custom.custom.send_ctc_report",
@@ -131,6 +132,12 @@ scheduler_events = {
         "00 10 * * *": [
             "starbox_custom.calculations.create_ts"
         ],
+        # "45 09 * * *": [
+        #     "starbox_custom.utils.current_day_attendance"
+        # ],
+        # "00 23 * * *": [
+        #     "starbox_custom.utils.current_day_attendance"
+        # ],
         # "45 11 * * *": [
         #     "starbox_custom.calculations.clc_calculator"
         # ]
@@ -138,7 +145,10 @@ scheduler_events = {
     },
 
 
-
+    "hourly": [
+        "starbox_custom.custom.removeduplicateatt",
+        "starbox_custom.utils.current_day_attendance"
+    ],
     # "hourly": [
     #     "starbox_custom.calculations.create_ts"
     # ],

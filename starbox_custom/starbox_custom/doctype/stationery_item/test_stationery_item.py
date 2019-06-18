@@ -6,5 +6,5 @@ from __future__ import unicode_literals
 import frappe
 import unittest
 
-class TestManualAttendanceCorrections(unittest.TestCase):
+class TestStationeryItem(unittest.TestCase):
 	pass

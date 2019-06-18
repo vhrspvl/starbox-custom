@@ -23,29 +23,28 @@ class OnDutyApplication(Document):
             frappe.throw(_("Only Applications with status 'Approved' and 'Rejected' can be submitted"))
 
     def validate(self):
-        self.validate_approver()
         self.validate_od_overlap()	
 
-    def validate_approver(self):
-        if not frappe.session.user == 'hr.hdi@hunterdouglas.asia':
-            employee = frappe.get_doc("Employee", self.employee)
-            approvers = [l.leave_approver for l in employee.get("leave_approvers")]
+    # def validate_approver(self):
+    #     if not frappe.session.user == 'hr.hdi@hunterdouglas.asia':
+    #         employee = frappe.get_doc("Employee", self.employee)
+    #         approvers = [l.leave_approver for l in employee.get("leave_approvers")]
 
-            if len(approvers) and self.approver not in approvers:
-                frappe.throw(_("Approver must be one of {0}")
-                    .format(comma_or(approvers)), InvalidApproverError)
+    #         if len(approvers) and self.approver not in approvers:
+    #             frappe.throw(_("Approver must be one of {0}")
+    #                 .format(comma_or(approvers)), InvalidApproverError)
 
-            elif self.approver and not frappe.db.sql("""select name from `tabHas Role`
-                where parent=%s and role='Leave Approver'""", self.approver):
-                frappe.throw(_("{0} ({1}) must have role 'Approver'")\
-                    .format(get_fullname(self.approver), self.approver), InvalidApproverError)
+    #         elif self.approver and not frappe.db.sql("""select name from `tabHas Role`
+    #             where parent=%s and role='Leave Approver'""", self.approver):
+    #             frappe.throw(_("{0} ({1}) must have role 'Approver'")\
+    #                 .format(get_fullname(self.approver), self.approver), InvalidApproverError)
 
-            elif self.docstatus==0 and len(approvers) and self.approver != frappe.session.user:
-                self.status = 'Applied'
+    #         elif self.docstatus==0 and len(approvers) and self.approver != frappe.session.user:
+    #             self.status = 'Applied'
                 
-            elif self.docstatus==1 and len(approvers) and self.approver != frappe.session.user:
-                frappe.throw(_("Only the selected Approver can submit this Application"),
-                    LeaveApproverIdentityError)
+    #         elif self.docstatus==1 and len(approvers) and self.approver != frappe.session.user:
+    #             frappe.throw(_("Only the selected Approver can submit this Application"),
+    #                 LeaveApproverIdentityError)
     
     def validate_od_overlap(self):
         if not self.name:
@@ -104,10 +103,10 @@ class OnDutyApplication(Document):
 def get_number_of_leave_days(employee, from_date, to_date,from_date_session=None,  to_date_session=None, date_dif=None):
     number_of_days = 0
     if from_date == to_date:
-        if from_date_session != 'Full Day':
-            number_of_days = 0.5
-        else:
+        if from_date_session == 'Full Day':
             number_of_days = 1
+        else:
+            number_of_days = 0.5
     else:
         if from_date_session == "Full Day" and to_date_session == "Full Day":
             number_of_days = flt(date_dif)

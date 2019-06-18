@@ -16,6 +16,8 @@ frappe.query_reports["Attendance Register"] = {
 			"fieldname": "year",
 			"label": __("Year"),
 			"fieldtype": "Select",
+			"options": "2018\n2019",
+			"default": "2019",
 			"reqd": 1
 		},
 		{
