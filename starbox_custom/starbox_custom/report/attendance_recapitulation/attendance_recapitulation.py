@@ -111,6 +111,11 @@ def execute(filters=None):
                     row += [att.status]
             else:
                 row += ["-"]
+
+            if att.modified_status:
+                row += [att.modified_status]
+            else:
+                row += ["-"]      
             
 
             data.append(row)
@@ -130,6 +135,7 @@ def get_columns():
         _("Out Time") + ":Rime:90",
         _("Working Hours") + ":Time:90",
         _("Status") + ":Link/Attendance:90",
+        _("Modified Status") + ":Data:90",
     ]
     return columns
 
@@ -137,7 +143,7 @@ def get_columns():
 def get_attendance(conditions, filters):
     attendance = frappe.db.sql("""
     select
-    att.leave_type,att.name as name,att.attendance_date as attendance_date,att.employee as employee, att.employee_name as employee_name,emp.employment_type as employment_type,att.department as department,att.shift as shift,att.in_time as in_time,att.out_time as out_time,att.total_working_hours as total_working_hours,att.status as status 
+    att.leave_type,att.name as name,att.attendance_date as attendance_date,att.employee as employee,att.modified_status as modified_status, att.employee_name as employee_name,emp.employment_type as employment_type,att.department as department,att.shift as shift,att.in_time as in_time,att.out_time as out_time,att.total_working_hours as total_working_hours,att.status as status 
     from `tabAttendance` att 
     left join `tabEmployee` emp on att.employee = emp.employee
     where  

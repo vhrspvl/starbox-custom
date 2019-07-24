@@ -139,6 +139,9 @@ def execute(filters=None):
                             row += [leave_record[0]]
                             l += 1.0
                     if od_record[0]:
+                        frappe.errprint(od_record[0])
+                        frappe.errprint(att.employee)
+                        frappe.errprint(od_record[1])
                         if od_record[1] == "First Half":
                             for lv in od_record[0]:
                                 row +=[lv+'/'+'A']
@@ -170,7 +173,7 @@ def execute(filters=None):
                     else:    
                         row += ["A"]
                         ab += 1.0
-
+                
                 elif att.status == "Half Day":
                     leave_session = get_leaves(att.employee,att.attendance_date)
                     # od_session = get_od(att.employee,att.attendance_date)
@@ -180,8 +183,12 @@ def execute(filters=None):
                                 row +=["P"+'/'+lv]
                                 p += 0.5
                                 l += 0.5  
-                            else: 
-                                row +=["P/A"]    
+                        else: 
+                            for lv in leave_session[0]:
+                                row +=[lv+'/'+"P"]
+                                p += 0.5
+                                l += 0.5  
+                            # row +=["P/A"]    
                     else: 
                         row +=["P/A"]
                         p += 0.5
@@ -273,7 +280,7 @@ def get_employee_details(filters):
 
 def get_leaves(emp,day):
     leave_type = from_date_session = to_date_session = leave = session = ""
-    leave_record = frappe.db.sql("""select from_date,to_date,half_day,leave_type,half_day_date from `tabLeave Application`
+    leave_record = frappe.db.sql("""select from_date,to_date,half_day,leave_type,half_day_date,from_date_session,to_date_session from `tabLeave Application`
                         where employee = %s and %s between from_date and to_date
                         and docstatus = 1 and status='Approved'""", (emp, day), as_dict=True)          
     if leave_record:
@@ -283,9 +290,19 @@ def get_leaves(emp,day):
             half_day_date = l.half_day_date
             from_date = l.from_date
             to_date = l.to_date
+            from_date_session = l.from_date_session
+            to_date_session = l.to_date_session
         if half_day:
-            if day == half_day_date:
-                session = "HD" 
+            if from_date_session:
+                if day == half_day_date:
+                    session = from_date_session
+            if to_date_session:
+                if day == half_day_date:
+                    session = to_date_session
+                    
+        
+            # if day == half_day_date:
+            #     session = ["HD"] 
         if leave_type == "Privilege Leave":
             leave = ["PL"]
         elif leave_type == "Casual Leave":
@@ -339,6 +356,7 @@ def get_od(emp,day):
             from_date_session = o.from_date_session
             to_date_session = o.to_date_session
             session = from_date_session
+            frappe.errprint(session)
         if half_day:
             if from_date == to_date:
                session = from_date_session 

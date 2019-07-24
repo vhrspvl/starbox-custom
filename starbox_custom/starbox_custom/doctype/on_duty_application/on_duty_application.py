@@ -19,11 +19,10 @@ class OnDutyApplication(Document):
     # def autoname(self):
     #     self.name = self.employee_name+"/"+self.from_date
     def on_submit(self):
-        if self.status == "Applied":
+        if self.status == "Open":
             frappe.throw(_("Only Applications with status 'Approved' and 'Rejected' can be submitted"))
-
     def validate(self):
-        self.validate_od_overlap()	
+        self.validate_od_overlap()
 
     # def validate_approver(self):
     #     if not frappe.session.user == 'hr.hdi@hunterdouglas.asia':

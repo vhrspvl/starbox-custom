@@ -60,6 +60,7 @@ def attendance(**args):
 
 
         if doc.employment_type == 'Contract' or doc.employment_type == 'Operator' or doc.designation == 'Operator':
+        # if doc.select_biometric_machine ! = 'Reception':    
             a_min_time = datetime.strptime('07:30', '%H:%M')
             a_max_time = datetime.strptime('08:30', '%H:%M')
             b_min_time = datetime.strptime('04:30', '%H:%M')
@@ -389,6 +390,8 @@ def mark_attendance(day):
     # employees = ['2073']
     employees = frappe.get_all(
         "Employee", {"status": "Active", "employment_type": ("not in", ["Contract","Operator"]) })
+    # employees = frappe.get_all(
+    #     "Employee", {"status": "Active", "select_biometric_machine": 'Reception' })
     for emp in employees:
         emp = emp.name
         # if emp == '405':
